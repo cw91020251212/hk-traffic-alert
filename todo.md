@@ -15,6 +15,7 @@
 - [x] 警報、ETA、道路速度、環境資料拆為獨立 tRPC endpoints，帶 timeout、快取和部分來源失敗狀態。
 - [x] 查核停課 RSS、政府公報、水浸黑點、航空及其他官方來源限制；見 `DATA_SOURCES.md` 和 `政府公告與警報選項.md`。
 - [x] 完成可交由其他 AI 續做的工程交接說明 `工程交接報告.md`。
+- [x] 完成 `開發說明.md`：列明已接入資料、明確限制、未完成 roadmap，以及每任 AI 在完工／中斷前必須更新交接狀態的規則。
 - [x] Vitest 20 項通過、`pnpm check` 通過、`pnpm build` 成功；桌面／375px 手機 screenshot 及 live preview DOM/API 資料核驗。
 - [x] 已儲存 WebDev checkpoint（版本資訊見 Manus 專案紀錄）。
 
