@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  filterPriorityAlerts,
+  getPriorityFeedState,
+  isMajorTrafficEvent,
+  mergeEndpointFailureSources,
   normalizeEarthquake,
   normalizeCurrentWeather,
   normalizeCitybusEta,
@@ -12,6 +16,7 @@ import {
   parseAQHIXml,
   parseSpecialTrafficNewsXml,
   prioritizeTrafficEvents,
+  selectPriorityAlerts,
 } from "./transportData";
 
 describe("parseSpecialTrafficNewsXml", () => {
@@ -218,5 +223,71 @@ describe("prioritizeTrafficEvents", () => {
       event("active-old", "仍然生效", "2026-09-27T08:00:00+08:00"),
       event("active-new", "仍然生效", "2026-09-27T09:00:00+08:00"),
     ]).map(({ id }) => id)).toEqual(["active-new", "active-old", "closed-new"]);
+  });
+});
+
+describe("alert-first selection and status", () => {
+  const emptyInput = { trafficEvents: [], warnings: [], trains: [], earthquakes: [], roadRoutes: [] } as const;
+
+  it("does not turn ordinary rainfall or empty active warnings into a traffic alert", () => {
+    const activeWarnings = normalizeWeatherWarnings({ details: [] });
+    expect(activeWarnings).toEqual([]);
+    expect(selectPriorityAlerts({ ...emptyInput, warnings: activeWarnings })).toEqual([]);
+  });
+
+  it("raises active yellow, red and black rain signals with distinct severity", () => {
+    const alerts = ["WRAINA", "WRAINR", "WRAINB"].map((subtype) => selectPriorityAlerts({
+      ...emptyInput,
+      warnings: normalizeWeatherWarnings({ details: [{ warningStatementCode: "WRAIN", subtype, contents: [`${subtype} 生效`] }] }),
+    })[0]);
+    expect(alerts.map((alert) => alert?.level)).toEqual(["watch", "high", "critical"]);
+  });
+
+  it("filters a cancelled warning and ignores a closed road event", () => {
+    const warnings = normalizeWeatherWarnings({ details: [{ warningStatementCode: "WTCSGNL", subtype: "CANCEL", contents: ["所有信號取消"] }] });
+    const closedRoad = { id: "closed", incidentNumber: "1", title: "吐露港公路嚴重交通意外", detail: "車輛相撞", location: "大埔", district: "大埔", direction: "往沙田", status: "完結", announcedAt: "2026-09-27T08:00:00+08:00" };
+    expect(selectPriorityAlerts({ ...emptyInput, warnings, trafficEvents: [closedRoad] })).toEqual([]);
+  });
+
+  it("selects major road incidents, MTR delay flags and local felt earthquakes, not global M6 bulletins", () => {
+    const majorRoad = { id: "road-1", incidentNumber: "IN-1", title: "吐露港公路交通意外", detail: "行車線封閉", location: "大埔", district: "大埔", direction: "往沙田", status: "仍然生效", announcedAt: "2026-09-27T09:00:00+08:00" };
+    const alerts = selectPriorityAlerts({
+      ...emptyInput,
+      trafficEvents: [majorRoad],
+      trains: [{ line: "EAL", label: "東鐵綫", station: "金鐘", arrivals: [], serviceDelayed: true }],
+      earthquakes: [{ kind: "quick", label: "全球 M6+", magnitude: 6.5 }, { kind: "felt", label: "香港有感地震報告", region: "香港附近" }],
+    });
+    expect(alerts.map((alert) => alert.kind)).toContain("road");
+    expect(alerts.map((alert) => alert.kind)).toContain("rail");
+    expect(alerts.filter((alert) => alert.kind === "earthquake")).toHaveLength(1);
+    expect(alerts.find((alert) => alert.kind === "earthquake")?.location).toBe("香港附近");
+  });
+
+  it("does not treat minor bus arrival notes as major road incidents", () => {
+    const routine = { id: "bus", incidentNumber: "", title: "巴士服務安排", detail: "班次恢復正常", location: "中環", district: "中西區", direction: "", status: "生效", announcedAt: "2026-09-27T09:00:00+08:00" };
+    expect(isMajorTrafficEvent(routine)).toBe(false);
+  });
+
+  it("distinguishes a confirmed clear feed from an unavailable official source", () => {
+    expect(getPriorityFeedState(false, [{ id: "td-traffic", label: "運輸署", url: "https://example.com", status: "ok", checkedAt: "now" }], [])).toEqual({ kind: "clear" });
+    expect(getPriorityFeedState(false, [{ id: "td-traffic", label: "運輸署", url: "https://example.com", status: "unavailable", checkedAt: "now" }], [])).toMatchObject({ kind: "unavailable" });
+    expect(getPriorityFeedState(true, [], [])).toEqual({ kind: "loading" });
+  });
+
+  it("keeps a territory-wide rain alert visible in each region and filters regional incidents safely", () => {
+    const road = { id: "tolo", incidentNumber: "1", title: "吐露港公路交通意外", detail: "行車線阻塞", location: "吐露港公路", district: "大埔", direction: "往大圍", status: "仍然生效", announcedAt: "2026-09-27T09:00:00+08:00" };
+    const alerts = selectPriorityAlerts({
+      ...emptyInput,
+      trafficEvents: [road],
+      warnings: normalizeWeatherWarnings({ details: [{ warningStatementCode: "WRAIN", subtype: "WRAINR", contents: ["紅色暴雨警告生效中"] }] }),
+    });
+    expect(filterPriorityAlerts(alerts, "港島", "all").map((item) => item.kind)).toEqual(["weather"]);
+    expect(filterPriorityAlerts(alerts, "新界／離島", "all").map((item) => item.kind).sort()).toEqual(["road", "weather"]);
+    expect(filterPriorityAlerts(alerts, "全部", "road")).toHaveLength(1);
+  });
+
+  it("does not report clear when the entire alert dashboard query has failed", () => {
+    const sources = mergeEndpointFailureSources([], { dashboard: true });
+    expect(getPriorityFeedState(false, sources, [])).toMatchObject({ kind: "unavailable" });
   });
 });

@@ -21,7 +21,7 @@ import {
   Zap,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { prioritizeTrafficEvents, type AQHIStation, type EarthquakeBulletin, type MobilityDemo, type TrafficEvent, type WeatherWarning } from "../../../server/transportData";
+import { filterPriorityAlerts, getPriorityFeedState, mergeEndpointFailureSources, prioritizeTrafficEvents, selectPriorityAlerts, type AQHIStation, type EarthquakeBulletin, type MobilityDemo, type PriorityAlert, type TrafficEvent, type WeatherWarning } from "../../../server/transportData";
 
 type Mode = {
   id: string;
@@ -31,6 +31,9 @@ type Mode = {
   tone: string;
   source: string;
 };
+
+type AlertAreaFilter = "全部" | "全港" | "港島" | "九龍" | "新界／離島";
+type AlertKindFilter = PriorityAlert["kind"] | "all";
 
 const modes: Mode[] = [
   { id: "road", label: "道路交通", subtitle: "事故・封路・路線車速", icon: CarFront, tone: "coral", source: "運輸署" },
@@ -91,6 +94,9 @@ function warningTone(warning: WeatherWarning) {
 }
 
 export default function Home() {
+  const [openPanels, setOpenPanels] = useState({ transport: false, weather: false, sources: false });
+  const [alertArea, setAlertArea] = useState<AlertAreaFilter>("全部");
+  const [alertKind, setAlertKind] = useState<AlertKindFilter>("all");
   const [activeMode, setActiveMode] = useState("all");
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState("");
@@ -122,7 +128,8 @@ export default function Home() {
   const priorityTrafficEvents = useMemo(() => prioritizeTrafficEvents(trafficEvents), [trafficEvents]);
   const mobilityDemos = mobility.data?.demos ?? [];
   const earthquakes = data?.earthquakes ?? [];
-  const activeSources = [...(data?.sources ?? []), ...(mobility.data?.sources ?? []), ...(roadTraffic.data?.source ? [roadTraffic.data.source] : []), ...(environment.data?.sources ?? [])];
+  const queriedSources = useMemo(() => [...(data?.sources ?? []), ...(mobility.data?.sources ?? []), ...(roadTraffic.data?.source ? [roadTraffic.data.source] : []), ...(environment.data?.sources ?? [])], [data?.sources, mobility.data?.sources, roadTraffic.data?.source, environment.data?.sources]);
+  const activeSources = useMemo(() => mergeEndpointFailureSources(queriedSources, { dashboard: dashboard.isError, roadTraffic: roadTraffic.isError }), [queriedSources, dashboard.isError, roadTraffic.isError]);
   const warningsUnavailable = activeSources.some((source) => source.id === "hko-warning" && source.status === "unavailable");
   const trafficUnavailable = activeSources.some((source) => source.id === "td-traffic" && source.status === "unavailable");
   const railUnavailable = activeSources.some((source) => source.id.startsWith("mtr-") && source.status === "unavailable");
@@ -133,6 +140,26 @@ export default function Home() {
   const rainfallEntries = environment.data?.current?.rainfall ?? [];
   const highestRainfall = [...rainfallEntries].sort((a, b) => b.millimetres - a.millimetres)[0];
   const rainfallPeriod = environment.data?.current?.rainfallPeriod?.split(" – ") ?? [];
+  const priorityAlerts = useMemo(() => selectPriorityAlerts({
+    trafficEvents,
+    warnings: activeWarnings,
+    trains: data?.trains ?? [],
+    earthquakes,
+    roadRoutes: roadTraffic.data?.routes ?? [],
+    roadUpdatedAt: roadTraffic.data?.fetchedAt,
+  }), [trafficEvents, activeWarnings, data?.trains, earthquakes, roadTraffic.data?.routes, roadTraffic.data?.fetchedAt]);
+  const priorityFeed = getPriorityFeedState(dashboard.isLoading || roadTraffic.isLoading, activeSources, priorityAlerts);
+  const regionalAlerts = filterPriorityAlerts(priorityAlerts, alertArea, "all");
+  const filteredPriorityAlerts = filterPriorityAlerts(priorityAlerts, alertArea, alertKind);
+  const priorityKindCounts = { road: regionalAlerts.filter((alert) => alert.kind === "road").length, rail: regionalAlerts.filter((alert) => alert.kind === "rail").length, weather: regionalAlerts.filter((alert) => alert.kind === "weather").length, earthquake: regionalAlerts.filter((alert) => alert.kind === "earthquake").length };
+  const hasUnavailableAlerts = priorityFeed.kind === "unavailable";
+  const displayAlerts = hasUnavailableAlerts ? priorityFeed.alerts : priorityFeed.kind === "alerts" ? priorityFeed.alerts : [];
+  const openPanel = (panel: "transport" | "weather" | "sources") => {
+    setOpenPanels((current) => ({ ...current, [panel]: true }));
+    const target = panel === "transport" ? "transport-details" : panel === "weather" ? "weather-details" : "source-details";
+    window.setTimeout(() => document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+  };
+  const togglePanel = (panel: "transport" | "weather" | "sources") => setOpenPanels((current) => ({ ...current, [panel]: !current[panel] }));
 
   return (
     <main className="traffic-app">
@@ -142,10 +169,10 @@ export default function Home() {
           <span className="brand-copy"><strong>交通警報器</strong><small>HONG KONG · MOVE SMARTER</small></span>
         </a>
         <nav className="top-nav" aria-label="主要導覽">
-          <a className="nav-current" href="#overview">交通總覽</a>
-          <a href="#weather">天氣與災害</a>
-          <a href="#weather-report">天氣預報／空氣</a>
-          <a href="#source-directory">資料來源</a>
+          <button className="nav-current" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>警報首頁</button>
+          <button onClick={() => openPanel("transport")}>道路／列車</button>
+          <button onClick={() => openPanel("weather")}>天氣警告</button>
+          <button onClick={() => openPanel("sources")}>資料來源</button>
         </nav>
         <div className="top-actions">
           <span className="preview-pill"><span /> 官方資料測試版</span>
@@ -158,8 +185,8 @@ export default function Home() {
         <section className="hero" id="overview">
           <div className="hero-copy">
             <div className="eyebrow"><span className="eyebrow-line" /> 香港出行，一站掌握</div>
-            <h1>出門前，<span>睇清全港交通。</span></h1>
-            <p>先睇道路路況、列車服務與公共交通，再掌握天氣警告、溫度、雨量、紫外線及空氣質素。</p>
+            <h1>出門前，<span>先知道要唔要改路。</span></h1>
+            <p>先睇會影響出行的主要路況、列車故障和生效中的天氣警告。普通天氣、AQHI 和到站資料不會塞進警報清單。</p>
             <div className="hero-meta">
               <span className="data-state"><span className="pulse-dot" />官方資料讀取 {dashboard.isFetching ? "中" : "完成"}</span>
               <span className="meta-divider" />
@@ -173,15 +200,33 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="preview-notice" aria-label="資料狀態提示">
-          <div className="notice-icon"><ShieldAlert size={17} /></div>
-          <div><strong>資料測試版｜道路事故消息、吐露港走廊車速估算、港鐵延誤標記及天氣／AQHI 已接入。</strong><span> 巴士、小巴與渡輪目前只有指定站點／路線試點；航班未有已核實的官方即時 API。緊急情況請以政府公告為準。</span></div>
-          <a href="#source-directory">資料與更新方式 <ArrowUpRight size={14} /></a>
-        </section>
-
         {notice && <div className="inline-notice" role="status">{notice}<button onClick={() => setNotice("")} aria-label="關閉">×</button></div>}
 
-        <section className="section-block transport-section" aria-labelledby="transport-heading">
+        <section className="priority-feed" aria-labelledby="priority-heading" id="priority-alerts">
+          <div className="priority-header">
+            <div><div className="eyebrow small-eyebrow">RIGHT NOW · ACTION FIRST</div><h2 id="priority-heading">而家有冇事要留意？</h2></div>
+            <button className="refresh-button" onClick={() => { void dashboard.refetch(); void roadTraffic.refetch(); }} disabled={dashboard.isFetching || roadTraffic.isFetching}><RefreshCw size={15} className={dashboard.isFetching || roadTraffic.isFetching ? "spin" : ""} /> 更新警報</button>
+          </div>
+          {priorityFeed.kind === "loading" ? <div className="priority-state" aria-live="polite"><span className="priority-loader" /> 正在檢查運輸署、港鐵及天文台官方來源…</div>
+            : <>
+              {hasUnavailableAlerts && <div className="priority-degraded" role="status"><TriangleAlert size={19} /><div><strong>有官方來源暫時未能讀取，不能確認全部警報狀態。</strong><span>{priorityFeed.kind === "unavailable" ? priorityFeed.sources.map((source) => source.label).join("、") : "請稍後重試，或查看官方來源。"} · 已收到的警報仍會保留。</span></div><button onClick={() => { void dashboard.refetch(); void roadTraffic.refetch(); }}>重試</button></div>}
+              {displayAlerts.length > 0 ? <>
+                <PriorityFilters area={alertArea} kind={alertKind} counts={priorityKindCounts} onAreaChange={setAlertArea} onKindChange={setAlertKind} />
+                <div className="priority-list">{filteredPriorityAlerts.slice(0, 6).map((alert) => <PriorityAlertCard key={alert.id} alert={alert} />)}{filteredPriorityAlerts.length > 6 && <div className="priority-more">另外 {filteredPriorityAlerts.length - 6} 張符合門檻的警報未展開，請先選地區或類別縮窄結果。</div>}{filteredPriorityAlerts.length === 0 && <div className="priority-filter-empty">此地區／類別目前沒有符合門檻的警報；其他地區仍有 {displayAlerts.length} 項。</div>}</div>
+              </> : hasUnavailableAlerts ? <div className="priority-state">目前沒有已核實的重大警報；由於部分來源失效，不能確認其餘情況。</div>
+                : <div className="priority-clear"><span className="clear-icon"><ShieldAlert size={20} /></span><div><strong>目前沒有已核實、符合門檻的重大交通警報。</strong><span>普通落雨、一般天氣、AQHI 和常規到站時間不會當作警報。資料源失效會另外提示。</span></div></div>}
+            </>}
+          <div className="journey-actions" aria-label="常用出行情境">
+            <button onClick={() => openPanel("transport")}><CarFront size={17} /><span><strong>出門返工／放工</strong><small>查主幹道路況</small></span><ChevronRight size={16} /></button>
+            <button onClick={() => openPanel("transport")}><TrainFront size={17} /><span><strong>轉乘／趕車</strong><small>查列車及 ETA</small></span><ChevronRight size={16} /></button>
+            <button onClick={() => openPanel("weather")}><CloudLightning size={17} /><span><strong>惡劣天氣／跨區</strong><small>看生效警告</small></span><ChevronRight size={16} /></button>
+          </div>
+          <div className="prototype-footnote"><ShieldAlert size={13} /> 資料測試版：只覆蓋吐露港走廊、金鐘港鐵及部分交通試點；並非全港全面警報服務。遇緊急情況請以官方公告為準。</div>
+        </section>
+
+        <details className="detail-accordion transport-accordion" id="transport-details" open={openPanels.transport} onToggle={(event) => setOpenPanels((current) => ({ ...current, transport: (event.currentTarget as HTMLDetailsElement).open }))}>
+          <summary><span><CarFront size={17} /> 查道路、列車、巴士及渡輪詳情</span><ChevronRight className="disclosure-chevron" size={17} /><small>指定路段／站點 ETA</small></summary>
+          <section className="section-block transport-section" aria-labelledby="transport-heading">
           <div className="section-heading">
             <div><div className="eyebrow small-eyebrow">TRANSPORT NETWORK</div><h2 id="transport-heading">交通網絡</h2></div>
             <button className="refresh-button" onClick={() => { void dashboard.refetch(); void mobility.refetch(); void roadTraffic.refetch(); void environment.refetch(); }} disabled={dashboard.isFetching}><RefreshCw size={15} className={dashboard.isFetching || mobility.isFetching || roadTraffic.isFetching || environment.isFetching ? "spin" : ""} /> 更新資料</button>
@@ -276,9 +321,12 @@ export default function Home() {
             {!trafficUnavailable && priorityTrafficEvents.slice(0, 5).map((event) => <TrafficEventRow key={event.id} event={event} />)}
             <div className="live-panel-foot">官方 feed 更新時間：{activeSources.find((source) => source.id === "td-traffic") ? formatHkt(activeSources.find((source) => source.id === "td-traffic")?.checkedAt) : "—"} · 資料流列為即時；政府未公布延遲 SLA</div>
           </div>
-        </section>
+          </section>
+        </details>
 
-        <section className="hazard-section" id="weather">
+        <details className="detail-accordion secondary-accordion" id="weather-details" open={openPanels.weather} onToggle={(event) => setOpenPanels((current) => ({ ...current, weather: (event.currentTarget as HTMLDetailsElement).open }))}>
+          <summary><span><CloudRain size={17} /> 查看其他天氣、災害、預報及空氣質素</span><ChevronRight className="disclosure-chevron" size={17} /><small>普通落雨／AQHI 不屬重大警報</small></summary>
+          <section className="hazard-section" id="weather">
           <div className="hazard-intro">
             <div className="eyebrow small-eyebrow">WEATHER & PUBLIC SAFETY</div>
             <h2>天氣轉變，<br /><span>出行計劃都要變。</span></h2>
@@ -288,7 +336,7 @@ export default function Home() {
           <div className="hazard-panel">
             <div className="hazard-panel-head"><div><span className="live-spark" /> 天文台警告監察</div><span className={warningsUnavailable ? "not-connected error" : "not-connected"}>{warningsUnavailable ? "來源暫停" : dashboard.isLoading ? "更新中" : `${activeWarnings.length} 項生效警告`}</span></div>
             <div className="hazard-list">
-              {hazardFallbacks.map((hazard) => {
+              {hazardFallbacks.filter((hazard) => activeWarnings.some((warning) => hazard.codes.includes(warning.code))).map((hazard) => {
                 const Icon = hazard.icon;
                 const matching = activeWarnings.filter((warning) => hazard.codes.includes(warning.code));
                 const hasWarning = matching.length > 0;
@@ -300,6 +348,7 @@ export default function Home() {
                   {hasWarning && <div className="warning-detail">{matching[0].content.slice(0, 150)}{matching[0].updatedAt ? ` · ${formatHkt(matching[0].updatedAt)} HKT` : ""}</div>}
                 </div>;
               })}
+              {activeWarnings.length === 0 && <div className="hazard-no-active">{warningsUnavailable ? "天文台來源暫不可用，無法確認警告狀態。" : dashboard.isLoading ? "正在讀取目前生效的警告…" : "目前沒有天文台生效警告。一般落雨及預報留在天氣詳情，不會當作警報。"}</div>}
             </div>
             <div className="earthquake-feed">
               <div className="earthquake-feed-title"><Waves size={14} /> 地震資訊 <span>全球 M6+ 速報／香港有感報告</span></div>
@@ -307,9 +356,9 @@ export default function Home() {
             </div>
             <div className="hazard-foot"><TriangleAlert size={15} /><span>本介面約每 60 秒查詢一次；資料以天文台公布時間為準。香港有感地震 API 空白回應表示暫無新報告，並不代表全球沒有地震。</span></div>
           </div>
-        </section>
+          </section>
 
-        <section className="environment-section" id="weather-report">
+          <section className="environment-section" id="weather-report">
           <div className="section-heading"><div><div className="eyebrow small-eyebrow">WEATHER & ENVIRONMENT</div><h2>天氣與環境</h2></div><span className="example-label">天文台現況／九日預報 · 環保署 AQHI</span></div>
           <div className="environment-current-grid">
             <article className="environment-card"><span className="environment-label">天文台氣溫</span><strong>{environment.data?.current?.temperatures?.find((item) => item.place === "香港天文台")?.value ?? "—"}<small>{environment.data?.current?.temperatures?.some((item) => item.place === "香港天文台") ? " °C" : ""}</small></strong><span>香港天文台測站 · {formatHkt(environment.data?.current?.updatedAt)} HKT</span></article>
@@ -321,9 +370,12 @@ export default function Home() {
           <div className="forecast-heading"><h3>九日天氣預報</h3><span>更新時間 {formatHkt(environment.data?.forecastUpdatedAt)} HKT</span></div>
           <div className="forecast-grid">{(environment.data?.forecast ?? []).map((day) => <article className="forecast-card" key={day.date}><strong>{day.week || day.date}</strong><span>{day.date}</span><p>{day.description}</p><b>{day.minTemperature ?? "—"}° — {day.maxTemperature ?? "—"}°C</b><small>降雨機率：{day.rainProbability || "未提供"}</small></article>)}{!environment.data?.forecast.length && <div className="road-speed-empty">{environment.isLoading ? "正在讀取九日天氣預報…" : "九日天氣預報暫時未能讀取。"}</div>}</div>
           <div className="aqhi-panel"><div className="forecast-heading"><h3>空氣質素健康指數（AQHI）</h3><span>環保署全部可用監測站 · 每小時資料 · {formatHkt(environment.data?.aqhiUpdatedAt)} HKT</span></div><div className="aqhi-grid">{(environment.data?.aqhi ?? []).map((station: AQHIStation) => <article className="aqhi-card" key={`${station.type}-${station.place}`}><span>{station.place}</span><strong>{station.index}</strong><small>{station.type}</small></article>)}{!environment.data?.aqhi.length && <div className="road-speed-empty">{environment.isLoading ? "正在讀取 AQHI…" : "AQHI 暫時未能讀取。"}</div>}</div><div className="environment-source-note">AQHI 按監測站展示，數值越高代表健康風險越高；此卡不是預測。天文台及環保署讀數更新頻率不同，請以各官方公布時間為準。</div></div>
-        </section>
+          </section>
+        </details>
 
-        <section className="section-block example-section">
+        <details className="detail-accordion source-accordion" id="source-details" open={openPanels.sources} onToggle={(event) => setOpenPanels((current) => ({ ...current, sources: (event.currentTarget as HTMLDetailsElement).open }))}>
+          <summary><span><ShieldAlert size={17} /> 資料來源、覆蓋範圍與限制</span><ChevronRight className="disclosure-chevron" size={17} /><small>透明列出未覆蓋範圍</small></summary>
+          <section className="section-block example-section">
           <div className="section-heading"><div><div className="eyebrow small-eyebrow">OFFICIAL DATA SOURCES</div><h2>已接入／已核實</h2></div><span className="example-label">來源狀態可見</span></div>
           <div className="example-grid">
             {examples.map((example) => {
@@ -331,9 +383,9 @@ export default function Home() {
               return <article className="example-card" key={example.title}><div className="example-top"><span className={`example-icon ${example.tone}`}><Icon size={18} /></span><span className="example-tag">官方來源</span></div><h3>{example.title}</h3><p>{example.detail}</p><div className="example-bottom"><span>公開 GET；目前測試接入</span><ArrowUpRight size={15} /></div></article>;
             })}
           </div>
-        </section>
+          </section>
 
-        <section className="section-block source-directory" id="source-directory">
+          <section className="section-block source-directory" id="source-directory">
           <div className="section-heading"><div><div className="eyebrow small-eyebrow">VERIFIED HONG KONG DATA</div><h2>政府及營辦商資料源地圖</h2></div><span className="example-label">已核實範圍／更新頻率</span></div>
           <div className="catalog-grid">
             {sourceCatalog.map((item) => <article className="catalog-card" key={item.title}>
@@ -343,19 +395,56 @@ export default function Home() {
             </article>)}
           </div>
           <p className="licence-note">開放資料可按 DATA.GOV.HK 條款重用；須標示來源並作適當致謝。官方資料以「現狀」提供，不保證準確、完整、及時或持續供應。</p>
-        </section>
+          </section>
 
-        <section className="source-strip" id="sources">
+          <section className="source-strip" id="sources">
           <div className="source-mark"><Zap size={18} /></div><div className="source-copy"><strong>以官方資料為先，標示來源與更新時間。</strong><span>警報／ETA 約每 60 秒、道路速度及環境數據約每 5 分鐘快取；各自查詢，慢來源不會阻塞急務交通及天氣消息。</span></div>
           <div className="source-links"><a href="https://data.gov.hk/" target="_blank" rel="noreferrer">data.gov.hk <ArrowUpRight size={13} /></a><a href="https://www.hko.gov.hk/tc/abouthko/opendata_intro.htm" target="_blank" rel="noreferrer">香港天文台 <ArrowUpRight size={13} /></a><a href="https://www.td.gov.hk/tc/special_news/spnews.htm" target="_blank" rel="noreferrer">運輸署 <ArrowUpRight size={13} /></a></div>
-        </section>
-        <div className="source-status-list" aria-label="各官方資料源連線狀態">{activeSources.map((source) => <span key={source.id} className={source.status === "ok" ? "source-ok" : "source-error"}><i />{source.label} · {source.status === "ok" ? formatHkt(source.checkedAt) : "暫不可用"}</span>)}</div>
+          </section>
+          <div className="source-status-list" aria-label="各官方資料源連線狀態">{activeSources.map((source) => <span key={source.id} className={source.status === "ok" ? "source-ok" : "source-error"}><i />{source.label} · {source.status === "ok" ? formatHkt(source.checkedAt) : "暫不可用"}</span>)}</div>
+        </details>
 
         <footer className="footer"><span>交通警報器 <span className="footer-dot">·</span> 香港出行資訊整合原型</span><span><Zap size={13} /> 官方公告優先，安全出行</span></footer>
       </div>
-      <div className="mobile-bottom-bar"><a href="#overview"><CarFront size={17} />交通</a><a href="#weather"><CloudRain size={17} />天氣警告</a><a href="#weather-report"><Zap size={17} />天氣／空氣</a><a href="#sources"><Zap size={17} />資料</a></div>
+      <div className="mobile-bottom-bar" role="navigation" aria-label="手機快速操作"><button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}><ShieldAlert size={19} /><span>警報</span></button><button onClick={() => openPanel("transport")}><CarFront size={19} /><span>交通</span></button><button onClick={() => openPanel("weather")}><CloudRain size={19} /><span>天氣</span></button><button onClick={() => openPanel("sources")}><Menu size={19} /><span>更多</span></button></div>
     </main>
   );
+}
+
+function PriorityFilters({ area, kind, counts, onAreaChange, onKindChange }: {
+  area: AlertAreaFilter;
+  kind: AlertKindFilter;
+  counts: { road: number; rail: number; weather: number; earthquake: number };
+  onAreaChange: (value: AlertAreaFilter) => void;
+  onKindChange: (value: AlertKindFilter) => void;
+}) {
+  const areaOptions: AlertAreaFilter[] = ["全部", "全港", "港島", "九龍", "新界／離島"];
+  const kindOptions: Array<{ id: AlertKindFilter; label: string; count: number }> = [
+    { id: "all", label: "全部警報", count: counts.road + counts.rail + counts.weather + counts.earthquake },
+    { id: "road", label: "道路", count: counts.road },
+    { id: "rail", label: "鐵路", count: counts.rail },
+    { id: "weather", label: "天氣", count: counts.weather },
+    { id: "earthquake", label: "地震", count: counts.earthquake },
+  ];
+  return <div className="alert-filter-stack">
+    <div className="alert-filter-row" role="group" aria-label="按地區篩選警報">{areaOptions.map((option) => <button key={option} className={area === option ? "alert-filter active" : "alert-filter"} aria-pressed={area === option} onClick={() => onAreaChange(option)}>{option}</button>)}</div>
+    <div className="alert-filter-row alert-kind-row" role="group" aria-label="按警報種類篩選">{kindOptions.map((option) => <button key={option.id} className={kind === option.id ? "alert-filter active" : "alert-filter"} aria-pressed={kind === option.id} onClick={() => onKindChange(option.id)}>{option.label}<span>{option.count}</span></button>)}</div>
+  </div>;
+}
+
+function PriorityAlertCard({ alert }: { alert: PriorityAlert }) {
+  const levelLabel = alert.level === "critical" ? "立即留意" : alert.level === "high" ? "重大影響" : "留意路況";
+  const sourceUrl = alert.kind === "rail"
+    ? "https://www.mtr.com.hk/tc/customer/main/service_status.html"
+    : alert.kind === "weather" || alert.kind === "earthquake"
+      ? "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warningInfo&lang=tc"
+      : "https://www.td.gov.hk/tc/special_news/spnews.htm";
+  return <article className={`priority-card priority-${alert.level}`}>
+    <div className="priority-card-top"><span className="priority-level">{levelLabel}</span><span className="priority-area">{alert.area} · {alert.kind === "road" ? "道路" : alert.kind === "rail" ? "鐵路" : alert.kind === "weather" ? "天氣警告" : "地震"}</span></div>
+    <h3>{alert.title}</h3><p>{alert.detail}</p>
+    <div className="priority-card-meta"><span>{alert.location}</span>{alert.updatedAt && <span>官方更新 {formatHkt(alert.updatedAt)} HKT</span>}</div>
+    <a href={sourceUrl} target="_blank" rel="noreferrer">查看官方消息 <ArrowUpRight size={13} /></a>
+  </article>;
 }
 
 function TrafficEventRow({ event }: { event: TrafficEvent }) {

@@ -32,6 +32,106 @@ export function prioritizeTrafficEvents(events: TrafficEvent[]): TrafficEvent[] 
   });
 }
 
+export type PriorityAlert = {
+  id: string;
+  kind: "road" | "rail" | "weather" | "earthquake";
+  level: "critical" | "high" | "watch";
+  title: string;
+  detail: string;
+  location: string;
+  area: "全港" | "港島" | "九龍" | "新界／離島" | "未標示";
+  updatedAt?: string;
+};
+
+const MAJOR_TRAFFIC_PATTERN = /封路|封閉|封閉行車線|交通意外|道路事故|交通事故|車輛故障|行車線阻塞|行車線受阻|嚴重擠塞|嚴重阻塞|交通改道|巴士改道|交通管制|road closure|lane closure|traffic accident|major congestion|diversion|service disruption/i;
+
+function alertArea(value: string): PriorityAlert["area"] {
+  if (/中西區|灣仔|東區|南區|港島|金鐘|中環|銅鑼灣|柴灣|香港仔/.test(value)) return "港島";
+  if (/九龍|油尖旺|深水埗|九龍城|黃大仙|觀塘|旺角|紅磡/.test(value)) return "九龍";
+  if (/新界|離島|大圍|沙田|大埔|吐露港|中文大學|北區|西貢|將軍澳|荃灣|屯門|元朗|葵青|上水|粉嶺/.test(value)) return "新界／離島";
+  return "未標示";
+}
+
+export function isMajorTrafficEvent(event: TrafficEvent): boolean {
+  if (/closed|完結|解封|已清除|已取消/i.test(event.status)) return false;
+  return MAJOR_TRAFFIC_PATTERN.test(`${event.title} ${event.detail}`);
+}
+
+export function selectPriorityAlerts(input: {
+  trafficEvents: TrafficEvent[];
+  warnings: WeatherWarning[];
+  trains: TrainLineStatus[];
+  earthquakes: EarthquakeBulletin[];
+  roadRoutes: RoadSpeedRoute[];
+  roadUpdatedAt?: string;
+}): PriorityAlert[] {
+  const alerts: PriorityAlert[] = [];
+  for (const event of input.trafficEvents.filter(isMajorTrafficEvent)) {
+    const location = [event.location, event.district, event.direction].filter(Boolean).join(" · ") || "地點以運輸署公告為準";
+    alerts.push({ id: `road-${event.id}`, kind: "road", level: "high", title: event.title || "主要道路交通事件", detail: event.detail || "運輸署公布主要道路安排。", location, area: alertArea(`${event.location} ${event.district} ${event.direction}`), updatedAt: event.announcedAt });
+  }
+  for (const warning of input.warnings) {
+    const subtype = warning.subtype ?? "";
+    let level: PriorityAlert["level"] | undefined;
+    if (warning.code === "WRAIN") level = subtype === "WRAINB" ? "critical" : subtype === "WRAINR" ? "high" : "watch";
+    else if (warning.code === "WTCSGNL") level = /TC(?:8|9|10)/.test(subtype) ? "critical" : "watch";
+    else if (warning.code === "WTMW") level = "critical";
+    else if (warning.code === "WL" || warning.code === "WFNTSA") level = "high";
+    if (!level) continue;
+    alerts.push({ id: `weather-${warning.code}-${subtype}`, kind: "weather", level, title: warning.label, detail: warning.content || "香港天文台官方警告目前生效。", location: "香港天文台官方訊號", area: "全港", updatedAt: warning.updatedAt });
+  }
+  for (const train of input.trains.filter((item) => item.serviceDelayed || Boolean(item.message))) {
+    alerts.push({ id: `rail-${train.line}`, kind: "rail", level: "high", title: `${train.label}服務延誤／安排`, detail: train.message || "港鐵 API 標記此綫服務延誤；原因及最新安排請查看官方消息。", location: `${train.station} · 以港鐵公告為準`, area: alertArea(train.station), updatedAt: train.currentTime });
+  }
+  for (const quake of input.earthquakes.filter((item) => item.kind === "felt")) {
+    alerts.push({ id: `earthquake-felt-${quake.occurredAt ?? quake.updatedAt ?? quake.region ?? "latest"}`, kind: "earthquake", level: "high", title: "香港有感地震報告", detail: quake.content || [quake.region, quake.magnitude ? `M${quake.magnitude}` : ""].filter(Boolean).join(" · ") || "天文台有感地震報告。", location: quake.region || "香港天文台本地報告", area: alertArea(quake.region || "香港"), updatedAt: quake.updatedAt || quake.occurredAt });
+  }
+  for (const route of input.roadRoutes.filter((item) => item.speedKph !== undefined && item.speedKph < 25)) {
+    const speed = route.speedKph ?? 0;
+    alerts.push({ id: `road-speed-${route.id}`, kind: "road", level: speed < 15 ? "high" : "watch", title: `${route.title}車速偏慢`, detail: `${speed} km/h · 路線平均速度估算，並非運輸署官方警告。行程約 ${route.eta || "資料未提供"}。`, location: route.direction, area: alertArea(`${route.title} ${route.direction}`), updatedAt: input.roadUpdatedAt });
+  }
+  const rank: Record<PriorityAlert["level"], number> = { critical: 0, high: 1, watch: 2 };
+  return alerts.sort((a, b) => rank[a.level] - rank[b.level] || (Date.parse(b.updatedAt ?? "") || 0) - (Date.parse(a.updatedAt ?? "") || 0));
+}
+
+export function filterPriorityAlerts(
+  alerts: PriorityAlert[],
+  area: "全部" | "全港" | "港島" | "九龍" | "新界／離島",
+  kind: PriorityAlert["kind"] | "all",
+): PriorityAlert[] {
+  return alerts.filter((alert) => (area === "全部" || alert.area === area || alert.area === "全港") && (kind === "all" || alert.kind === kind));
+}
+
+export type PriorityFeedState =
+  | { kind: "loading" }
+  | { kind: "unavailable"; sources: TrafficSource[]; alerts: PriorityAlert[] }
+  | { kind: "alerts"; alerts: PriorityAlert[] }
+  | { kind: "clear" };
+
+export function mergeEndpointFailureSources(
+  sources: TrafficSource[],
+  failures: { dashboard?: boolean; roadTraffic?: boolean },
+): TrafficSource[] {
+  const merged = [...sources];
+  const markUnavailable = (source: TrafficSource) => {
+    const existing = merged.findIndex((item) => item.id === source.id);
+    if (existing >= 0) merged[existing] = source;
+    else merged.push(source);
+  };
+  if (failures.dashboard) markUnavailable({ id: "td-traffic", label: "交通與災害主要警報資料", url: "https://www.td.gov.hk/tc/special_news/trafficnews.xml", status: "unavailable", checkedAt: new Date().toISOString(), message: "主要交通警報查詢端點暫時未能讀取。" });
+  if (failures.roadTraffic) markUnavailable({ id: "tdas-road-speed", label: "吐露港道路速度估算", url: "https://data.gov.hk/en-data/dataset/hk-td-tis_28-traffic-data-tdas", status: "unavailable", checkedAt: new Date().toISOString(), message: "運輸署路況查詢端點暫時未能讀取。" });
+  return merged;
+}
+
+export function getPriorityFeedState(loading: boolean, sources: TrafficSource[], alerts: PriorityAlert[]): PriorityFeedState {
+  if (loading) return { kind: "loading" };
+  const coreIds = new Set(["td-traffic", "hko-warning", "tdas-road-speed"]);
+  const unavailable = sources.filter((source) => (coreIds.has(source.id) || source.id.startsWith("mtr-")) && source.status === "unavailable");
+  if (unavailable.length) return { kind: "unavailable", sources: unavailable, alerts };
+  if (alerts.length) return { kind: "alerts", alerts };
+  return { kind: "clear" };
+}
+
 export type WeatherWarning = {
   code: string;
   label: string;
