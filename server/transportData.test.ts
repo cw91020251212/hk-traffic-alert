@@ -268,6 +268,13 @@ describe("alert-first selection and status", () => {
     expect(isMajorTrafficEvent(routine)).toBe(false);
   });
 
+  it("recognizes explicit road impact while suppressing roadside incidents with no traffic impact", () => {
+    const event = (title: string, detail = "", status = "生效") => ({ id: title, incidentNumber: "", title, detail, location: "吐露港公路", district: "大埔", direction: "往沙田", status, announcedAt: "2026-09-27T09:00:00+08:00" });
+    expect(["吐露港公路封路", "吐露港公路塞車", "行車線阻塞", "交通改道", "車輛故障"].every((title) => isMajorTrafficEvent(event(title)))).toBe(true);
+    expect(isMajorTrafficEvent(event("車輛故障", "車輛已移至路旁，交通不受影響"))).toBe(false);
+    expect(isMajorTrafficEvent(event("吐露港公路交通意外", "", "已解除"))).toBe(false);
+  });
+
   it("distinguishes a confirmed clear feed from an unavailable official source", () => {
     expect(getPriorityFeedState(false, [{ id: "td-traffic", label: "運輸署", url: "https://example.com", status: "ok", checkedAt: "now" }], [])).toEqual({ kind: "clear" });
     expect(getPriorityFeedState(false, [{ id: "td-traffic", label: "運輸署", url: "https://example.com", status: "unavailable", checkedAt: "now" }], [])).toMatchObject({ kind: "unavailable" });

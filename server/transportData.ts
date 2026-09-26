@@ -43,7 +43,8 @@ export type PriorityAlert = {
   updatedAt?: string;
 };
 
-const MAJOR_TRAFFIC_PATTERN = /封路|封閉|封閉行車線|交通意外|道路事故|交通事故|車輛故障|行車線阻塞|行車線受阻|嚴重擠塞|嚴重阻塞|交通改道|巴士改道|交通管制|road closure|lane closure|traffic accident|major congestion|diversion|service disruption/i;
+const MAJOR_TRAFFIC_PATTERN = /封路|封閉|封閉行車線|交通意外|道路事故|交通事故|車輛故障|行車線阻塞|行車線受阻|嚴重擠塞|嚴重阻塞|交通擠塞|塞車|行車緩慢|交通改道|巴士改道|交通管制|road closure|lane closure|traffic accident|major congestion|diversion|service disruption/i;
+const EXPLICIT_NO_IMPACT_PATTERN = /交通不受影響|不影響交通|行車暢順|不影響行車/i;
 
 function alertArea(value: string): PriorityAlert["area"] {
   if (/中西區|灣仔|東區|南區|港島|金鐘|中環|銅鑼灣|柴灣|香港仔/.test(value)) return "港島";
@@ -53,8 +54,9 @@ function alertArea(value: string): PriorityAlert["area"] {
 }
 
 export function isMajorTrafficEvent(event: TrafficEvent): boolean {
-  if (/closed|完結|解封|已清除|已取消/i.test(event.status)) return false;
-  return MAJOR_TRAFFIC_PATTERN.test(`${event.title} ${event.detail}`);
+  if (/closed|ended|inactive|完結|解封|已清除|已解除|已結束|已取消|已撤銷/i.test(event.status)) return false;
+  const searchable = `${event.title} ${event.detail} ${event.location}`;
+  return !EXPLICIT_NO_IMPACT_PATTERN.test(searchable) && MAJOR_TRAFFIC_PATTERN.test(searchable);
 }
 
 export function selectPriorityAlerts(input: {

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -10,6 +10,8 @@ import {
   CloudLightning,
   CloudRain,
   Menu,
+  MapPinned,
+  Navigation,
   Plane,
   RefreshCw,
   Search,
@@ -21,6 +23,8 @@ import {
   Zap,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { ALERT_AREA_OPTIONS, ALERT_AREA_PREFERENCE_KEY, parseAlertAreaPreference, type AlertAreaPreference } from "@/lib/alertPreferences";
+import { buildDirectionsUrl, parseRouteBookmarks, ROUTE_BOOKMARKS_PREFERENCE_KEY, selectAlertsForRouteAreas, type RouteArea, type RouteBookmark, type RouteMode } from "@/lib/routePlanner";
 import { filterPriorityAlerts, getPriorityFeedState, mergeEndpointFailureSources, prioritizeTrafficEvents, selectPriorityAlerts, type AQHIStation, type EarthquakeBulletin, type MobilityDemo, type PriorityAlert, type TrafficEvent, type WeatherWarning } from "../../../server/transportData";
 
 type Mode = {
@@ -32,8 +36,22 @@ type Mode = {
   source: string;
 };
 
-type AlertAreaFilter = "全部" | "全港" | "港島" | "九龍" | "新界／離島";
+type AlertAreaFilter = AlertAreaPreference;
 type AlertKindFilter = PriorityAlert["kind"] | "all";
+
+function loadPreferredAlertArea(): AlertAreaFilter {
+  if (typeof window === "undefined") return "全部";
+  try {
+    return parseAlertAreaPreference(window.localStorage.getItem(ALERT_AREA_PREFERENCE_KEY));
+  } catch {
+    return "全部";
+  }
+}
+
+function loadRouteBookmarks(): RouteBookmark[] {
+  if (typeof window === "undefined") return [];
+  try { return parseRouteBookmarks(window.localStorage.getItem(ROUTE_BOOKMARKS_PREFERENCE_KEY)); } catch { return []; }
+}
 
 const modes: Mode[] = [
   { id: "road", label: "道路交通", subtitle: "事故・封路・路線車速", icon: CarFront, tone: "coral", source: "運輸署" },
@@ -95,11 +113,23 @@ function warningTone(warning: WeatherWarning) {
 
 export default function Home() {
   const [openPanels, setOpenPanels] = useState({ transport: false, weather: false, sources: false });
-  const [alertArea, setAlertArea] = useState<AlertAreaFilter>("全部");
+  const [alertArea, setAlertArea] = useState<AlertAreaFilter>(loadPreferredAlertArea);
   const [alertKind, setAlertKind] = useState<AlertKindFilter>("all");
+  const [routePlannerOpen, setRoutePlannerOpen] = useState(false);
+  const [routeOrigin, setRouteOrigin] = useState("");
+  const [routeDestination, setRouteDestination] = useState("");
+  const [routeMode, setRouteMode] = useState<RouteMode>("driving");
+  const [routeAreas, setRouteAreas] = useState<RouteArea[]>([]);
+  const [routeBookmarks, setRouteBookmarks] = useState<RouteBookmark[]>(loadRouteBookmarks);
   const [activeMode, setActiveMode] = useState("all");
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState("");
+  useEffect(() => {
+    try { window.localStorage.setItem(ALERT_AREA_PREFERENCE_KEY, alertArea); } catch { /* local preference is optional */ }
+  }, [alertArea]);
+  useEffect(() => {
+    try { window.localStorage.setItem(ROUTE_BOOKMARKS_PREFERENCE_KEY, JSON.stringify(routeBookmarks)); } catch { /* local preference is optional */ }
+  }, [routeBookmarks]);
   const dashboard = trpc.transport.dashboard.useQuery(undefined, {
     refetchInterval: 60_000,
     refetchOnWindowFocus: true,
@@ -152,6 +182,8 @@ export default function Home() {
   const regionalAlerts = filterPriorityAlerts(priorityAlerts, alertArea, "all");
   const filteredPriorityAlerts = filterPriorityAlerts(priorityAlerts, alertArea, alertKind);
   const priorityKindCounts = { road: regionalAlerts.filter((alert) => alert.kind === "road").length, rail: regionalAlerts.filter((alert) => alert.kind === "rail").length, weather: regionalAlerts.filter((alert) => alert.kind === "weather").length, earthquake: regionalAlerts.filter((alert) => alert.kind === "earthquake").length };
+  const routeDirectionsUrl = useMemo(() => routeOrigin.trim() && routeDestination.trim() ? buildDirectionsUrl(routeOrigin, routeDestination, routeMode) : "", [routeOrigin, routeDestination, routeMode]);
+  const routeRelatedAlerts = useMemo(() => selectAlertsForRouteAreas(priorityAlerts, routeAreas, routeMode), [priorityAlerts, routeAreas, routeMode]);
   const hasUnavailableAlerts = priorityFeed.kind === "unavailable";
   const displayAlerts = hasUnavailableAlerts ? priorityFeed.alerts : priorityFeed.kind === "alerts" ? priorityFeed.alerts : [];
   const openPanel = (panel: "transport" | "weather" | "sources") => {
@@ -160,6 +192,20 @@ export default function Home() {
     window.setTimeout(() => document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
   };
   const togglePanel = (panel: "transport" | "weather" | "sources") => setOpenPanels((current) => ({ ...current, [panel]: !current[panel] }));
+  const saveRouteBookmark = () => {
+    const origin = routeOrigin.trim();
+    const destination = routeDestination.trim();
+    if (!origin || !destination) return;
+    const id = `${origin.toLocaleLowerCase()}|${destination.toLocaleLowerCase()}|${routeMode}`;
+    const bookmark: RouteBookmark = { id, origin, destination, mode: routeMode, areas: [...routeAreas] };
+    setRouteBookmarks((current) => [bookmark, ...current.filter((item) => item.id !== id)].slice(0, 5));
+  };
+  const loadRouteBookmark = (bookmark: RouteBookmark) => {
+    setRouteOrigin(bookmark.origin);
+    setRouteDestination(bookmark.destination);
+    setRouteMode(bookmark.mode);
+    setRouteAreas(bookmark.areas);
+  };
 
   return (
     <main className="traffic-app">
@@ -221,6 +267,20 @@ export default function Home() {
             <button onClick={() => openPanel("transport")}><TrainFront size={17} /><span><strong>轉乘／趕車</strong><small>查列車及 ETA</small></span><ChevronRight size={16} /></button>
             <button onClick={() => openPanel("weather")}><CloudLightning size={17} /><span><strong>惡劣天氣／跨區</strong><small>看生效警告</small></span><ChevronRight size={16} /></button>
           </div>
+          <details className="route-planner" open={routePlannerOpen} onToggle={(event) => setRoutePlannerOpen((event.currentTarget as HTMLDetailsElement).open)}>
+            <summary><MapPinned size={16} /><span><strong>規劃 A 到 B 路線</strong><small>查路線建議及沿途可能相關警報</small></span><ChevronRight size={16} /></summary>
+            <div className="route-planner-body">
+              <div className="route-inputs"><label>起點<input value={routeOrigin} onChange={(event) => setRouteOrigin(event.target.value)} placeholder="例如：金鐘站" autoComplete="street-address" /></label><span className="route-arrow">→</span><label>目的地<input value={routeDestination} onChange={(event) => setRouteDestination(event.target.value)} placeholder="例如：大埔墟站" autoComplete="street-address" /></label></div>
+              <label className="route-mode-label">出行方式<select value={routeMode} onChange={(event) => setRouteMode(event.target.value as RouteMode)}><option value="driving">駕車（Google Maps 路線建議）</option><option value="transit">公共交通（Google Maps 路線建議）</option><option value="walking">步行（Google Maps 路線建議）</option></select></label>
+              <div className="route-area-control"><strong>途中可能經過的地區（可多選）</strong><div className="route-area-chips">{(["港島", "九龍", "新界／離島"] as RouteArea[]).map((area) => <button type="button" key={area} className={routeAreas.includes(area) ? "route-area-chip active" : "route-area-chip"} aria-pressed={routeAreas.includes(area)} onClick={() => setRouteAreas((current) => current.includes(area) ? current.filter((item) => item !== area) : [...current, area])}>{area}</button>)}</div></div>
+              {routeDirectionsUrl ? <a className="route-submit" href={routeDirectionsUrl} target="_blank" rel="noreferrer"><Navigation size={16} /> 在 Google Maps 查看路線建議 <ArrowUpRight size={14} /></a> : <div className="route-submit disabled"><Navigation size={16} /> 輸入起點及目的地以查看路線建議</div>}
+              <button type="button" className="route-save-button" disabled={!routeDirectionsUrl} onClick={saveRouteBookmark}>儲存為本機常用路線</button>
+              {routeBookmarks.length > 0 && <div className="saved-routes"><strong>本機常用路線（最多 5 條）</strong>{routeBookmarks.map((bookmark) => <div className="saved-route-row" key={bookmark.id}><button type="button" className="saved-route-select" onClick={() => loadRouteBookmark(bookmark)}>{bookmark.origin} → {bookmark.destination}<small>{bookmark.mode === "driving" ? "駕車" : bookmark.mode === "transit" ? "公共交通" : "步行"} · {bookmark.areas.length ? bookmark.areas.join("／") : "只看全港警告"}</small></button><button type="button" className="saved-route-remove" aria-label={`刪除 ${bookmark.origin} 至 ${bookmark.destination} 常用路線`} onClick={() => setRouteBookmarks((current) => current.filter((item) => item.id !== bookmark.id))}>×</button></div>)}</div>}
+              <div className="route-safety-note">路線及最快／替代選項由 Google Maps 計算；這裡只按你選的地區列出可能相關的官方警報，並非精確路線封路檢查或到達時間保證。</div>
+              <div className="route-alerts"><strong>可能相關的官方警報{routeAreas.length ? ` · ${routeAreas.join("、")}` : " · 全港級別"}</strong>{routeRelatedAlerts.length ? routeRelatedAlerts.slice(0, 4).map((alert) => <PriorityAlertCard key={`route-${alert.id}`} alert={alert} />) : <p>目前沒有可列出的符合門檻警報。若想查途經地區的警報，請選上方地區。</p>}</div>
+              <a className="official-route-fallback" href="https://www.hkemobility.gov.hk/" target="_blank" rel="noreferrer">亦可使用運輸署 HKeMobility 官方路線搜尋 <ArrowUpRight size={13} /></a>
+            </div>
+          </details>
           <div className="prototype-footnote"><ShieldAlert size={13} /> 資料測試版：只覆蓋吐露港走廊、金鐘港鐵及部分交通試點；並非全港全面警報服務。遇緊急情況請以官方公告為準。</div>
         </section>
 
@@ -418,7 +478,7 @@ function PriorityFilters({ area, kind, counts, onAreaChange, onKindChange }: {
   onAreaChange: (value: AlertAreaFilter) => void;
   onKindChange: (value: AlertKindFilter) => void;
 }) {
-  const areaOptions: AlertAreaFilter[] = ["全部", "全港", "港島", "九龍", "新界／離島"];
+  const areaOptions = ALERT_AREA_OPTIONS;
   const kindOptions: Array<{ id: AlertKindFilter; label: string; count: number }> = [
     { id: "all", label: "全部警報", count: counts.road + counts.rail + counts.weather + counts.earthquake },
     { id: "road", label: "道路", count: counts.road },
@@ -427,6 +487,7 @@ function PriorityFilters({ area, kind, counts, onAreaChange, onKindChange }: {
     { id: "earthquake", label: "地震", count: counts.earthquake },
   ];
   return <div className="alert-filter-stack">
+    <div className="alert-filter-note">自選常用地區 · 只儲存在此手機，不讀取 GPS</div>
     <div className="alert-filter-row" role="group" aria-label="按地區篩選警報">{areaOptions.map((option) => <button key={option} className={area === option ? "alert-filter active" : "alert-filter"} aria-pressed={area === option} onClick={() => onAreaChange(option)}>{option}</button>)}</div>
     <div className="alert-filter-row alert-kind-row" role="group" aria-label="按警報種類篩選">{kindOptions.map((option) => <button key={option.id} className={kind === option.id ? "alert-filter active" : "alert-filter"} aria-pressed={kind === option.id} onClick={() => onKindChange(option.id)}>{option.label}<span>{option.count}</span></button>)}</div>
   </div>;

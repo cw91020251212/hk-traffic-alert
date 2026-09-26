@@ -16,17 +16,21 @@
 - [x] 查核停課 RSS、政府公報、水浸黑點、航空及其他官方來源限制；見 `DATA_SOURCES.md` 和 `政府公告與警報選項.md`。
 - [x] 完成可交由其他 AI 續做的工程交接說明 `工程交接報告.md`。
 - [x] 完成 `開發說明.md`：列明已接入資料、明確限制、未完成 roadmap，以及每任 AI 在完工／中斷前必須更新交接狀態的規則。
-- [x] Vitest 28 項通過、`pnpm check` 通過、`pnpm build` 成功；desktop／375px 手機 screenshot 及 live preview DOM/API 資料核驗。
+- [x] Vitest 36 項通過、`pnpm check` 通過、`pnpm build` 成功；desktop／375px 手機 screenshot 及 live preview DOM/API 資料核驗。
 - [x] 已儲存 WebDev checkpoint（版本資訊見 Manus 專案紀錄）。
 
 ## 產品方向修正｜優先於下一階段功能
 
 - [x] 手機首屏先顯示符合門檻的重大警報；普通天氣、AQHI、ETA 收到可展開詳情。
 - [x] 新增按地區及道路／鐵路／天氣／地震過濾的 chip 和警報數目；顯示警報級別、地點、時間與官方連結。
+- [x] 記住使用者明確自選的常用地區於本機 `localStorage`；不讀 GPS、不把偏好傳到伺服器。
 - [x] 「沒有符合門檻」和「核心官方來源／整個 tRPC 請求故障」有不同狀態；來源故障時仍保留其他已知警報。
-- [x] 測試例包含普通雨量不觸發、黃／紅／黑雨級別、取消訊號、主要道路事故、港鐵 delay 旗標、未標示普通交通不誤觸發、整個 endpoint error fallback、地區全港警告篩選。
-- [ ] classifier 仍為保守 keyword 規則；用更多運輸署最新 feed 範例和不同位置測 false positive／false negative，必要時調整並補測。
-- [ ] 將手動走廊／車站示範擴成常用出發地／目的地和使用者自選範圍；目前沒有按個人路線通知。
+- [x] 測試例包含普通雨量不觸發、黃／紅／黑雨級別、取消／解除狀態、明確塞車／封路正例、明示交通不受影響負例、港鐵 delay 旗標、整個 endpoint error fallback、跨區全港警告篩選。
+- [x] 道路 classifier 已補「塞車／交通擠塞」並明確 suppress「不影響交通」事件；保守原型規則及其他政府 feed 尚未覆蓋的限制已列明。
+- [x] 使用者可選擇警報地區，偏好在目前手機本機保存並安全測試；完整限制見 A→B 書籤項目與 route geometry 未完成項。
+- [x] 增加 A→B 手機路線表單，支援駕車／公共交通／步行；以無 API key 的 Google Maps Directions URL 開啟路線建議，並提供運輸署 HKeMobility 官方備用連結。
+- [x] 路線卡按使用者手選途經地區、運具篩出可能相關官方警報；最高級別優先；明確說明此為地區提示，不等同精確路線封路比對。
+- [x] 最多 5 條起點／目的地／方式／地區常用路線記於該裝置 localStorage；移除、載入及不可信舊資料 parser 有測試。
 
 ## 下一階段 Roadmap（明確尚未實作；供下一位 AI 按資源安排）
 
@@ -45,7 +49,7 @@
 
 **產品擴展（不妨礙當前原型運作）**
 
-8. 使用者收藏出發地／目的地、交通路線／車站，按其路線和地區濾出相關事件。
+8. 更精確的 route-aware warning matching 尚未實作；現有是使用者手選可能途經區域與運具過濾，路線方向由 Google Maps 提供而不回傳 geometry 給本 App。
 9. 依使用者先前要求設計手機加入主畫面用的 app icon，補 Web App Manifest／適當尺寸圖示及手機加入主畫面說明；**目前圖示與 PWA 安裝支援未完成**。
 10. 若要關頁後仍有警報，才規劃 PWA／browser push：需使用者明確同意、服務端 background job、API 限流、去重、退避與故障提示。本版尚無背景監察／推播。
 
@@ -60,9 +64,10 @@
 
 ## 本階段（二）驗證紀錄
 
-- [x] `pnpm test`：2 個 test files、28 tests 全部通過。
+- [x] `pnpm test`：4 個 test files、36 tests 全部通過。
 - [x] `pnpm check`：TypeScript 無錯誤。
 - [x] `pnpm build`：Vite 前端與 Express server bundle 成功。
 - [x] live smoke：TDAS 兩方向成功；運輸署 feed 可讀；HKO current/forecast/AQHI sources 均 `ok`，27 個溫度站、9 日預報、18 個 AQHI 站。
 - [x] Browser DOM：最新路況及天氣／AQHI 資料可見；夜間 UV 為空值時顯示破折號。
-- [x] Desktop 與 375px mobile 全頁 preview 截圖核驗。
+- [x] Browser route interaction：填金鐘→大埔墟並選公共交通，生成含正確中英文的 Google Maps URL；保存 route 驗證本機 localStorage 存在後清理測試資料。
+- [x] Desktop 與 375px mobile 全頁首頁 preview 截圖核驗（route form 收合）。**尚未**在 375px 展開 route form 逐項驗長文字／溢位。
