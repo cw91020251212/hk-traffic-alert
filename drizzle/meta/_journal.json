@@ -1,5 +1,13 @@
 {
   "version": "7",
   "dialect": "mysql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1790436752519,
+      "tag": "0000_clear_kree",
+      "breakpoints": true
+    }
+  ]
 }
