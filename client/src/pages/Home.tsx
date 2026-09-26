@@ -21,7 +21,7 @@ import {
   Zap,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import type { EarthquakeBulletin, MobilityDemo, TrafficEvent, WeatherWarning } from "../../../server/transportData";
+import { prioritizeTrafficEvents, type AQHIStation, type EarthquakeBulletin, type MobilityDemo, type TrafficEvent, type WeatherWarning } from "../../../server/transportData";
 
 type Mode = {
   id: string;
@@ -33,7 +33,7 @@ type Mode = {
 };
 
 const modes: Mode[] = [
-  { id: "road", label: "道路交通", subtitle: "事故・封路・特別安排", icon: CarFront, tone: "coral", source: "運輸署" },
+  { id: "road", label: "道路交通", subtitle: "事故・封路・路線車速", icon: CarFront, tone: "coral", source: "運輸署" },
   { id: "rail", label: "港鐵／鐵路", subtitle: "到站 ETA・服務安排", icon: TrainFront, tone: "indigo", source: "港鐵／運輸署" },
   { id: "bus", label: "巴士・小巴", subtitle: "改道・班次・停駛", icon: BusFront, tone: "gold", source: "營辦商／運輸署" },
   { id: "ferry", label: "渡輪・海路", subtitle: "航班・碼頭・海況", icon: Ship, tone: "teal", source: "營辦商／海事處" },
@@ -57,7 +57,10 @@ const examples = [
 
 const sourceCatalog = [
   { category: "道路", title: "運輸署特別交通消息（第二代）", status: "已接入", freshness: "官方目錄列為即時；沒有延遲 SLA", detail: "道路事故、封路及交通安排；是公告 feed，不等於全路網車速。", href: "https://www.td.gov.hk/tc/special_news/trafficnews.xml" },
+  { category: "道路車速", title: "運輸署 TDAS 路線速度估算", status: "已接入・吐露港走廊雙向", freshness: "資料集每 5 分鐘更新；原型每 5 分鐘查詢", detail: "官方 API 回傳指定起終點間的平均速度與估算行程時間；目前示範大圍—中文大學／大埔走廊，不等於逐路段交通感應器。", href: "https://data.gov.hk/en-data/dataset/hk-td-tis_28-traffic-data-tdas" },
   { category: "天氣警告", title: "天文台 warningInfo API", status: "已接入", freshness: "開放 JSON API；頁面約每 60 秒查詢", detail: "含颱風信號、黃／紅／黑雨、山泥傾瀉、雷暴、海嘯等警告。", href: "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warningInfo&lang=tc" },
+  { category: "天氣預報", title: "天文台即時天氣及九日預報", status: "已接入", freshness: "即時天氣每小時／有更新時；預報按官方更新時間", detail: "顯示天文台測站溫度、濕度、雨量、當前紫外線讀數、天氣概況與九日預報。", href: "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=rhrread&lang=tc" },
+  { category: "空氣質素", title: "環保署 AQHI 24 小時 XML", status: "已接入・監測站列表", freshness: "每小時公布；按站點取最新一小時", detail: "顯示一般及路邊監測站 AQHI。數字愈高代表健康風險愈高；屬環境健康讀數而非預測。", href: "https://www.aqhi.gov.hk/epd/ddata/html/out/24aqhi_ChT.xml" },
   { category: "地震", title: "天文台地震 API", status: "已接入", freshness: "有新資料時更新；頁面約每 60 秒查詢", detail: "地震速報涵蓋全球 M6+；本地有感報告是另一個資料類型，兩者不可混為一談。", href: "https://data.weather.gov.hk/weatherAPI/opendata/earthquake.php?dataType=qem&lang=tc" },
   { category: "港鐵", title: "MTR Next Train API", status: "已接入・金鐘試點", freshness: "官方資料集列每 10 秒更新；本頁每 60 秒刷新", detail: "目前展示金鐘站東鐵綫、港島綫、南港島綫到站預報；API 非完整事故警報。", href: "https://data.gov.hk/en-data/dataset/mtr-data2-nexttrain-data" },
   { category: "巴士", title: "KMB／LWB ETA API", status: "已接入・荃灣單站", freshness: "ETA 每分鐘更新；路線／站點資料每日更新", detail: "目前只示範麗城花園第一期一個站；不是全港巴士警報。即時改道另看營辦商公告。", href: "https://data.gov.hk/en-data/dataset/hk-td-tis_21-etakmb" },
@@ -101,6 +104,8 @@ export default function Home() {
     refetchOnWindowFocus: true,
     retry: 1,
   });
+  const roadTraffic = trpc.transport.roadTraffic.useQuery(undefined, { refetchInterval: 5 * 60_000, refetchOnWindowFocus: true, retry: 1 });
+  const environment = trpc.transport.environment.useQuery(undefined, { refetchInterval: 5 * 60_000, refetchOnWindowFocus: true, retry: 1 });
 
   const visibleModes = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -114,9 +119,10 @@ export default function Home() {
   const data = dashboard.data;
   const activeWarnings = data?.warnings ?? [];
   const trafficEvents = data?.trafficEvents ?? [];
+  const priorityTrafficEvents = useMemo(() => prioritizeTrafficEvents(trafficEvents), [trafficEvents]);
   const mobilityDemos = mobility.data?.demos ?? [];
   const earthquakes = data?.earthquakes ?? [];
-  const activeSources = [...(data?.sources ?? []), ...(mobility.data?.sources ?? [])];
+  const activeSources = [...(data?.sources ?? []), ...(mobility.data?.sources ?? []), ...(roadTraffic.data?.source ? [roadTraffic.data.source] : []), ...(environment.data?.sources ?? [])];
   const warningsUnavailable = activeSources.some((source) => source.id === "hko-warning" && source.status === "unavailable");
   const trafficUnavailable = activeSources.some((source) => source.id === "td-traffic" && source.status === "unavailable");
   const railUnavailable = activeSources.some((source) => source.id.startsWith("mtr-") && source.status === "unavailable");
@@ -124,6 +130,9 @@ export default function Home() {
   const busUnavailableCount = busSourceStatuses.filter((status) => status === "unavailable").length;
   const ferryUnavailable = activeSources.some((source) => source.id === "hkkf-eta" && source.status === "unavailable");
   const lastUpdated = data?.fetchedAt ? formatHkt(data.fetchedAt) : "正在讀取";
+  const rainfallEntries = environment.data?.current?.rainfall ?? [];
+  const highestRainfall = [...rainfallEntries].sort((a, b) => b.millimetres - a.millimetres)[0];
+  const rainfallPeriod = environment.data?.current?.rainfallPeriod?.split(" – ") ?? [];
 
   return (
     <main className="traffic-app">
@@ -135,6 +144,7 @@ export default function Home() {
         <nav className="top-nav" aria-label="主要導覽">
           <a className="nav-current" href="#overview">交通總覽</a>
           <a href="#weather">天氣與災害</a>
+          <a href="#weather-report">天氣預報／空氣</a>
           <a href="#source-directory">資料來源</a>
         </nav>
         <div className="top-actions">
@@ -149,7 +159,7 @@ export default function Home() {
           <div className="hero-copy">
             <div className="eyebrow"><span className="eyebrow-line" /> 香港出行，一站掌握</div>
             <h1>出門前，<span>睇清全港交通。</span></h1>
-            <p>道路、鐵路、巴士、小巴、渡輪、航班，以至天氣災害警告——重要變化集中睇。</p>
+            <p>先睇道路路況、列車服務與公共交通，再掌握天氣警告、溫度、雨量、紫外線及空氣質素。</p>
             <div className="hero-meta">
               <span className="data-state"><span className="pulse-dot" />官方資料讀取 {dashboard.isFetching ? "中" : "完成"}</span>
               <span className="meta-divider" />
@@ -165,7 +175,7 @@ export default function Home() {
 
         <section className="preview-notice" aria-label="資料狀態提示">
           <div className="notice-icon"><ShieldAlert size={17} /></div>
-          <div><strong>資料測試版｜已接入天文台警告／地震、運輸署交通消息及多個營辦商 ETA API。</strong><span> 巴士、小巴與渡輪目前只有指定站點／路線試點；航班未有已核實的官方即時 API。緊急情況請以政府公告為準。</span></div>
+          <div><strong>資料測試版｜道路事故消息、吐露港走廊車速估算、港鐵延誤標記及天氣／AQHI 已接入。</strong><span> 巴士、小巴與渡輪目前只有指定站點／路線試點；航班未有已核實的官方即時 API。緊急情況請以政府公告為準。</span></div>
           <a href="#source-directory">資料與更新方式 <ArrowUpRight size={14} /></a>
         </section>
 
@@ -174,7 +184,7 @@ export default function Home() {
         <section className="section-block transport-section" aria-labelledby="transport-heading">
           <div className="section-heading">
             <div><div className="eyebrow small-eyebrow">TRANSPORT NETWORK</div><h2 id="transport-heading">交通網絡</h2></div>
-            <button className="refresh-button" onClick={() => { void dashboard.refetch(); if (!mobility.isFetching) void mobility.refetch(); }} disabled={dashboard.isFetching}><RefreshCw size={15} className={dashboard.isFetching || mobility.isFetching ? "spin" : ""} /> 更新資料</button>
+            <button className="refresh-button" onClick={() => { void dashboard.refetch(); void mobility.refetch(); void roadTraffic.refetch(); void environment.refetch(); }} disabled={dashboard.isFetching}><RefreshCw size={15} className={dashboard.isFetching || mobility.isFetching || roadTraffic.isFetching || environment.isFetching ? "spin" : ""} /> 更新資料</button>
           </div>
           <div className="toolbar">
             <div className="filter-tabs" role="tablist" aria-label="交通類別篩選">
@@ -192,7 +202,7 @@ export default function Home() {
               const Icon = mode.icon;
               const connected = mode.id === "road" || mode.id === "rail" || mode.id === "bus" || mode.id === "ferry";
               const modeStatus = mode.id === "road"
-                ? trafficUnavailable ? "來源暫停" : "已接官方消息"
+                ? roadTraffic.data?.source.status === "unavailable" ? "車速來源暫停" : trafficUnavailable ? "已接車速，消息暫停" : "已接車速＋消息"
                 : mode.id === "rail"
                   ? railUnavailable ? "來源暫停" : "已接金鐘 ETA"
                   : mode.id === "bus"
@@ -200,7 +210,7 @@ export default function Home() {
                     : mode.id === "ferry"
                       ? ferryUnavailable ? "來源暫停" : "已接單一航線 ETA"
                       : "規劃接入";
-              return <button key={mode.id} className="transport-card" onClick={() => setNotice(connected ? "交通消息已讀取於下方；此 feed 屬官方公告，並非每宗即時路況。" : `${mode.label}：已查到可用官方資料源，完整路線／即時狀態頁面正在下一階段接入。`)}>
+              return <button key={mode.id} className="transport-card" onClick={() => setNotice(mode.id === "road" ? "下方有運輸署道路消息及吐露港雙向速度估算；如需全港即時圖，可開啟官方交通圖。" : connected ? "交通及到站資料已讀取於下方；ETA 與事故／停駛公告是不同資料。" : `${mode.label}：已查到可用官方資料源，完整路線／即時狀態頁面正在下一階段接入。`)}>
                 <span className={`mode-icon ${mode.tone}`}><Icon size={20} strokeWidth={1.8} /></span>
                 <span className="mode-text"><strong>{mode.label}</strong><small>{mode.subtitle}</small></span>
                 <span className={`mode-status ${connected && !modeStatus.includes("暫停") ? "connected" : "planned"}`}><i />{modeStatus}</span>
@@ -209,6 +219,19 @@ export default function Home() {
               </button>;
             })}
             {visibleModes.length === 0 && <div className="empty-search">找不到相關交通類別，試試其他關鍵字。</div>}
+          </div>
+          <div className="road-traffic-panel" id="road-traffic">
+            <div className="road-traffic-head"><span><CarFront size={16} /> 主要道路路況 <small>吐露港公路走廊 · 路線平均速度估算</small></span><span>{roadTraffic.isFetching ? "更新中" : `查詢時間 ${formatHkt(roadTraffic.data?.fetchedAt)} HKT`}</span></div>
+            <div className="road-speed-grid">
+              {(roadTraffic.data?.routes ?? []).map((route) => {
+                const speed = route.speedKph;
+                const condition = speed === undefined ? "資料暫缺" : speed < 25 ? "行車緩慢" : speed < 45 ? "車速偏慢" : "一般流速";
+                const tone = speed === undefined ? "" : speed < 25 ? "road-slow" : speed < 45 ? "road-watch" : "road-clear";
+                return <article className="road-speed-card" key={route.id}><div className="road-speed-route"><strong>{route.title}</strong><span>{route.direction}</span></div><div className={`road-speed-value ${tone}`}>{speed === undefined ? "—" : <>{speed}<small> km/h</small></>}</div><div className={`road-speed-condition ${tone}`}>{condition}</div><div className="road-speed-meta">行程 {route.distance || "—"} · 預計 {route.eta || "—"}</div>{route.message && <div className="road-speed-meta">{route.message}</div>}</article>;
+              })}
+              {!roadTraffic.data?.routes.length && <div className="road-speed-empty">{roadTraffic.isLoading ? "正在讀取運輸署路線速度…" : "TDAS 路況暫時未能讀取。"}</div>}
+            </div>
+            <div className="road-traffic-foot">運輸署 TDAS 路線平均速度估算，官方資料集每 5 分鐘更新；本卡為大圍—中文大學／大埔一段走廊，不代表每個路段。慢／快狀態按車速作參考，非運輸署官方警報級別。<a href="https://www.hkemobility.gov.hk/tc/traffic-information/live/cctv/all?cctv=on&jt=on&smp=on&ts=on" target="_blank" rel="noreferrer">查看全港即時交通圖 <ArrowUpRight size={12} /></a></div>
           </div>
           <div className="train-status-panel">
             <div className="train-status-head"><span><TrainFront size={15} /> 港鐵到站預報 <small>金鐘站 · 東鐵綫／港島綫／南港島綫</small></span><span>官方資料每 10 秒更新 · 本頁約每 60 秒刷新</span></div>
@@ -219,8 +242,7 @@ export default function Home() {
                   <strong>{train.label}</strong>
                   {train.message ? <a className="train-service-alert" href={train.informationUrl || "https://www.mtr.com.hk/tc/customer/main/service_status.html"} target="_blank" rel="noreferrer">{train.message}<ArrowUpRight size={13} /></a>
                     : sourceUnavailable ? <span className="train-no-data">目前無法讀取此綫到站資料</span>
-                      : train.arrivals.length ? <div className="train-arrivals">{train.arrivals.map((arrival) => <span key={arrival.direction}><small>{arrival.direction}</small><b>{arrival.minutes === "0" ? "即將到站" : `${arrival.minutes} 分鐘`}</b>{arrival.platform ? <i>{arrival.platform} 號月台</i> : null}</span>)}</div>
-                        : <span className="train-no-data">API 暫未提供到站預報</span>}
+                      : <>{train.serviceDelayed && <a className="train-service-alert" href="https://www.mtr.com.hk/tc/customer/main/service_status.html" target="_blank" rel="noreferrer">港鐵官方 API 標記此綫服務延誤；查看最新車務狀況<ArrowUpRight size={13} /></a>}{train.arrivals.length ? <div className="train-arrivals">{train.arrivals.map((arrival) => <span key={arrival.direction}><small>{arrival.direction}</small><b>{arrival.minutes === "0" ? "即將到站" : `${arrival.minutes} 分鐘`}</b>{arrival.platform ? <i>{arrival.platform} 號月台</i> : null}</span>)}</div> : <span className="train-no-data">API 暫未提供到站預報</span>}</>}
                   <small className="train-line-time">{train.currentTime ? `資料時間 ${formatHkt(train.currentTime)} HKT` : "資料時間以港鐵回應為準"}</small>
                 </div>;
               })}
@@ -248,10 +270,10 @@ export default function Home() {
             </div>
           </div>
           <div className="live-data-panel">
-            <div className="live-panel-title"><span><CarFront size={15} /> 運輸署特別交通消息</span><span>{trafficUnavailable ? "暫時無法讀取" : dashboard.isLoading ? "正在讀取" : `${trafficEvents.length} 則官方消息`}</span></div>
+            <div className="live-panel-title"><span><CarFront size={15} /> 運輸署特別交通消息</span><span>{trafficUnavailable ? "暫時無法讀取" : dashboard.isLoading ? "正在讀取" : `${priorityTrafficEvents.filter((event) => !isClosed(event)).length} 則未完結 · ${trafficEvents.length} 則總消息`}</span></div>
             {trafficUnavailable && <div className="feed-empty">運輸署來源暫時未能連線；稍後可按「更新資料」重試，亦可直接查閱 <a href="https://www.td.gov.hk/tc/special_news/spnews.htm" target="_blank" rel="noreferrer">運輸署公告頁</a>。</div>}
             {!trafficUnavailable && trafficEvents.length === 0 && <div className="feed-empty">目前官方 feed 沒有交通消息紀錄。</div>}
-            {!trafficUnavailable && trafficEvents.slice(0, 3).map((event) => <TrafficEventRow key={event.id} event={event} />)}
+            {!trafficUnavailable && priorityTrafficEvents.slice(0, 5).map((event) => <TrafficEventRow key={event.id} event={event} />)}
             <div className="live-panel-foot">官方 feed 更新時間：{activeSources.find((source) => source.id === "td-traffic") ? formatHkt(activeSources.find((source) => source.id === "td-traffic")?.checkedAt) : "—"} · 資料流列為即時；政府未公布延遲 SLA</div>
           </div>
         </section>
@@ -287,6 +309,20 @@ export default function Home() {
           </div>
         </section>
 
+        <section className="environment-section" id="weather-report">
+          <div className="section-heading"><div><div className="eyebrow small-eyebrow">WEATHER & ENVIRONMENT</div><h2>天氣與環境</h2></div><span className="example-label">天文台現況／九日預報 · 環保署 AQHI</span></div>
+          <div className="environment-current-grid">
+            <article className="environment-card"><span className="environment-label">天文台氣溫</span><strong>{environment.data?.current?.temperatures?.find((item) => item.place === "香港天文台")?.value ?? "—"}<small>{environment.data?.current?.temperatures?.some((item) => item.place === "香港天文台") ? " °C" : ""}</small></strong><span>香港天文台測站 · {formatHkt(environment.data?.current?.updatedAt)} HKT</span></article>
+            <article className="environment-card"><span className="environment-label">相對濕度</span><strong>{environment.data?.current?.humidity ?? "—"}<small>{environment.data?.current?.humidity !== undefined ? "%" : ""}</small></strong><span>香港天文台 · {formatHkt(environment.data?.current?.humidityTime)} HKT</span></article>
+            <article className="environment-card"><span className="environment-label">紫外線指數</span><strong>{environment.data?.current?.uvIndex ?? "—"}<small>{environment.data?.current?.uvDescription ? ` · ${environment.data.current.uvDescription}` : ""}</small></strong><span>{environment.data?.current?.uvIndex === undefined ? "天文台暫無最新指數（夜間或未發布）" : "天文台當前公開讀數"}</span></article>
+            <article className="environment-card"><span className="environment-label">過去一小時雨量最高</span><strong>{highestRainfall?.millimetres ?? (rainfallEntries.length ? 0 : "—")}<small>{rainfallEntries.length ? " mm" : ""}</small></strong><span>{highestRainfall?.place ?? "未有讀數"} · 時段 {rainfallPeriod.length === 2 ? `${formatHkt(rainfallPeriod[0])}–${formatHkt(rainfallPeriod[1])}` : "天文台未提供"} HKT</span></article>
+          </div>
+          <div className="environment-situation"><strong>天氣概況</strong><span>{environment.data?.generalSituation || (environment.isLoading ? "正在讀取天氣概況…" : "天文台天氣概況暫時未能讀取。")}</span></div>
+          <div className="forecast-heading"><h3>九日天氣預報</h3><span>更新時間 {formatHkt(environment.data?.forecastUpdatedAt)} HKT</span></div>
+          <div className="forecast-grid">{(environment.data?.forecast ?? []).map((day) => <article className="forecast-card" key={day.date}><strong>{day.week || day.date}</strong><span>{day.date}</span><p>{day.description}</p><b>{day.minTemperature ?? "—"}° — {day.maxTemperature ?? "—"}°C</b><small>降雨機率：{day.rainProbability || "未提供"}</small></article>)}{!environment.data?.forecast.length && <div className="road-speed-empty">{environment.isLoading ? "正在讀取九日天氣預報…" : "九日天氣預報暫時未能讀取。"}</div>}</div>
+          <div className="aqhi-panel"><div className="forecast-heading"><h3>空氣質素健康指數（AQHI）</h3><span>環保署全部可用監測站 · 每小時資料 · {formatHkt(environment.data?.aqhiUpdatedAt)} HKT</span></div><div className="aqhi-grid">{(environment.data?.aqhi ?? []).map((station: AQHIStation) => <article className="aqhi-card" key={`${station.type}-${station.place}`}><span>{station.place}</span><strong>{station.index}</strong><small>{station.type}</small></article>)}{!environment.data?.aqhi.length && <div className="road-speed-empty">{environment.isLoading ? "正在讀取 AQHI…" : "AQHI 暫時未能讀取。"}</div>}</div><div className="environment-source-note">AQHI 按監測站展示，數值越高代表健康風險越高；此卡不是預測。天文台及環保署讀數更新頻率不同，請以各官方公布時間為準。</div></div>
+        </section>
+
         <section className="section-block example-section">
           <div className="section-heading"><div><div className="eyebrow small-eyebrow">OFFICIAL DATA SOURCES</div><h2>已接入／已核實</h2></div><span className="example-label">來源狀態可見</span></div>
           <div className="example-grid">
@@ -310,14 +346,14 @@ export default function Home() {
         </section>
 
         <section className="source-strip" id="sources">
-          <div className="source-mark"><Zap size={18} /></div><div className="source-copy"><strong>以官方資料為先，標示來源與更新時間。</strong><span>交通／災害警報與營辦商 ETA 分開查詢，各自每 60 秒快取；慢速 ETA 不會阻塞天氣警告或交通消息。</span></div>
+          <div className="source-mark"><Zap size={18} /></div><div className="source-copy"><strong>以官方資料為先，標示來源與更新時間。</strong><span>警報／ETA 約每 60 秒、道路速度及環境數據約每 5 分鐘快取；各自查詢，慢來源不會阻塞急務交通及天氣消息。</span></div>
           <div className="source-links"><a href="https://data.gov.hk/" target="_blank" rel="noreferrer">data.gov.hk <ArrowUpRight size={13} /></a><a href="https://www.hko.gov.hk/tc/abouthko/opendata_intro.htm" target="_blank" rel="noreferrer">香港天文台 <ArrowUpRight size={13} /></a><a href="https://www.td.gov.hk/tc/special_news/spnews.htm" target="_blank" rel="noreferrer">運輸署 <ArrowUpRight size={13} /></a></div>
         </section>
         <div className="source-status-list" aria-label="各官方資料源連線狀態">{activeSources.map((source) => <span key={source.id} className={source.status === "ok" ? "source-ok" : "source-error"}><i />{source.label} · {source.status === "ok" ? formatHkt(source.checkedAt) : "暫不可用"}</span>)}</div>
 
         <footer className="footer"><span>交通警報器 <span className="footer-dot">·</span> 香港出行資訊整合原型</span><span><Zap size={13} /> 官方公告優先，安全出行</span></footer>
       </div>
-      <div className="mobile-bottom-bar"><a href="#overview"><CarFront size={17} />交通</a><a href="#weather"><CloudRain size={17} />天氣警告</a><a href="#sources"><Zap size={17} />資料</a></div>
+      <div className="mobile-bottom-bar"><a href="#overview"><CarFront size={17} />交通</a><a href="#weather"><CloudRain size={17} />天氣警告</a><a href="#weather-report"><Zap size={17} />天氣／空氣</a><a href="#sources"><Zap size={17} />資料</a></div>
     </main>
   );
 }

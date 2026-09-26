@@ -1,12 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
   normalizeEarthquake,
+  normalizeCurrentWeather,
   normalizeCitybusEta,
   normalizeGmbEta,
   normalizeKmbEta,
   normalizeMtrSchedule,
+  normalizeTdasRoute,
+  normalizeWeatherForecast,
   normalizeWeatherWarnings,
+  parseAQHIXml,
   parseSpecialTrafficNewsXml,
+  prioritizeTrafficEvents,
 } from "./transportData";
 
 describe("parseSpecialTrafficNewsXml", () => {
@@ -115,6 +120,67 @@ describe("normalizeMtrSchedule", () => {
   });
 });
 
+describe("MTR disruption, road speed and environment reports", () => {
+  it("flags MTR's official isdelay marker even when no train ETA is returned", () => {
+    expect(normalizeMtrSchedule({ status: 1, isdelay: "Y", data: { "EAL-ADM": { UP: [], DOWN: [] } } }, "EAL", "東鐵綫", "金鐘"))
+      .toMatchObject({ line: "EAL", serviceDelayed: true, arrivals: [] });
+  });
+
+  it("extracts average route speed and ETA from TDAS localized fields", () => {
+    expect(normalizeTdasRoute({ jSpeed: "53公里/小時", distU: "7.66公里", eta: "00:09" }, "tolo", "吐露港公路走廊", "大圍→大埔"))
+      .toEqual({ id: "tolo", title: "吐露港公路走廊", direction: "大圍→大埔", speedKph: 53, distance: "7.66公里", eta: "00:09" });
+  });
+
+  it("normalizes current temperature, humidity, regional rainfall, UV and HKO messages", () => {
+    expect(normalizeCurrentWeather({
+      updateTime: "2026-09-27T00:02:00+08:00",
+      temperature: { data: [{ place: "香港天文台", value: 28, unit: "C" }, { place: "屯門", value: 27, unit: "C" }] },
+      humidity: { recordTime: "2026-09-27T00:00:00+08:00", data: [{ place: "香港天文台", value: 77 }] },
+      uvindex: { value: 3, desc: "低" },
+      rainfall: { startTime: "2026-09-26T22:45:00+08:00", endTime: "2026-09-26T23:45:00+08:00", data: [{ place: "北區", max: 12, unit: "mm" }] },
+      warningMessage: ["火災危險警告為黃色"],
+    })).toEqual({
+      updatedAt: "2026-09-27T00:02:00+08:00",
+      temperatures: [{ place: "香港天文台", value: 28 }, { place: "屯門", value: 27 }],
+      humidity: 77,
+      humidityTime: "2026-09-27T00:00:00+08:00",
+      uvIndex: 3,
+      uvDescription: "低",
+      rainfall: [{ place: "北區", millimetres: 12 }],
+      rainfallPeriod: "2026-09-26T22:45:00+08:00 – 2026-09-26T23:45:00+08:00",
+      warningMessages: ["火災危險警告為黃色"],
+    });
+  });
+
+  it("does not turn a blank night-time UV value into index zero", () => {
+    expect(normalizeCurrentWeather({ uvindex: "" })).not.toHaveProperty("uvIndex");
+  });
+
+  it("normalizes HKO general weather situation and nine-day forecast", () => {
+    expect(normalizeWeatherForecast({
+      generalSituation: "未來兩三日天色大致良好。",
+      updateTime: "2026-09-27T00:15:00+08:00",
+      weatherForecast: [{ forecastDate: "20260927", week: "星期日", forecastWeather: "大致天晴。", forecastWind: "西南風3至4級。", forecastMintemp: { value: 27 }, forecastMaxtemp: { value: 33 }, PSR: "低" }],
+    })).toEqual({
+      generalSituation: "未來兩三日天色大致良好。",
+      updateTime: "2026-09-27T00:15:00+08:00",
+      days: [{ date: "20260927", week: "星期日", description: "大致天晴。", wind: "西南風3至4級。", minTemperature: 27, maxTemperature: 33, rainProbability: "低" }],
+    });
+  });
+
+  it("selects the latest AQHI hour per station from the official 24-hour feed", () => {
+    const result = parseAQHIXml(`<AQHI24HrReport><lastBuildDate>Sat, 26 Sep 2026 23:30:00 +0800</lastBuildDate>
+      <item><type>一般監測站</type><StationName>中西區</StationName><DateTime>Sat, 26 Sep 2026 22:00:00 +0800</DateTime><aqhi>4</aqhi></item>
+      <item><type>一般監測站</type><StationName>中西區</StationName><DateTime>Sat, 26 Sep 2026 23:00:00 +0800</DateTime><aqhi>5</aqhi></item>
+      <item><type>路邊監測站</type><StationName>旺角</StationName><DateTime>Sat, 26 Sep 2026 23:00:00 +0800</DateTime><aqhi>7</aqhi></item>
+    </AQHI24HrReport>`);
+    expect(result).toEqual({ updatedAt: "Sat, 26 Sep 2026 23:30:00 +0800", stations: [
+      { place: "旺角", type: "路邊監測站", time: "Sat, 26 Sep 2026 23:00:00 +0800", index: "7" },
+      { place: "中西區", type: "一般監測站", time: "Sat, 26 Sep 2026 23:00:00 +0800", index: "5" },
+    ] });
+  });
+});
+
 describe("normalize bus and minibus arrival estimates", () => {
   it("keeps KMB service notes for routes without a live ETA", () => {
     expect(normalizeKmbEta({ data: [
@@ -142,5 +208,15 @@ describe("normalize bus and minibus arrival estimates", () => {
     expect(normalizeGmbEta({ data: { enabled: false, description_tc: "到站預報暫停" } }, "港島 1 號線", "山頂廣場", "中環")).toMatchObject({
       arrivals: [], message: "此路線站點沒有 ETA：到站預報暫停",
     });
+  });
+});
+describe("prioritizeTrafficEvents", () => {
+  it("places active notices before closed notices, then sorts each group by newest announcement", () => {
+    const event = (id: string, status: string, announcedAt: string) => ({ id, incidentNumber: id, title: id, detail: "", location: "", district: "", direction: "", status, announcedAt });
+    expect(prioritizeTrafficEvents([
+      event("closed-new", "完結", "2026-09-27T10:00:00+08:00"),
+      event("active-old", "仍然生效", "2026-09-27T08:00:00+08:00"),
+      event("active-new", "仍然生效", "2026-09-27T09:00:00+08:00"),
+    ]).map(({ id }) => id)).toEqual(["active-new", "active-old", "closed-new"]);
   });
 });

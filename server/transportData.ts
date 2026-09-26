@@ -21,6 +21,17 @@ export type TrafficEvent = {
   longitude?: number;
 };
 
+export function prioritizeTrafficEvents(events: TrafficEvent[]): TrafficEvent[] {
+  return [...events].sort((a, b) => {
+    const aClosed = /closed|完結|解封/i.test(a.status);
+    const bClosed = /closed|完結|解封/i.test(b.status);
+    if (aClosed !== bClosed) return Number(aClosed) - Number(bClosed);
+    const aTime = Date.parse(a.announcedAt);
+    const bTime = Date.parse(b.announcedAt);
+    return (Number.isFinite(bTime) ? bTime : 0) - (Number.isFinite(aTime) ? aTime : 0);
+  });
+}
+
 export type WeatherWarning = {
   code: string;
   label: string;
@@ -49,6 +60,7 @@ export type TrainLineStatus = {
   arrivals: Array<{ direction: string; minutes: string; destination?: string; platform?: string }>;
   message?: string;
   informationUrl?: string;
+  serviceDelayed?: boolean;
 };
 
 export type ArrivalEstimate = {
@@ -82,6 +94,53 @@ export type MobilityDashboard = {
   fetchedAt: string;
   sources: TrafficSource[];
   demos: MobilityDemo[];
+};
+
+export type RoadSpeedRoute = {
+  id: string;
+  title: string;
+  direction: string;
+  speedKph?: number;
+  distance?: string;
+  eta?: string;
+  message?: string;
+};
+
+export type RoadTrafficDashboard = { fetchedAt: string; routes: RoadSpeedRoute[]; source: TrafficSource };
+
+export type CurrentWeather = {
+  updatedAt?: string;
+  temperatures: Array<{ place: string; value: number }>;
+  humidity?: number;
+  humidityTime?: string;
+  uvIndex?: number;
+  uvDescription?: string;
+  rainfall: Array<{ place: string; millimetres: number }>;
+  rainfallPeriod?: string;
+  warningMessages: string[];
+};
+
+export type WeatherForecastDay = {
+  date: string;
+  week: string;
+  description: string;
+  wind: string;
+  minTemperature?: number;
+  maxTemperature?: number;
+  rainProbability: string;
+};
+
+export type AQHIStation = { place: string; type: string; index: string; time: string };
+
+export type EnvironmentDashboard = {
+  fetchedAt: string;
+  current: CurrentWeather;
+  generalSituation: string;
+  forecastUpdatedAt?: string;
+  forecast: WeatherForecastDay[];
+  aqhiUpdatedAt?: string;
+  aqhi: AQHIStation[];
+  sources: TrafficSource[];
 };
 
 const WARNING_LABELS: Record<string, string> = {
@@ -121,6 +180,10 @@ const TRAFFIC_FEED_URL = "https://www.td.gov.hk/tc/special_news/trafficnews.xml"
 const WEATHER_API_URL = "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warningInfo&lang=tc";
 const EARTHQUAKE_API_URL = "https://data.weather.gov.hk/weatherAPI/opendata/earthquake.php?dataType=qem&lang=tc";
 const FELT_EARTHQUAKE_API_URL = "https://data.weather.gov.hk/weatherAPI/opendata/earthquake.php?dataType=feltearthquake&lang=tc";
+const CURRENT_WEATHER_API_URL = "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=rhrread&lang=tc";
+const FORECAST_API_URL = "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=fnd&lang=tc";
+const AQHI_XML_URL = "https://www.aqhi.gov.hk/epd/ddata/html/out/24aqhi_ChT.xml";
+const TDAS_ROUTE_API_URL = "https://tdas-api.hkemobility.gov.hk/tdas/api/route";
 const KMB_STOP_ID = "B8B04CD1E568B8F6";
 const CITYBUS_ROUTE = "11";
 const CITYBUS_STOP = "001145";
@@ -248,6 +311,88 @@ export function normalizeEarthquake(payload: unknown, kind: "quick" | "felt"): E
   }];
 }
 
+function numberFromWeatherValue(value: unknown): number | undefined {
+  if (value === "" || value === null || value === undefined) return undefined;
+  const record = asRecord(value);
+  if (record.value === "" || record.value === null) return undefined;
+  const parsed = numericValue(record.value ?? value);
+  return parsed === undefined ? undefined : parsed;
+}
+
+export function normalizeCurrentWeather(payload: unknown): CurrentWeather {
+  const root = asRecord(payload);
+  const temperatureRoot = asRecord(root.temperature);
+  const temperatures = (Array.isArray(temperatureRoot.data) ? temperatureRoot.data : []).flatMap((raw) => {
+    const item = asRecord(raw);
+    const value = numericValue(item.value);
+    return textValue(item.place) && value !== undefined ? [{ place: textValue(item.place), value }] : [];
+  });
+  const humidityRoot = asRecord(root.humidity);
+  const hkoHumidity = (Array.isArray(humidityRoot.data) ? humidityRoot.data : []).map(asRecord).find((item) => item.place === "香港天文台");
+  const uv = asRecord(root.uvindex);
+  const rainfallRoot = asRecord(root.rainfall);
+  const rainfall = (Array.isArray(rainfallRoot.data) ? rainfallRoot.data : []).flatMap((raw) => {
+    const item = asRecord(raw);
+    const value = numericValue(item.max ?? item.value);
+    return textValue(item.place) && value !== undefined ? [{ place: textValue(item.place), millimetres: value }] : [];
+  });
+  const rainfallPeriod = [textValue(rainfallRoot.startTime), textValue(rainfallRoot.endTime)].filter(Boolean).join(" – ");
+  const uvIndex = numberFromWeatherValue(uv);
+  return {
+    ...(textValue(root.updateTime) ? { updatedAt: textValue(root.updateTime) } : {}),
+    temperatures,
+    ...(hkoHumidity && numericValue(hkoHumidity.value) !== undefined ? { humidity: numericValue(hkoHumidity.value) } : {}),
+    ...(textValue(humidityRoot.recordTime) ? { humidityTime: textValue(humidityRoot.recordTime) } : {}),
+    ...(uvIndex === undefined ? {} : { uvIndex }),
+    ...(textValue(uv.desc) ? { uvDescription: textValue(uv.desc) } : {}),
+    rainfall,
+    ...(rainfallPeriod ? { rainfallPeriod } : {}),
+    warningMessages: (Array.isArray(root.warningMessage) ? root.warningMessage : []).filter((value): value is string => typeof value === "string" && Boolean(value.trim())),
+  };
+}
+
+export function normalizeWeatherForecast(payload: unknown): { generalSituation: string; updateTime?: string; days: WeatherForecastDay[] } {
+  const root = asRecord(payload);
+  const entries = Array.isArray(root.weatherForecast) ? root.weatherForecast : [];
+  const days = entries.flatMap((raw) => {
+    const item = asRecord(raw);
+    const date = textValue(item.forecastDate);
+    if (!date) return [];
+    const minTemperature = numberFromWeatherValue(item.forecastMintemp);
+    const maxTemperature = numberFromWeatherValue(item.forecastMaxtemp);
+    return [{
+      date,
+      week: textValue(item.week),
+      description: textValue(item.forecastWeather),
+      wind: textValue(item.forecastWind),
+      ...(minTemperature === undefined ? {} : { minTemperature }),
+      ...(maxTemperature === undefined ? {} : { maxTemperature }),
+      rainProbability: textValue(item.PSR),
+    }];
+  });
+  return {
+    generalSituation: textValue(root.generalSituation),
+    ...(textValue(root.updateTime) ? { updateTime: textValue(root.updateTime) } : {}),
+    days,
+  };
+}
+
+export function parseAQHIXml(xml: string): { updatedAt?: string; stations: AQHIStation[] } {
+  const updatedAt = readXmlField(xml, "lastBuildDate");
+  const latestByStation = new Map<string, AQHIStation>();
+  for (const [, body] of Array.from(xml.matchAll(/<item\b[^>]*>([\s\S]*?)<\/item>/gi))) {
+    const place = readXmlField(body, "StationName");
+    const time = readXmlField(body, "DateTime");
+    const index = readXmlField(body, "aqhi");
+    if (!place || !time || !index) continue;
+    const old = latestByStation.get(place);
+    if (!old || Date.parse(time) > Date.parse(old.time)) {
+      latestByStation.set(place, { place, time, index, type: readXmlField(body, "type") });
+    }
+  }
+  return { ...(updatedAt ? { updatedAt } : {}), stations: Array.from(latestByStation.values()).sort((a, b) => Number(b.index) - Number(a.index)) };
+}
+
 export function normalizeMtrSchedule(payload: unknown, line: string, label: string, station: string): TrainLineStatus {
   const root = asRecord(payload);
   const data = asRecord(root.data);
@@ -267,6 +412,7 @@ export function normalizeMtrSchedule(payload: unknown, line: string, label: stri
     }
   }
   const status = numericValue(root.status);
+  const serviceDelayed = textValue(root.isdelay) === "Y";
   return {
     line,
     label,
@@ -274,7 +420,23 @@ export function normalizeMtrSchedule(payload: unknown, line: string, label: stri
     ...(textValue(schedule.curr_time) && textValue(schedule.curr_time) !== "-" ? { currentTime: textValue(schedule.curr_time) } : {}),
     arrivals,
     ...(status === 0 ? { message: textValue(root.message) || "港鐵回報特別服務安排" } : {}),
+    ...(serviceDelayed ? { serviceDelayed: true } : {}),
     ...(textValue(root.url) ? { informationUrl: textValue(root.url) } : {}),
+  };
+}
+
+export function normalizeTdasRoute(payload: unknown, id: string, title: string, direction: string): RoadSpeedRoute {
+  const root = asRecord(payload);
+  const match = textValue(root.jSpeed).match(/[\d.]+/);
+  const speedKph = match ? Number(match[0]) : undefined;
+  return {
+    id,
+    title,
+    direction,
+    ...(speedKph === undefined || !Number.isFinite(speedKph) ? {} : { speedKph }),
+    ...(textValue(root.distU) ? { distance: textValue(root.distU) } : {}),
+    ...(textValue(root.eta) ? { eta: textValue(root.eta) } : {}),
+    ...(!Object.keys(root).length || (!textValue(root.jSpeed) && !textValue(root.eta)) ? { message: textValue(root.Message) || "官方路況暫未提供" } : {}),
   };
 }
 
@@ -389,6 +551,10 @@ let cached: { expiresAt: number; data: TransportDashboard } | undefined;
 let inFlight: Promise<TransportDashboard> | undefined;
 let mobilityCached: { expiresAt: number; data: MobilityDashboard } | undefined;
 let mobilityInFlight: Promise<MobilityDashboard> | undefined;
+let roadTrafficCached: { expiresAt: number; data: RoadTrafficDashboard } | undefined;
+let roadTrafficInFlight: Promise<RoadTrafficDashboard> | undefined;
+let environmentCached: { expiresAt: number; data: EnvironmentDashboard } | undefined;
+let environmentInFlight: Promise<EnvironmentDashboard> | undefined;
 
 export async function getTransportDashboard(): Promise<TransportDashboard> {
   const now = Date.now();
@@ -489,4 +655,71 @@ export async function getMobilityDashboard(): Promise<MobilityDashboard> {
   } finally {
     mobilityInFlight = undefined;
   }
+}
+
+async function fetchTdasRoute(id: string, title: string, direction: string, start: { lat: number; long: number }, end: { lat: number; long: number }): Promise<RoadSpeedRoute> {
+  const response = await fetch(TDAS_ROUTE_API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "User-Agent": "HK-Traffic-Alert/0.1 (public-data prototype)" },
+    body: JSON.stringify({ start: { ...start, buffer: 300 }, end: { ...end, buffer: 300 }, departIn: 0, lang: "tc", type: "ST" }),
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!response.ok) throw new Error(`TDAS HTTP ${response.status}`);
+  return normalizeTdasRoute(await response.json(), id, title, direction);
+}
+
+export async function getRoadTrafficDashboard(): Promise<RoadTrafficDashboard> {
+  const now = Date.now();
+  if (roadTrafficCached && roadTrafficCached.expiresAt > now) return roadTrafficCached.data;
+  if (roadTrafficInFlight) return roadTrafficInFlight;
+  roadTrafficInFlight = (async () => {
+    const checkedAt = new Date().toISOString();
+    const routes = await Promise.allSettled([
+      fetchTdasRoute("tolo-northbound", "吐露港公路走廊", "大圍 → 中文大學／大埔方向", { lat: 22.3720, long: 114.1780 }, { lat: 22.4136, long: 114.2105 }),
+      fetchTdasRoute("tolo-southbound", "吐露港公路走廊", "中文大學／大埔 → 大圍方向", { lat: 22.4136, long: 114.2105 }, { lat: 22.3720, long: 114.1780 }),
+    ]);
+    const failed = routes.every((route) => route.status === "rejected");
+    const rows: RoadSpeedRoute[] = routes.map((route, index) => route.status === "fulfilled" ? route.value : ({
+      id: index === 0 ? "tolo-northbound" : "tolo-southbound",
+      title: "吐露港公路走廊",
+      direction: index === 0 ? "大圍 → 中文大學／大埔方向" : "中文大學／大埔 → 大圍方向",
+      message: "暫時無法讀取路況，請查看運輸署即時交通圖。",
+    }));
+    const data: RoadTrafficDashboard = {
+      fetchedAt: new Date().toISOString(),
+      routes: rows,
+      source: { id: "tdas-road-speed", label: "運輸署 TDAS 主要道路路線速度估算", url: TDAS_ROUTE_API_URL, status: failed ? "unavailable" : "ok", checkedAt, ...(failed ? { message: "所有路線速度查詢失敗" } : {}) },
+    };
+    roadTrafficCached = { data, expiresAt: Date.now() + 5 * 60_000 };
+    return data;
+  })();
+  try { return await roadTrafficInFlight; } finally { roadTrafficInFlight = undefined; }
+}
+
+export async function getEnvironmentDashboard(): Promise<EnvironmentDashboard> {
+  const now = Date.now();
+  if (environmentCached && environmentCached.expiresAt > now) return environmentCached.data;
+  if (environmentInFlight) return environmentInFlight;
+  environmentInFlight = (async () => {
+    const [current, forecast, aqhi] = await Promise.all([
+      fetchSource("hko-current-weather", "香港天文台即時天氣（rhrread）", CURRENT_WEATHER_API_URL, async (response) => normalizeCurrentWeather(await response.json())),
+      fetchSource("hko-9day-forecast", "香港天文台九日天氣預報（fnd）", FORECAST_API_URL, async (response) => normalizeWeatherForecast(await response.json())),
+      fetchSource("epd-aqhi", "環保署空氣質素健康指數（AQHI）", AQHI_XML_URL, async (response) => parseAQHIXml(await response.text())),
+    ]);
+    const aqhiValue = asRecord(aqhi.data);
+    const forecastValue = asRecord(forecast.data);
+    const data: EnvironmentDashboard = {
+      fetchedAt: new Date().toISOString(),
+      current: current.data as CurrentWeather,
+      generalSituation: textValue(forecastValue.generalSituation),
+      ...(textValue(forecastValue.updateTime) ? { forecastUpdatedAt: textValue(forecastValue.updateTime) } : {}),
+      forecast: Array.isArray(forecastValue.days) ? forecastValue.days as WeatherForecastDay[] : [],
+      ...(textValue(aqhiValue.updatedAt) ? { aqhiUpdatedAt: textValue(aqhiValue.updatedAt) } : {}),
+      aqhi: Array.isArray(aqhiValue.stations) ? aqhiValue.stations as AQHIStation[] : [],
+      sources: [current.source, forecast.source, aqhi.source],
+    };
+    environmentCached = { data, expiresAt: Date.now() + 5 * 60_000 };
+    return data;
+  })();
+  try { return await environmentInFlight; } finally { environmentInFlight = undefined; }
 }
