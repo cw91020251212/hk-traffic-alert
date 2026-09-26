@@ -21,7 +21,7 @@ import {
   Zap,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import type { EarthquakeBulletin, TrafficEvent, WeatherWarning } from "../../../server/transportData";
+import type { EarthquakeBulletin, MobilityDemo, TrafficEvent, WeatherWarning } from "../../../server/transportData";
 
 type Mode = {
   id: string;
@@ -60,10 +60,10 @@ const sourceCatalog = [
   { category: "天氣警告", title: "天文台 warningInfo API", status: "已接入", freshness: "開放 JSON API；頁面約每 60 秒查詢", detail: "含颱風信號、黃／紅／黑雨、山泥傾瀉、雷暴、海嘯等警告。", href: "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warningInfo&lang=tc" },
   { category: "地震", title: "天文台地震 API", status: "已接入", freshness: "有新資料時更新；頁面約每 60 秒查詢", detail: "地震速報涵蓋全球 M6+；本地有感報告是另一個資料類型，兩者不可混為一談。", href: "https://data.weather.gov.hk/weatherAPI/opendata/earthquake.php?dataType=qem&lang=tc" },
   { category: "港鐵", title: "MTR Next Train API", status: "已接入・金鐘試點", freshness: "官方資料集列每 10 秒更新；本頁每 60 秒刷新", detail: "目前展示金鐘站東鐵綫、港島綫、南港島綫到站預報；API 非完整事故警報。", href: "https://data.gov.hk/en-data/dataset/mtr-data2-nexttrain-data" },
-  { category: "巴士", title: "KMB／LWB ETA API", status: "待接入", freshness: "ETA 每分鐘更新；路線／站點資料每日更新", detail: "路線、站點和到站預報可按路線或站點查詢；即時改道應另看營辦商公告。", href: "https://data.gov.hk/en-data/dataset/hk-td-tis_21-etakmb" },
-  { category: "巴士", title: "Citybus Next Bus API", status: "待接入", freshness: "ETA 每分鐘更新", detail: "城巴路線、站點及到站預報；不是服務中斷警報 feed。", href: "https://data.gov.hk/en-data/dataset/ctb-eta-transport-realtime-eta" },
-  { category: "公共小巴", title: "綠色專線小巴 ETA API", status: "待接入", freshness: "ETA 每分鐘更新；官方稱涵蓋所有綠色小巴路線", detail: "到站預報不等於交通事故或停駛消息；紅色小巴未有同等全港官方 ETA feed 證據。", href: "https://data.gov.hk/en-data/dataset/hk-td-sm_7-real-time-arrival-data-of-gmb" },
-  { category: "渡輪", title: "香港九龍渡海小輪 ETA API", status: "待接入", freshness: "ETA 每分鐘更新", detail: "只涵蓋該營辦商航線；臨時停航及改動仍須營辦商公告。", href: "https://data.gov.hk/en-data/dataset/hkkf-hkkfdata-hkkf-eta-data" },
+  { category: "巴士", title: "KMB／LWB ETA API", status: "已接入・荃灣單站", freshness: "ETA 每分鐘更新；路線／站點資料每日更新", detail: "目前只示範麗城花園第一期一個站；不是全港巴士警報。即時改道另看營辦商公告。", href: "https://data.gov.hk/en-data/dataset/hk-td-tis_21-etakmb" },
+  { category: "巴士", title: "Citybus Next Bus API", status: "已接入・單站／一路線", freshness: "ETA 每分鐘更新", detail: "目前只示範城巴 11 號線一個站；不是服務中斷警報 feed。", href: "https://data.gov.hk/en-data/dataset/ctb-eta-transport-realtime-eta" },
+  { category: "公共小巴", title: "綠色專線小巴 ETA API", status: "已接入・港島 1 號線試點", freshness: "ETA API 可查詢；路線清單每日更新", detail: "目前示範山頂－中環 1 號線的一個站。官方 API 可覆蓋綠色小巴路線，但此畫面未覆蓋全港；紅色小巴沒有已核實 ETA feed。", href: "https://data.gov.hk/en-data/dataset/hk-td-sm_7-real-time-arrival-data-of-gmb" },
+  { category: "渡輪", title: "香港九龍渡海小輪 ETA API", status: "已接入・中環－坪洲", freshness: "官方 ETA API；本頁每 60 秒刷新", detail: "目前只查詢中環 6 號碼頭－坪洲航線；不代表全港渡輪，臨時停航另看營辦商公告。", href: "https://data.gov.hk/en-data/dataset/hkkf-hkkfdata-hkkf-eta-data" },
   { category: "海事", title: "海事處海事通告／RSS", status: "有限替代", freshness: "發布通告時更新；沒有即時延遲承諾", detail: "可補充航道、海上工程及航行安全消息，不是全港渡輪班次 API。", href: "https://www.mardep.gov.hk/en/legislation/notices/md-notices/index.html" },
   { category: "航空", title: "機管局航班即時網頁／開放資料", status: "不是即時 API", freshness: "data.gov.hk 資料只更新至前一曆日", detail: "當日航班可連往機管局官方航班頁；本次未查到可穩定公開接入的第三方即時航班 API。", href: "https://www.hongkongairport.com/en/flights/departures/passenger.page" },
 ];
@@ -96,6 +96,11 @@ export default function Home() {
     refetchOnWindowFocus: true,
     retry: 1,
   });
+  const mobility = trpc.transport.mobility.useQuery(undefined, {
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
+    retry: 1,
+  });
 
   const visibleModes = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -109,11 +114,15 @@ export default function Home() {
   const data = dashboard.data;
   const activeWarnings = data?.warnings ?? [];
   const trafficEvents = data?.trafficEvents ?? [];
+  const mobilityDemos = mobility.data?.demos ?? [];
   const earthquakes = data?.earthquakes ?? [];
-  const activeSources = data?.sources ?? [];
+  const activeSources = [...(data?.sources ?? []), ...(mobility.data?.sources ?? [])];
   const warningsUnavailable = activeSources.some((source) => source.id === "hko-warning" && source.status === "unavailable");
   const trafficUnavailable = activeSources.some((source) => source.id === "td-traffic" && source.status === "unavailable");
   const railUnavailable = activeSources.some((source) => source.id.startsWith("mtr-") && source.status === "unavailable");
+  const busSourceStatuses = ["kmb-eta", "citybus-eta", "gmb-eta"].map((id) => activeSources.find((source) => source.id === id)?.status);
+  const busUnavailableCount = busSourceStatuses.filter((status) => status === "unavailable").length;
+  const ferryUnavailable = activeSources.some((source) => source.id === "hkkf-eta" && source.status === "unavailable");
   const lastUpdated = data?.fetchedAt ? formatHkt(data.fetchedAt) : "正在讀取";
 
   return (
@@ -156,7 +165,7 @@ export default function Home() {
 
         <section className="preview-notice" aria-label="資料狀態提示">
           <div className="notice-icon"><ShieldAlert size={17} /></div>
-          <div><strong>資料測試版｜現已接入天文台警告／地震資料及運輸署特別交通消息。</strong><span> 到站、航班與部分營辦商服務狀態仍待接入；官方資料亦可能延遲或不完整，緊急情況請以政府公告為準。</span></div>
+          <div><strong>資料測試版｜已接入天文台警告／地震、運輸署交通消息及多個營辦商 ETA API。</strong><span> 巴士、小巴與渡輪目前只有指定站點／路線試點；航班未有已核實的官方即時 API。緊急情況請以政府公告為準。</span></div>
           <a href="#source-directory">資料與更新方式 <ArrowUpRight size={14} /></a>
         </section>
 
@@ -165,7 +174,7 @@ export default function Home() {
         <section className="section-block transport-section" aria-labelledby="transport-heading">
           <div className="section-heading">
             <div><div className="eyebrow small-eyebrow">TRANSPORT NETWORK</div><h2 id="transport-heading">交通網絡</h2></div>
-            <button className="refresh-button" onClick={() => void dashboard.refetch()} disabled={dashboard.isFetching}><RefreshCw size={15} className={dashboard.isFetching ? "spin" : ""} /> 更新資料</button>
+            <button className="refresh-button" onClick={() => { void dashboard.refetch(); if (!mobility.isFetching) void mobility.refetch(); }} disabled={dashboard.isFetching}><RefreshCw size={15} className={dashboard.isFetching || mobility.isFetching ? "spin" : ""} /> 更新資料</button>
           </div>
           <div className="toolbar">
             <div className="filter-tabs" role="tablist" aria-label="交通類別篩選">
@@ -181,12 +190,16 @@ export default function Home() {
           <div className="transport-grid">
             {visibleModes.map((mode) => {
               const Icon = mode.icon;
-              const connected = mode.id === "road" || mode.id === "rail";
+              const connected = mode.id === "road" || mode.id === "rail" || mode.id === "bus" || mode.id === "ferry";
               const modeStatus = mode.id === "road"
                 ? trafficUnavailable ? "來源暫停" : "已接官方消息"
                 : mode.id === "rail"
                   ? railUnavailable ? "來源暫停" : "已接金鐘 ETA"
-                  : "規劃接入";
+                  : mode.id === "bus"
+                    ? busUnavailableCount === 3 ? "ETA 來源暫停" : busUnavailableCount ? "ETA 部分可用" : "已接 ETA 試點"
+                    : mode.id === "ferry"
+                      ? ferryUnavailable ? "來源暫停" : "已接單一航線 ETA"
+                      : "規劃接入";
               return <button key={mode.id} className="transport-card" onClick={() => setNotice(connected ? "交通消息已讀取於下方；此 feed 屬官方公告，並非每宗即時路況。" : `${mode.label}：已查到可用官方資料源，完整路線／即時狀態頁面正在下一階段接入。`)}>
                 <span className={`mode-icon ${mode.tone}`}><Icon size={20} strokeWidth={1.8} /></span>
                 <span className="mode-text"><strong>{mode.label}</strong><small>{mode.subtitle}</small></span>
@@ -212,6 +225,26 @@ export default function Home() {
                 </div>;
               })}
               {!data?.trains?.length && <div className="train-no-data">{dashboard.isLoading ? "正在讀取港鐵資料…" : "港鐵到站資料暫時未能讀取。"}　<a href="https://www.mtr.com.hk/tc/customer/main/service_status.html" target="_blank" rel="noreferrer">查看港鐵服務狀態</a></div>}
+            </div>
+          </div>
+          <div className="mobility-panel">
+            <div className="mobility-head"><span><BusFront size={15} /> 巴士・小巴・渡輪 ETA <small>官方營辦商 API 示範資料</small></span><span>{mobility.isFetching ? "ETA 資料更新中" : `查詢時間 ${formatHkt(mobility.data?.fetchedAt)} HKT`}</span></div>
+            <div className="mobility-grid">
+              {mobilityDemos.map((demo: MobilityDemo) => {
+                const source = activeSources.find((item) => item.id === `${demo.id === "hkkf" ? "hkkf" : demo.id}-eta`);
+                return <article className="mobility-card" key={demo.id}>
+                  <div className="mobility-card-heading"><strong>{demo.provider}</strong><span className={source?.status === "unavailable" ? "mobility-state error" : "mobility-state"}><i />{source?.status === "unavailable" ? "來源暫停" : source?.status === "ok" ? "API 可用" : "載入中"}</span></div>
+                  <div className="mobility-place">{demo.location}</div>
+                  <div className="mobility-scope">{demo.scope}</div>
+                  {demo.arrivals.length ? <div className="mobility-arrivals">{demo.arrivals.map((arrival, index) => <div className="mobility-arrival" key={`${arrival.route}-${arrival.direction}-${index}`}>
+                    <span className="mobility-route">{arrival.route}</span><span className="mobility-destination">{arrival.destination}{arrival.direction ? ` · ${arrival.direction}` : ""}</span>
+                    <b>{arrival.minutes === undefined ? (arrival.note || "班次") : arrival.minutes <= 0 ? "即將到站" : `${arrival.minutes} 分鐘`}</b>
+                    {arrival.note && arrival.minutes !== undefined ? <small>{arrival.note}</small> : null}
+                  </div>)}</div> : <div className="mobility-empty">{source?.status === "unavailable" ? "目前無法讀取，稍後可重試。" : demo.message || "目前沒有即時班次；可能是服務時段外。"}</div>}
+                  <div className="mobility-foot">{source?.status === "unavailable" ? "來源暫停" : `來源更新 ${formatHkt(source?.checkedAt)} HKT`} · 每分鐘快取</div>
+                </article>;
+              })}
+              {!mobilityDemos.length && <div className="mobility-empty">{mobility.isLoading ? "正在分開查詢各營辦商 ETA；交通及天氣警告不會受此等待影響。" : "到站預報暫時未能讀取，請按上方更新資料重試。"}</div>}
             </div>
           </div>
           <div className="live-data-panel">
@@ -277,7 +310,7 @@ export default function Home() {
         </section>
 
         <section className="source-strip" id="sources">
-          <div className="source-mark"><Zap size={18} /></div><div className="source-copy"><strong>以官方資料為先，標示來源與更新時間。</strong><span>前端每 60 秒查詢一次；伺服器對官方資料流作 60 秒快取，減少重複請求。</span></div>
+          <div className="source-mark"><Zap size={18} /></div><div className="source-copy"><strong>以官方資料為先，標示來源與更新時間。</strong><span>交通／災害警報與營辦商 ETA 分開查詢，各自每 60 秒快取；慢速 ETA 不會阻塞天氣警告或交通消息。</span></div>
           <div className="source-links"><a href="https://data.gov.hk/" target="_blank" rel="noreferrer">data.gov.hk <ArrowUpRight size={13} /></a><a href="https://www.hko.gov.hk/tc/abouthko/opendata_intro.htm" target="_blank" rel="noreferrer">香港天文台 <ArrowUpRight size={13} /></a><a href="https://www.td.gov.hk/tc/special_news/spnews.htm" target="_blank" rel="noreferrer">運輸署 <ArrowUpRight size={13} /></a></div>
         </section>
         <div className="source-status-list" aria-label="各官方資料源連線狀態">{activeSources.map((source) => <span key={source.id} className={source.status === "ok" ? "source-ok" : "source-error"}><i />{source.label} · {source.status === "ok" ? formatHkt(source.checkedAt) : "暫不可用"}</span>)}</div>

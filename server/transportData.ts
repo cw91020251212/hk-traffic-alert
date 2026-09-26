@@ -51,6 +51,24 @@ export type TrainLineStatus = {
   informationUrl?: string;
 };
 
+export type ArrivalEstimate = {
+  route: string;
+  destination: string;
+  direction?: string;
+  eta?: string;
+  minutes?: number;
+  note?: string;
+};
+
+export type MobilityDemo = {
+  id: string;
+  provider: string;
+  location: string;
+  scope: string;
+  arrivals: ArrivalEstimate[];
+  message?: string;
+};
+
 export type TransportDashboard = {
   fetchedAt: string;
   sources: TrafficSource[];
@@ -58,6 +76,12 @@ export type TransportDashboard = {
   earthquakes: EarthquakeBulletin[];
   trafficEvents: TrafficEvent[];
   trains: TrainLineStatus[];
+};
+
+export type MobilityDashboard = {
+  fetchedAt: string;
+  sources: TrafficSource[];
+  demos: MobilityDemo[];
 };
 
 const WARNING_LABELS: Record<string, string> = {
@@ -97,10 +121,20 @@ const TRAFFIC_FEED_URL = "https://www.td.gov.hk/tc/special_news/trafficnews.xml"
 const WEATHER_API_URL = "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warningInfo&lang=tc";
 const EARTHQUAKE_API_URL = "https://data.weather.gov.hk/weatherAPI/opendata/earthquake.php?dataType=qem&lang=tc";
 const FELT_EARTHQUAKE_API_URL = "https://data.weather.gov.hk/weatherAPI/opendata/earthquake.php?dataType=feltearthquake&lang=tc";
+const KMB_STOP_ID = "B8B04CD1E568B8F6";
+const CITYBUS_ROUTE = "11";
+const CITYBUS_STOP = "001145";
+const HKKF_ROUTE_ID = 3;
 const MTR_LINES = [
   { line: "EAL", label: "東鐵綫", station: "金鐘", stationCode: "ADM" },
   { line: "ISL", label: "港島綫", station: "金鐘", stationCode: "ADM" },
   { line: "SIL", label: "南港島綫", station: "金鐘", stationCode: "ADM" },
+];
+const MOBILITY_FALLBACKS: MobilityDemo[] = [
+  { id: "kmb", provider: "九巴／龍運", location: "麗城花園第一期 (TW367)", scope: "單一荃灣站點 · 到站預報", arrivals: [] },
+  { id: "citybus", provider: "城巴", location: "中環碼頭 - 巴士總站", scope: `路線 ${CITYBUS_ROUTE} · 單一站點 · 到站預報`, arrivals: [] },
+  { id: "gmb", provider: "綠色專線小巴", location: "山頂廣場（下層巴士總站）", scope: "港島 1 號線 · 山頂－中環 · 到站預報", arrivals: [] },
+  { id: "hkkf", provider: "香港九龍渡海小輪", location: "中環 6 號碼頭／坪洲", scope: "中環－坪洲航線 · 到船預報", arrivals: [] },
 ];
 
 function decodeXml(value: string): string {
@@ -244,20 +278,101 @@ export function normalizeMtrSchedule(payload: unknown, line: string, label: stri
   };
 }
 
+export function normalizeKmbEta(payload: unknown, stopName: string): MobilityDemo {
+  const root = asRecord(payload);
+  const records = Array.isArray(root.data) ? root.data : [];
+  const arrivals = records.flatMap((raw) => {
+    const item = asRecord(raw);
+    const eta = textValue(item.eta);
+    const note = textValue(item.rmk_tc);
+    if (!eta && !note) return [];
+    const minutes = eta ? Math.max(0, Math.round((new Date(eta).getTime() - Date.now()) / 60_000)) : undefined;
+    return [{
+      route: textValue(item.route),
+      destination: textValue(item.dest_tc) || "目的地未提供",
+      direction: textValue(item.dir),
+      ...(eta ? { eta, minutes } : {}),
+      ...(note ? { note } : {}),
+    }];
+  }).slice(0, 6);
+  return { id: "kmb", provider: "九巴／龍運", location: stopName, scope: "單一荃灣站點 · 到站預報", arrivals, ...(!arrivals.length ? { message: "現時沒有可顯示班次；可能是深夜、預定班次或站點資料暫缺。" } : {}) };
+}
+
+export function normalizeCitybusEta(payload: unknown, stopName: string): MobilityDemo {
+  const root = asRecord(payload);
+  const records = Array.isArray(root.data) ? root.data : [];
+  const arrivals = records.flatMap((raw) => {
+    const item = asRecord(raw);
+    const eta = textValue(item.eta);
+    const note = textValue(item.rmk_tc);
+    if (!eta && !note) return [];
+    const minutes = eta ? Math.max(0, Math.round((new Date(eta).getTime() - Date.now()) / 60_000)) : undefined;
+    return [{ route: textValue(item.route), destination: textValue(item.dest_tc) || "目的地未提供", direction: textValue(item.dir), ...(eta ? { eta, minutes } : {}), ...(note ? { note } : {}) }];
+  }).slice(0, 6);
+  return { id: "citybus", provider: "城巴", location: stopName, scope: `路線 ${CITYBUS_ROUTE} · 單一站點 · 到站預報`, arrivals, ...(!arrivals.length ? { message: "此站此路線目前沒有回傳到站預報。" } : {}) };
+}
+
+export function normalizeGmbEta(payload: unknown, routeLabel: string, stopName: string, destination: string): MobilityDemo {
+  const root = asRecord(payload);
+  const result = asRecord(root.data);
+  const rawEta = Array.isArray(result.eta) ? result.eta : [];
+  const arrivals = rawEta.flatMap((raw) => {
+    const item = asRecord(raw);
+    const timestamp = textValue(item.timestamp);
+    const diff = numericValue(item.diff);
+    if (diff === undefined && !timestamp) return [];
+    return [{
+      route: routeLabel,
+      destination,
+      ...(timestamp ? { eta: timestamp } : {}),
+      ...(diff === undefined ? {} : { minutes: diff }),
+      ...(textValue(item.remarks_tc) ? { note: textValue(item.remarks_tc) } : {}),
+    }];
+  }).slice(0, 3);
+  const reason = textValue(result.description_tc);
+  return {
+    id: "gmb",
+    provider: "綠色專線小巴",
+    location: stopName,
+    scope: `${routeLabel} · 單一站點 · 到站預報`,
+    arrivals,
+    ...(!arrivals.length ? { message: result.enabled === false && reason ? `此路線站點沒有 ETA：${reason}` : "此站點目前沒有回傳到站預報；可能是服務時段外。" } : {}),
+  };
+}
+
+function normalizeFerryEta(payload: unknown, routeName: string, direction: string): ArrivalEstimate[] {
+  const root = asRecord(payload);
+  const records = Array.isArray(root.data) ? root.data : [];
+  return records.flatMap((raw) => {
+    const item = asRecord(raw);
+    const eta = textValue(item.ETA);
+    if (!eta) return [];
+    const minutes = Math.max(0, Math.round((new Date(eta).getTime() - Date.now()) / 60_000));
+    return [{ route: routeName, destination: routeName, direction, eta, minutes, ...(textValue(item.session_time) ? { note: `班次 ${textValue(item.session_time)}` } : {}) }];
+  }).slice(0, 3);
+}
+
 type FetchResult<T> = { data: T; source: TrafficSource };
+
+async function fetchJson(url: string, timeoutMs = 9000): Promise<unknown> {
+  const response = await fetch(url, {
+    headers: { "User-Agent": "HK-Traffic-Alert/0.1 (public-data prototype)" },
+    signal: AbortSignal.timeout(timeoutMs),
+  });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return response.json();
+}
 
 async function fetchSource<T>(
   id: string,
   label: string,
   url: string,
   parse: (response: Response) => Promise<T>,
+  timeoutMs = 12_000,
 ): Promise<FetchResult<T>> {
   const checkedAt = new Date().toISOString();
   try {
-    const response = await fetch(url, {
-      headers: { "User-Agent": "HK-Traffic-Alert/0.1 (public-data prototype)" },
-      signal: AbortSignal.timeout(9000),
-    });
+    const response = await fetch(url, { headers: { "User-Agent": "HK-Traffic-Alert/0.1 (public-data prototype)" }, signal: AbortSignal.timeout(timeoutMs) });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await parse(response);
     return { data, source: { id, label, url, status: "ok", checkedAt } };
@@ -272,6 +387,8 @@ async function fetchSource<T>(
 
 let cached: { expiresAt: number; data: TransportDashboard } | undefined;
 let inFlight: Promise<TransportDashboard> | undefined;
+let mobilityCached: { expiresAt: number; data: MobilityDashboard } | undefined;
+let mobilityInFlight: Promise<MobilityDashboard> | undefined;
 
 export async function getTransportDashboard(): Promise<TransportDashboard> {
   const now = Date.now();
@@ -308,5 +425,68 @@ export async function getTransportDashboard(): Promise<TransportDashboard> {
     return await inFlight;
   } finally {
     inFlight = undefined;
+  }
+}
+
+export async function getMobilityDashboard(): Promise<MobilityDashboard> {
+  const now = Date.now();
+  if (mobilityCached && mobilityCached.expiresAt > now) return mobilityCached.data;
+  if (mobilityInFlight) return mobilityInFlight;
+
+  mobilityInFlight = (async () => {
+    const results = await Promise.all([
+      fetchSource("kmb-eta", "九巴／龍運 ETA · 麗城花園第一期", `https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${KMB_STOP_ID}`, async (response) => [normalizeKmbEta(await response.json(), "麗城花園第一期 (TW367)")], 16_000),
+      fetchSource("citybus-eta", `城巴 ETA · 路線 ${CITYBUS_ROUTE}`, `https://rt.data.gov.hk/v1/transport/citybus-nwfb/eta/CTB/${CITYBUS_STOP}/${CITYBUS_ROUTE}`, async (response) => {
+        const [etaPayload, stopPayload] = await Promise.all([response.json(), fetchJson(`https://rt.data.gov.hk/v1/transport/citybus-nwfb/stop/${CITYBUS_STOP}`)]);
+        const stopData = asRecord(asRecord(stopPayload).data);
+        return [normalizeCitybusEta(etaPayload, textValue(stopData.name_tc) || `城巴站 ${CITYBUS_STOP}`)];
+      }),
+      fetchSource("gmb-eta", "綠色專線小巴 ETA · 港島 1 號線", "https://data.etagmb.gov.hk/route/HKI/1", async (response) => {
+        const routePayload = asRecord(await response.json());
+        const routeList = Array.isArray(routePayload.data) ? routePayload.data : [];
+        const route = routeList.map(asRecord).find((item) => item.region === "HKI" && item.route_code === "1");
+        if (!route) throw new Error("找不到港島 1 號線路線資料");
+        const routeId = numericValue(route.route_id);
+        const directions = Array.isArray(route.directions) ? route.directions.map(asRecord) : [];
+        const direction = directions.find((item) => numericValue(item.route_seq) === 1);
+        if (!routeId || !direction) throw new Error("小巴路線方向資料不完整");
+        const routeSequence = numericValue(direction.route_seq) ?? 1;
+        const stopResponse = asRecord(await fetchJson(`https://data.etagmb.gov.hk/route-stop/${routeId}/${routeSequence}`));
+        const stopData = asRecord(stopResponse.data);
+        const routeStops = Array.isArray(stopData.route_stops) ? stopData.route_stops.map(asRecord) : [];
+        const firstStop = routeStops[0];
+        if (!firstStop) throw new Error("小巴路線沒有站點資料");
+        const stopSequence = numericValue(firstStop.stop_seq) ?? 1;
+        const stopName = textValue(firstStop.name_tc) || "山頂廣場（下層巴士總站）";
+        const eta = await fetchJson(`https://data.etagmb.gov.hk/eta/route-stop/${routeId}/${routeSequence}/${stopSequence}`);
+        const routeLabel = `港島 1 號線 · ${textValue(direction.orig_tc)} → ${textValue(direction.dest_tc)}`;
+        return [normalizeGmbEta(eta, routeLabel, stopName, textValue(direction.dest_tc) || "中環")];
+      }, 18_000),
+      fetchSource("hkkf-eta", "香港九龍渡海小輪 ETA · 中環－坪洲", `https://www.hkkfeta.com/opendata/eta/${HKKF_ROUTE_ID}/inbound`, async (response) => {
+        const [inboundPayload, outboundPayload] = await Promise.all([
+          response.json(),
+          fetchJson(`https://www.hkkfeta.com/opendata/eta/${HKKF_ROUTE_ID}/outbound`, 18_000),
+        ]);
+        const routeName = "中環－坪洲";
+        const arrivals = [
+          ...normalizeFerryEta(inboundPayload, routeName, "往中環"),
+          ...normalizeFerryEta(outboundPayload, routeName, "往坪洲"),
+        ];
+        return [{ id: "hkkf", provider: "香港九龍渡海小輪", location: "中環 6 號碼頭／坪洲", scope: "中環－坪洲航線 · 到船預報", arrivals, ...(!arrivals.length ? { message: "目前沒有正在營運的到船預報，請核對渡輪時間表。" } : {}) }];
+      }, 20_000),
+    ]);
+    const demos = results.map((result, index) => {
+      const rows = Array.isArray(result.data) ? result.data as unknown as MobilityDemo[] : [];
+      return rows[0] ?? { ...MOBILITY_FALLBACKS[index], ...(result.source.message ? { message: `來源錯誤：${result.source.message}` } : { message: "目前沒有即時班次；可能是服務時段外。" }) };
+    });
+    const data: MobilityDashboard = { fetchedAt: new Date().toISOString(), sources: results.map((result) => result.source), demos };
+    mobilityCached = { data, expiresAt: Date.now() + 60_000 };
+    return data;
+  })();
+
+  try {
+    return await mobilityInFlight;
+  } finally {
+    mobilityInFlight = undefined;
   }
 }

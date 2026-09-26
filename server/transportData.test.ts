@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   normalizeEarthquake,
+  normalizeCitybusEta,
+  normalizeGmbEta,
+  normalizeKmbEta,
   normalizeMtrSchedule,
   normalizeWeatherWarnings,
   parseSpecialTrafficNewsXml,
@@ -108,6 +111,36 @@ describe("normalizeMtrSchedule", () => {
   it("preserves the MTR service alert response and user-facing link", () => {
     expect(normalizeMtrSchedule({ status: 0, message: "此站暫停服務", url: "https://mtr.example/alert" }, "EAL", "東鐵綫", "金鐘")).toMatchObject({
       line: "EAL", message: "此站暫停服務", informationUrl: "https://mtr.example/alert", arrivals: [],
+    });
+  });
+});
+
+describe("normalize bus and minibus arrival estimates", () => {
+  it("keeps KMB service notes for routes without a live ETA", () => {
+    expect(normalizeKmbEta({ data: [
+      { route: "234C", dir: "O", dest_tc: "觀塘（翠屏北邨）", eta: null, rmk_tc: "服務只限於星期一至六" },
+      { route: "234D", dest_tc: "觀塘", eta: null, rmk_tc: "" },
+    ] }, "麗城花園")).toMatchObject({
+      id: "kmb", provider: "九巴／龍運", location: "麗城花園", arrivals: [{ route: "234C", destination: "觀塘（翠屏北邨）", note: "服務只限於星期一至六" }],
+    });
+  });
+
+  it("converts Citybus ETA to minutes and ignores null arrival entries", () => {
+    const eta = new Date(Date.now() + 4 * 60_000).toISOString();
+    expect(normalizeCitybusEta({ data: [
+      { route: "11", dir: "O", dest_tc: "渣甸山", eta },
+      { route: "11", dest_tc: "渣甸山", eta: null },
+    ] }, "砵典乍街")).toMatchObject({
+      id: "citybus", location: "砵典乍街", arrivals: [{ route: "11", destination: "渣甸山", direction: "O", eta }],
+    });
+  });
+
+  it("preserves GMB relative minutes, timestamps, and service unavailability", () => {
+    expect(normalizeGmbEta({ data: { enabled: true, eta: [{ eta_seq: 1, diff: 6, timestamp: "2026-09-27T10:20:00+08:00", remarks_tc: "" }] } }, "港島 1 號線", "山頂廣場", "中環")).toMatchObject({
+      id: "gmb", location: "山頂廣場", arrivals: [{ route: "港島 1 號線", destination: "中環", minutes: 6 }],
+    });
+    expect(normalizeGmbEta({ data: { enabled: false, description_tc: "到站預報暫停" } }, "港島 1 號線", "山頂廣場", "中環")).toMatchObject({
+      arrivals: [], message: "此路線站點沒有 ETA：到站預報暫停",
     });
   });
 });
