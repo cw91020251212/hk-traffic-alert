@@ -43,6 +43,15 @@
 - [x] PR #12 已合併到 `main` commit `6d4e226`。
 - [x] 經使用者確認，發布至 `gh-pages` commit `ad2bf46`；正式頁確認入口直達港鐵官方車務狀況、新分頁開啟，A→B 路線搜尋仍保留出行易。
 
+## 階段十一｜港鐵入口改為即時路綫狀態（進行中）
+
+- [x] 親自開啟並核對：`service_status.html` 主要是綠／黃／紅圖例，並非各路綫即時狀態清單。
+- [x] 找到並實測港鐵首頁 `#RYGLineStatus` 深層連結：直接捲至各綫即時狀態和最後更新時間。
+- [x] Pages 版 quick link 與 Server 版三個服務／資料失效後備入口改至該錨點，並使用「港鐵即時車務狀況（官方）」文案。
+- [x] `pnpm test` 6 files／49 tests、`pnpm check`、`pnpm pages:build`、`pnpm build` 通過；375px viewport 確認新 href／新分頁和無橫向溢位。
+- [x] 官方 MTR 深層連結已實際確認會捲至 `#RYGLineStatus` 即時狀態列表。
+- [ ] 建立並合併程式 PR；正式 Pages 發布仍待使用者另行確認。
+
 ## 階段三｜直接結論與自動行程篩選（已完成）
 
 - [x] 首屏由宣傳式 hero 改為直接行動結論：照常出發、留意、預留時間、改路／延後，或來源不足時「未能完整確認」。

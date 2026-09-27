@@ -175,7 +175,7 @@ export default function StaticHome() {
             <p className="source-health-note">綠燈＝成功讀取；紅燈＝讀取失敗；灰燈＝未能確認。燈號只表示是否剛成功取得資料，不代表內容完整、正確或最新，也不代表列車準時。出行資訊請看上方警報；官方消息見下方易讀入口。</p>
           </> : <p className="source-health-note">目前未能連接官方資料；請稍後再試。緊急情況請以運輸署、港鐵或天文台公告為準，入口見下方。</p>}
         </details>
-        <div className="quick-detail-links"><a href="https://www.td.gov.hk/tc/special_news/spnews.htm" target="_blank" rel="noreferrer"><CarFront size={17} /> 運輸署路況 <ArrowUpRight size={14} /></a><a href="https://www.mtr.com.hk/ch/customer/main/service_status.html" target="_blank" rel="noreferrer"><TrainFront size={17} /> 港鐵車務狀況（官方） <ArrowUpRight size={14} /></a><a href="https://www.hko.gov.hk/tc/index.html" target="_blank" rel="noreferrer"><CloudLightning size={17} /> 天文台警告 <ArrowUpRight size={14} /></a></div>
+        <div className="quick-detail-links"><a href="https://www.td.gov.hk/tc/special_news/spnews.htm" target="_blank" rel="noreferrer"><CarFront size={17} /> 運輸署路況 <ArrowUpRight size={14} /></a><a href="https://www.mtr.com.hk/ch/customer/main/index.html#RYGLineStatus" target="_blank" rel="noreferrer"><TrainFront size={17} /> 港鐵即時車務狀況（官方） <ArrowUpRight size={14} /></a><a href="https://www.hko.gov.hk/tc/index.html" target="_blank" rel="noreferrer"><CloudLightning size={17} /> 天文台警告 <ArrowUpRight size={14} /></a></div>
         <div className="prototype-footnote"><ShieldAlert size={13} /> GitHub Pages 版直接讀取支援瀏覽器跨域的官方警報來源；TDAS 路線平均車速仍只在 server 版。遇緊急情況以官方公告為準。</div>
       </section>
     </div>
