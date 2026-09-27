@@ -15,6 +15,8 @@
 
 ## 目前功能摘要
 
+- 首屏直接給出「照常出發／預留時間／改路／未能完整確認」結論，再列出觸發原因；不再要求使用者先逐項查資料。
+- A→B 輸入香港地名後會在本機估算相關地區並篩選警報；地名不清楚時才需要手動補充，不讀 GPS、不上傳行程。
 - 首屏只凸顯符合原型門檻的交通／天氣／地震警報；普通天氣、AQHI 和常規 ETA 收合於詳情。
 - 按警報類型／地區篩選，清楚分開「無符合門檻事件」和「官方來源不可用」。
 - 道路：運輸署交通消息；吐露港走廊雙向路線平均車速試點，不是全港逐路段車速矩陣。
@@ -22,7 +24,7 @@
 - 天氣與環境：天文台警告、天氣現況與九日預報、環保署 AQHI。
 - A→B 路線：駕車／公共交通／步行，透過 Google Maps 官方 URL 及 HKeMobility 官方連結查路線；按使用者手選地區列出可能相關的官方警報。最多五條常用路線保存在此瀏覽器。
 
-**A→B alert matching 不是精確地圖避障：**本站沒有 Google Maps route geometry，也不會自動判斷事故是否在該路線上；使用者須手選途經地區。普通預報／ETA 不應當成警報。本原型亦沒有背景監察、推播、PWA icon 或 app manifest；逐項查看 `todo.md`。
+**A→B alert matching 不是精確地圖避障：**本站沒有 Google Maps route geometry，也不會自動判斷事故是否在該路線上；目前只按輸入地名在本機估算大區，辨認不到時才讓使用者補充。普通預報／ETA 不應當成警報。本原型已有 manifest／app icon，但沒有背景監察或推播；逐項查看 `todo.md`。
 
 ## 開發與測試
 
@@ -36,7 +38,7 @@ pnpm test
 pnpm build
 ```
 
-最近驗證為 36 項測試通過、TypeScript 檢查通過、正式 build 成功。若在一般 Node 環境啟動 Manus 模板，OAuth／DB 等平台整合要用正式環境 secrets；**不要將 `.env`、token 或使用者憑證放入 GitHub／交接 ZIP**。
+最近驗證為 41 項測試通過、TypeScript 檢查通過、正式 build 成功，並完成 375px 展開路線表單、地區推斷、Google Maps URL、localStorage 及橫向溢位檢查。若在一般 Node 環境啟動 Manus 模板，OAuth／DB 等平台整合要用正式環境 secrets；**不要將 `.env`、token 或使用者憑證放入 GitHub／交接 ZIP**。
 
 ## 預覽
 

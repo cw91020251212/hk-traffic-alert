@@ -4,6 +4,14 @@
 目前 GitHub `main` commit：`4e35683e515e40e7a1934e2de63b6e4c05e80228`  
 本文件目的：讓下一位 AI 直接接續，勿重做已驗證工作或誤稱未完成項目已完成。
 
+## 2026-09-27 最新接手更新
+
+- 首屏已改為直接回答「照常出發／預留時間／改路／未能完整確認」，而不是先叫市民逐項查資料。
+- A→B 已移到首屏；輸入香港地名後在本機推斷相關地區並自動篩選，無法辨認時才讓使用者補充地區。
+- 新增 `client/src/lib/journeyDecision.ts` 及測試；現為 5 個 test files、41 tests 通過，TypeScript 與 production build 通過。
+- 已完成 375×812 展開表單實測：金鐘站→大埔墟站、公共交通、Google Maps URL、localStorage 及橫向溢位均已核驗。
+- 已補 manifest／SVG app icon。仍然沒有精確 route geometry、背景推播或正式 production deployment；不可誤稱已完成。
+
 ## 先把這三種網址分清楚
 
 1. **公開 GitHub 原始碼**：<https://github.com/cw91020251212/hk-traffic-alert>  
@@ -40,7 +48,7 @@
 
 最新 main commit `4e35683e515e40e7a1934e2de63b6e4c05e80228` 記錄：
 
-- `pnpm check` 通過；`pnpm test` **4 個 test files、36 項測試通過**；`pnpm build` 成功。
+- 階段二當時為 4 個 test files、36 tests；階段三最新驗證為 `pnpm check` 通過、**5 個 test files／41 tests 通過**、`pnpm build` 成功。
 - Desktop 及 375px 直向首頁 preview 已截圖檢查。首頁收合狀態確認手機警報優先；**375px 展開 A→B route form 的長文字／溢位仍未驗**。
 - Browser 實際填過「金鐘→大埔墟」、公共交通，確認 Google Maps URL；常用路線存在 localStorage 後已清除這次測試資料。
 - 最新功能/完成/缺口要看 `todo.md`，不要只根據本摘要推斷。

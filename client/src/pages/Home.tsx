@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { ALERT_AREA_OPTIONS, ALERT_AREA_PREFERENCE_KEY, parseAlertAreaPreference, type AlertAreaPreference } from "@/lib/alertPreferences";
+import { getJourneyDecision, inferRouteAreas, modeLabel } from "@/lib/journeyDecision";
 import { buildDirectionsUrl, parseRouteBookmarks, ROUTE_BOOKMARKS_PREFERENCE_KEY, selectAlertsForRouteAreas, type RouteArea, type RouteBookmark, type RouteMode } from "@/lib/routePlanner";
 import { filterPriorityAlerts, getPriorityFeedState, mergeEndpointFailureSources, prioritizeTrafficEvents, selectPriorityAlerts, type AQHIStation, type EarthquakeBulletin, type MobilityDemo, type PriorityAlert, type TrafficEvent, type WeatherWarning } from "../../../server/transportData";
 
@@ -120,6 +121,7 @@ export default function Home() {
   const [routeDestination, setRouteDestination] = useState("");
   const [routeMode, setRouteMode] = useState<RouteMode>("driving");
   const [routeAreas, setRouteAreas] = useState<RouteArea[]>([]);
+  const [routeAreasManuallySet, setRouteAreasManuallySet] = useState(false);
   const [routeBookmarks, setRouteBookmarks] = useState<RouteBookmark[]>(loadRouteBookmarks);
   const [activeMode, setActiveMode] = useState("all");
   const [query, setQuery] = useState("");
@@ -182,10 +184,18 @@ export default function Home() {
   const regionalAlerts = filterPriorityAlerts(priorityAlerts, alertArea, "all");
   const filteredPriorityAlerts = filterPriorityAlerts(priorityAlerts, alertArea, alertKind);
   const priorityKindCounts = { road: regionalAlerts.filter((alert) => alert.kind === "road").length, rail: regionalAlerts.filter((alert) => alert.kind === "rail").length, weather: regionalAlerts.filter((alert) => alert.kind === "weather").length, earthquake: regionalAlerts.filter((alert) => alert.kind === "earthquake").length };
-  const routeDirectionsUrl = useMemo(() => routeOrigin.trim() && routeDestination.trim() ? buildDirectionsUrl(routeOrigin, routeDestination, routeMode) : "", [routeOrigin, routeDestination, routeMode]);
-  const routeRelatedAlerts = useMemo(() => selectAlertsForRouteAreas(priorityAlerts, routeAreas, routeMode), [priorityAlerts, routeAreas, routeMode]);
+  const routeReady = Boolean(routeOrigin.trim() && routeDestination.trim());
+  const inferredRouteAreas = useMemo(() => inferRouteAreas(routeOrigin, routeDestination), [routeOrigin, routeDestination]);
+  const effectiveRouteAreas = routeAreasManuallySet ? routeAreas : inferredRouteAreas;
+  const routeDirectionsUrl = useMemo(() => routeReady ? buildDirectionsUrl(routeOrigin, routeDestination, routeMode) : "", [routeOrigin, routeDestination, routeMode, routeReady]);
+  const routeRelatedAlerts = useMemo(() => selectAlertsForRouteAreas(priorityAlerts, effectiveRouteAreas, routeMode), [priorityAlerts, effectiveRouteAreas, routeMode]);
   const hasUnavailableAlerts = priorityFeed.kind === "unavailable";
   const displayAlerts = hasUnavailableAlerts ? priorityFeed.alerts : priorityFeed.kind === "alerts" ? priorityFeed.alerts : [];
+  const journeyDecision = getJourneyDecision(routeReady ? routeRelatedAlerts : displayAlerts, {
+    loading: priorityFeed.kind === "loading",
+    degraded: hasUnavailableAlerts,
+    routeReady,
+  });
   const openPanel = (panel: "transport" | "weather" | "sources") => {
     setOpenPanels((current) => ({ ...current, [panel]: true }));
     const target = panel === "transport" ? "transport-details" : panel === "weather" ? "weather-details" : "source-details";
@@ -197,7 +207,7 @@ export default function Home() {
     const destination = routeDestination.trim();
     if (!origin || !destination) return;
     const id = `${origin.toLocaleLowerCase()}|${destination.toLocaleLowerCase()}|${routeMode}`;
-    const bookmark: RouteBookmark = { id, origin, destination, mode: routeMode, areas: [...routeAreas] };
+    const bookmark: RouteBookmark = { id, origin, destination, mode: routeMode, areas: [...effectiveRouteAreas] };
     setRouteBookmarks((current) => [bookmark, ...current.filter((item) => item.id !== id)].slice(0, 5));
   };
   const loadRouteBookmark = (bookmark: RouteBookmark) => {
@@ -205,6 +215,7 @@ export default function Home() {
     setRouteDestination(bookmark.destination);
     setRouteMode(bookmark.mode);
     setRouteAreas(bookmark.areas);
+    setRouteAreasManuallySet(true);
   };
 
   return (
@@ -228,25 +239,45 @@ export default function Home() {
       </header>
 
       <div className="page-shell" id="top">
-        <section className="hero" id="overview">
-          <div className="hero-copy">
-            <div className="eyebrow"><span className="eyebrow-line" /> 香港出行，一站掌握</div>
-            <h1>出門前，<span>先知道要唔要改路。</span></h1>
-            <p>先睇會影響出行的主要路況、列車故障和生效中的天氣警告。普通天氣、AQHI 和到站資料不會塞進警報清單。</p>
-            <div className="hero-meta">
-              <span className="data-state"><span className="pulse-dot" />官方資料讀取 {dashboard.isFetching ? "中" : "完成"}</span>
-              <span className="meta-divider" />
-              <span>更新時間 {lastUpdated} HKT</span>
-            </div>
+        <section className={`decision-hero decision-${journeyDecision.tone}`} id="overview" aria-live="polite">
+          <div className="decision-topline">
+            <span className="decision-kicker"><i />{journeyDecision.kicker}</span>
+            <button className="decision-refresh" onClick={() => { void dashboard.refetch(); void roadTraffic.refetch(); }} disabled={dashboard.isFetching || roadTraffic.isFetching} aria-label="重新檢查官方警報">
+              <RefreshCw size={16} className={dashboard.isFetching || roadTraffic.isFetching ? "spin" : ""} />
+            </button>
           </div>
-          <div className="hero-art" aria-hidden="true">
-            <div className="sun-disc" /><div className="route route-one" /><div className="route route-two" /><div className="route route-three" />
-            <div className="route-pin pin-one">M</div><div className="route-pin pin-two">!</div><div className="route-pin pin-three">↗</div>
-            <div className="art-caption"><span>HK</span><span>OFFICIAL DATA FIRST</span></div>
+          {routeReady && <div className="decision-route"><span>{routeOrigin.trim()}</span><ArrowRight size={15} /><span>{routeDestination.trim()}</span><b>{modeLabel(routeMode)}</b></div>}
+          <h1>{journeyDecision.title}</h1>
+          <p>{journeyDecision.detail}</p>
+          <div className="decision-actions">
+            {routeDirectionsUrl
+              ? <a className="decision-primary" href={routeDirectionsUrl} target="_blank" rel="noreferrer"><Navigation size={17} /> 開啟路線建議 <ArrowUpRight size={14} /></a>
+              : <button className="decision-primary" onClick={() => { setRoutePlannerOpen(true); window.setTimeout(() => document.getElementById("route-planner")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50); }}><MapPinned size={17} /> 設定我的行程</button>}
+            {(routeReady ? routeRelatedAlerts : displayAlerts).length > 0 && <a className="decision-secondary" href="#priority-alerts">{journeyDecision.action} · {(routeReady ? routeRelatedAlerts : displayAlerts).length}</a>}
           </div>
+          <div className="decision-meta"><span>官方資料 {dashboard.isFetching ? "更新中" : "已檢查"}</span><span>{lastUpdated} HKT</span><span>普通天氣／ETA 已略去</span></div>
         </section>
 
         {notice && <div className="inline-notice" role="status">{notice}<button onClick={() => setNotice("")} aria-label="關閉">×</button></div>}
+
+        <details className="route-planner route-planner-primary" id="route-planner" open={routePlannerOpen} onToggle={(event) => setRoutePlannerOpen((event.currentTarget as HTMLDetailsElement).open)}>
+          <summary><MapPinned size={18} /><span><strong>我由邊度去邊度？</strong><small>輸入一次，程式替你篩走無關資料</small></span><ChevronRight size={17} /></summary>
+          <div className="route-planner-body">
+            <div className="route-inputs"><label>起點<input value={routeOrigin} onChange={(event) => { setRouteOrigin(event.target.value); setRouteAreas([]); setRouteAreasManuallySet(false); }} placeholder="例如：金鐘站" autoComplete="street-address" /></label><span className="route-arrow">↓</span><label>目的地<input value={routeDestination} onChange={(event) => { setRouteDestination(event.target.value); setRouteAreas([]); setRouteAreasManuallySet(false); }} placeholder="例如：大埔墟站" autoComplete="street-address" /></label></div>
+            <div className="route-mode-switch" role="group" aria-label="出行方式">
+              {(["driving", "transit", "walking"] as RouteMode[]).map((mode) => <button type="button" key={mode} className={routeMode === mode ? "active" : ""} aria-pressed={routeMode === mode} onClick={() => setRouteMode(mode)}>{modeLabel(mode)}</button>)}
+            </div>
+            {routeReady && <div className="route-inference"><span>自動篩選範圍</span><strong>{effectiveRouteAreas.length ? effectiveRouteAreas.join(" → ") : "只顯示全港警告"}</strong><small>{inferredRouteAreas.length ? "按起點及目的地名稱估算；不會讀取 GPS。" : "未能從地名辨認地區，可補充選擇。"}</small></div>}
+            <details className="route-area-override"><summary>地名唔夠清楚？補充途經地區</summary><div className="route-area-chips">{(["港島", "九龍", "新界／離島"] as RouteArea[]).map((area) => <button type="button" key={area} className={effectiveRouteAreas.includes(area) ? "route-area-chip active" : "route-area-chip"} aria-pressed={effectiveRouteAreas.includes(area)} onClick={() => { setRouteAreas((current) => { const base = routeAreasManuallySet ? current : inferredRouteAreas; return base.includes(area) ? base.filter((item) => item !== area) : [...base, area]; }); setRouteAreasManuallySet(true); }}>{area}</button>)}</div></details>
+            {routeReady && <div className={`route-verdict route-verdict-${journeyDecision.tone}`}><span>{journeyDecision.kicker}</span><strong>{journeyDecision.title}</strong><p>{journeyDecision.detail}</p></div>}
+            {routeDirectionsUrl ? <a className="route-submit" href={routeDirectionsUrl} target="_blank" rel="noreferrer"><Navigation size={16} /> 在 Google Maps 查看建議路線 <ArrowUpRight size={14} /></a> : <div className="route-submit disabled"><Navigation size={16} /> 輸入起點及目的地</div>}
+            <button type="button" className="route-save-button" disabled={!routeDirectionsUrl} onClick={saveRouteBookmark}>儲存呢程喺本機</button>
+            {routeBookmarks.length > 0 && <div className="saved-routes"><strong>常用行程</strong>{routeBookmarks.map((bookmark) => <div className="saved-route-row" key={bookmark.id}><button type="button" className="saved-route-select" onClick={() => loadRouteBookmark(bookmark)}>{bookmark.origin} → {bookmark.destination}<small>{modeLabel(bookmark.mode)} · {bookmark.areas.length ? bookmark.areas.join("／") : "全港警告"}</small></button><button type="button" className="saved-route-remove" aria-label={`刪除 ${bookmark.origin} 至 ${bookmark.destination} 常用路線`} onClick={() => setRouteBookmarks((current) => current.filter((item) => item.id !== bookmark.id))}>×</button></div>)}</div>}
+            {routeReady && <div className="route-alerts"><strong>程式篩選結果</strong>{routeRelatedAlerts.length ? routeRelatedAlerts.slice(0, 3).map((alert) => <PriorityAlertCard key={`route-${alert.id}`} alert={alert} />) : <p>暫時未找到達到警報門檻、而且可能與呢程相關的事件。</p>}</div>}
+            <div className="route-safety-note">地區由輸入地名作保守估算，未有精確路線 geometry；實際路線由 Google Maps 計算。</div>
+            <a className="official-route-fallback" href="https://www.hkemobility.gov.hk/" target="_blank" rel="noreferrer">運輸署 HKeMobility 官方路線搜尋 <ArrowUpRight size={13} /></a>
+          </div>
+        </details>
 
         <section className="priority-feed" aria-labelledby="priority-heading" id="priority-alerts">
           <div className="priority-header">
@@ -262,25 +293,10 @@ export default function Home() {
               </> : hasUnavailableAlerts ? <div className="priority-state">目前沒有已核實的重大警報；由於部分來源失效，不能確認其餘情況。</div>
                 : <div className="priority-clear"><span className="clear-icon"><ShieldAlert size={20} /></span><div><strong>目前沒有已核實、符合門檻的重大交通警報。</strong><span>普通落雨、一般天氣、AQHI 和常規到站時間不會當作警報。資料源失效會另外提示。</span></div></div>}
             </>}
-          <div className="journey-actions" aria-label="常用出行情境">
-            <button onClick={() => openPanel("transport")}><CarFront size={17} /><span><strong>出門返工／放工</strong><small>查主幹道路況</small></span><ChevronRight size={16} /></button>
-            <button onClick={() => openPanel("transport")}><TrainFront size={17} /><span><strong>轉乘／趕車</strong><small>查列車及 ETA</small></span><ChevronRight size={16} /></button>
-            <button onClick={() => openPanel("weather")}><CloudLightning size={17} /><span><strong>惡劣天氣／跨區</strong><small>看生效警告</small></span><ChevronRight size={16} /></button>
+          <div className="quick-detail-links" aria-label="其他資料">
+            <button onClick={() => openPanel("transport")}><CarFront size={17} /> 道路／列車詳情 <ChevronRight size={16} /></button>
+            <button onClick={() => openPanel("weather")}><CloudLightning size={17} /> 天氣及環境 <ChevronRight size={16} /></button>
           </div>
-          <details className="route-planner" open={routePlannerOpen} onToggle={(event) => setRoutePlannerOpen((event.currentTarget as HTMLDetailsElement).open)}>
-            <summary><MapPinned size={16} /><span><strong>規劃 A 到 B 路線</strong><small>查路線建議及沿途可能相關警報</small></span><ChevronRight size={16} /></summary>
-            <div className="route-planner-body">
-              <div className="route-inputs"><label>起點<input value={routeOrigin} onChange={(event) => setRouteOrigin(event.target.value)} placeholder="例如：金鐘站" autoComplete="street-address" /></label><span className="route-arrow">→</span><label>目的地<input value={routeDestination} onChange={(event) => setRouteDestination(event.target.value)} placeholder="例如：大埔墟站" autoComplete="street-address" /></label></div>
-              <label className="route-mode-label">出行方式<select value={routeMode} onChange={(event) => setRouteMode(event.target.value as RouteMode)}><option value="driving">駕車（Google Maps 路線建議）</option><option value="transit">公共交通（Google Maps 路線建議）</option><option value="walking">步行（Google Maps 路線建議）</option></select></label>
-              <div className="route-area-control"><strong>途中可能經過的地區（可多選）</strong><div className="route-area-chips">{(["港島", "九龍", "新界／離島"] as RouteArea[]).map((area) => <button type="button" key={area} className={routeAreas.includes(area) ? "route-area-chip active" : "route-area-chip"} aria-pressed={routeAreas.includes(area)} onClick={() => setRouteAreas((current) => current.includes(area) ? current.filter((item) => item !== area) : [...current, area])}>{area}</button>)}</div></div>
-              {routeDirectionsUrl ? <a className="route-submit" href={routeDirectionsUrl} target="_blank" rel="noreferrer"><Navigation size={16} /> 在 Google Maps 查看路線建議 <ArrowUpRight size={14} /></a> : <div className="route-submit disabled"><Navigation size={16} /> 輸入起點及目的地以查看路線建議</div>}
-              <button type="button" className="route-save-button" disabled={!routeDirectionsUrl} onClick={saveRouteBookmark}>儲存為本機常用路線</button>
-              {routeBookmarks.length > 0 && <div className="saved-routes"><strong>本機常用路線（最多 5 條）</strong>{routeBookmarks.map((bookmark) => <div className="saved-route-row" key={bookmark.id}><button type="button" className="saved-route-select" onClick={() => loadRouteBookmark(bookmark)}>{bookmark.origin} → {bookmark.destination}<small>{bookmark.mode === "driving" ? "駕車" : bookmark.mode === "transit" ? "公共交通" : "步行"} · {bookmark.areas.length ? bookmark.areas.join("／") : "只看全港警告"}</small></button><button type="button" className="saved-route-remove" aria-label={`刪除 ${bookmark.origin} 至 ${bookmark.destination} 常用路線`} onClick={() => setRouteBookmarks((current) => current.filter((item) => item.id !== bookmark.id))}>×</button></div>)}</div>}
-              <div className="route-safety-note">路線及最快／替代選項由 Google Maps 計算；這裡只按你選的地區列出可能相關的官方警報，並非精確路線封路檢查或到達時間保證。</div>
-              <div className="route-alerts"><strong>可能相關的官方警報{routeAreas.length ? ` · ${routeAreas.join("、")}` : " · 全港級別"}</strong>{routeRelatedAlerts.length ? routeRelatedAlerts.slice(0, 4).map((alert) => <PriorityAlertCard key={`route-${alert.id}`} alert={alert} />) : <p>目前沒有可列出的符合門檻警報。若想查途經地區的警報，請選上方地區。</p>}</div>
-              <a className="official-route-fallback" href="https://www.hkemobility.gov.hk/" target="_blank" rel="noreferrer">亦可使用運輸署 HKeMobility 官方路線搜尋 <ArrowUpRight size={13} /></a>
-            </div>
-          </details>
           <div className="prototype-footnote"><ShieldAlert size={13} /> 資料測試版：只覆蓋吐露港走廊、金鐘港鐵及部分交通試點；並非全港全面警報服務。遇緊急情況請以官方公告為準。</div>
         </section>
 
