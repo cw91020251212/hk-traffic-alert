@@ -21,7 +21,7 @@
 - Pages 版已加入標準／大／特大文字、本機常用行程，以及道路事故慢速呼吸警示；`prefers-reduced-motion` 會關閉動畫。
 - 2026-09-27 使用者實機截圖證實港鐵官網維護頁不可用；介面內鐵路外連已改用已核實的運輸署 HKeMobility 後備入口。港鐵 API 讀取邏輯不變。
 - `client/src/pages/StaticHome.tsx` 已新增 Pages 公開版官方來源健康明細（預設收合）：可見各來源可讀取／暫不可用狀態、檢查時間、失敗訊息及官方入口。`pnpm test` 5 個 test files／41 tests、`pnpm check`、`pnpm pages:build`、`pnpm build` 均通過；375×812 正常及一項來源失效畫面已人工視覺驗收。GitHub [PR #1](https://github.com/cw91020251212/hk-traffic-alert/pull/1) 已 squash merge 至 `main`；Pages 已發布至 `gh-pages` commit `c7fc702`，公開網址已驗證載入新 bundle，7 項官方來源當時均顯示可讀取。
-- 使用者反映來源列手機按下無反應。檢查確認只有右側小箭頭原本是連結；分支 `fix/source-health-row-tap-target` 已改成整列均可點擊並在新分頁開啟官方資料，觸控列高約 52px、附鍵盤 focus 樣式和清楚提示。`pnpm test` 41 tests、`pnpm check`、`pnpm pages:build` 通過；瀏覽器確認七列連結均覆蓋全寬。**此修正尚未合併／發布；正式 Pages 仍是舊版，發布前須先取得使用者確認。**
+- 使用者反映來源列手機按下無反應。原本只有右側小箭頭是連結；修正後整列均可點擊並在新分頁開啟官方資料，觸控列高約 52px、附鍵盤 focus 樣式和清楚提示。`pnpm test` 41 tests、`pnpm check`、`pnpm pages:build` 通過；瀏覽器確認七列連結均覆蓋全寬。GitHub [PR #3](https://github.com/cw91020251212/hk-traffic-alert/pull/3) 已於 `a79dde4d1c1095064728e8a158c34e7afc909716` 合併至 `main`。**修正尚未發布至公開 Pages；正式網站仍是舊版，發布前須先取得使用者確認。** 詳見 [`reports/2026-09-27-source-health-mobile-tap-target.md`](reports/2026-09-27-source-health-mobile-tap-target.md)。
 
 ## 先把這三種網址分清楚
 
