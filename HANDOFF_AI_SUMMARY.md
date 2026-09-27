@@ -14,7 +14,7 @@
 - GitHub Pages 已設定於 <https://cw91020251212.github.io/hk-traffic-alert/>，由 `gh-pages` branch 發布。由於 Pages 無 server runtime，該版本在瀏覽器直接讀取已核實 CORS 的道路消息、港鐵及天文台來源，每 60 秒更新；TDAS POST 路線車速及完整 Express／tRPC 功能仍需 server hosting。
 - Pages 版已加入標準／大／特大文字、本機常用行程，以及道路事故慢速呼吸警示；`prefers-reduced-motion` 會關閉動畫。
 - 2026-09-27 使用者實機截圖證實港鐵官網維護頁不可用；介面內鐵路外連已改用已核實的運輸署 HKeMobility 後備入口。港鐵 API 讀取邏輯不變。
-- 開發分支 `feat/source-health-panel` 新增 Pages 公開版官方來源健康明細（預設收合）：可見各來源可讀取／暫不可用狀態、檢查時間、失敗訊息及官方入口。`pnpm test` 5 個 test files／41 tests、`pnpm check`、`pnpm pages:build` 均通過；375×812 正常及一項來源失效畫面已人工視覺驗收，GitHub PR 狀態以本次交付為準。
+- 開發分支 `feat/source-health-panel` 新增 Pages 公開版官方來源健康明細（預設收合）：可見各來源可讀取／暫不可用狀態、檢查時間、失敗訊息及官方入口。`pnpm test` 5 個 test files／41 tests、`pnpm check`、`pnpm pages:build`、`pnpm build` 均通過；375×812 正常及一項來源失效畫面已人工視覺驗收。GitHub [PR #1](https://github.com/cw91020251212/hk-traffic-alert/pull/1) 已建立，未合併；公開 Pages 仍未更新。
 
 ## 先把這三種網址分清楚
 
