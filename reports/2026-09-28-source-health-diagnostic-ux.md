@@ -1,9 +1,11 @@
 # 官方來源狀態：一般用戶易讀化
 
 - 日期（香港時間）：2026-09-28
-- 狀態：程式修改及驗證完成、尚未發布
+- 狀態：程式修改、驗證及 main 合併完成；公開網站尚未發布
 - 分支：`fix/source-health-human-friendly`
-- 相關來源互動 PR：[PR #3](https://github.com/cw91020251212/hk-traffic-alert/pull/3)（已合併，曾發布 raw API 連結版本）
+- 相關來源互動 PR：[PR #6](https://github.com/cw91020251212/hk-traffic-alert/pull/6)，已合併
+- main 合併 commit：`b27ee1ef8ccb77f72c62e76b74fdd03988db6932`
+- 前一個 raw API 連結版本的 PR：[PR #3](https://github.com/cw91020251212/hk-traffic-alert/pull/3)
 - 使用者回饋：外連打開後顯示程式碼／原始資料，一般人看不懂，也不明白為甚麼顯示。
 
 ## 決策與改動
@@ -30,7 +32,7 @@
 
 ## 發布狀態與下一步
 
-本次修改尚未建立／合併 PR，亦未發布至 GitHub Pages。公開網站仍為 `gh-pages` commit `fdb17c6`，展開來源診斷會連到 raw API。測試及本機 browser 驗收已完成。合併 PR 後，公開 Pages 前須先取得使用者對此介面更新的明確確認；之後從最新 `main` 建置及發布至 `gh-pages`，在線上確認來源列表沒有 raw API 外連、技術名稱不再出現，警報和易讀官方入口仍正常。
+本次修改已透過 [PR #6](https://github.com/cw91020251212/hk-traffic-alert/pull/6) 合併至 `main` commit `b27ee1ef8ccb77f72c62e76b74fdd03988db6932`，尚未發布至 GitHub Pages。公開網站仍為 `gh-pages` commit `fdb17c6`，展開來源診斷會連到 raw API。測試及本機 browser 驗收已完成。發布 Pages 前須先取得使用者對此介面更新的明確確認；之後從最新 `main` 建置及發布至 `gh-pages`，在線上確認來源列表沒有 raw API 外連、技術名稱不再出現，警報和易讀官方入口仍正常。
 
 已發布 raw API 互動版本的詳細記錄見 [`2026-09-27-source-health-mobile-tap-target.md`](2026-09-27-source-health-mobile-tap-target.md)。如需回復舊版，可用 Git revert 追溯此次 PR 與 `gh-pages` 部署 commit，不要 force-push。
 
