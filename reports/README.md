@@ -24,4 +24,5 @@
 - [`2026-09-27-source-health-mobile-tap-target.md`](2026-09-27-source-health-mobile-tap-target.md) — 整列來源連結修正、行動版觸控驗收及發布狀態。
 - [`2026-09-28-source-health-diagnostic-ux.md`](2026-09-28-source-health-diagnostic-ux.md) — 撤回對一般用戶不友善的 raw API 跳轉，改為易讀的連線診斷，含 Pages 部署及線上驗收結果。
 - [`2026-09-28-source-health-summary-lights.md`](2026-09-28-source-health-summary-lights.md) — 在收合摘要顯示七粒綠／紅／灰燈，直接找到未成功或未確認的資料來源。
+- [`2026-09-28-railway-status-direct-link.md`](2026-09-28-railway-status-direct-link.md) — 將一般公共交通路線搜尋入口改為港鐵官方車務狀況直達頁。
 - [`TEMPLATE.md`](TEMPLATE.md) — 後續每項工作的報告範本。

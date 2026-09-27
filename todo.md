@@ -34,6 +34,14 @@
 - [x] PR #9 已合併到 `main` commit `ac3ad65`。
 - [x] 經使用者確認，發布至 `gh-pages` commit `4a671bc`；正式頁驗收 7 燈均綠、7 列同序、0 raw API 連結，警報卡及 3 個易讀官方入口正常。
 
+## 階段十｜鐵路事故入口改為港鐵車務狀況直達頁
+
+- [x] 確認舊連結是香港出行易 `/tc/route-search/pt` 公共交通路線搜尋，而非事故／車務狀況頁。
+- [x] 改為港鐵官方繁體「車務狀況」頁 `https://www.mtr.com.hk/ch/customer/main/service_status.html`，連結文字改為「港鐵車務狀況（官方）」。
+- [x] Server 版列車延誤、服務消息和到站資料失效後備入口亦改指港鐵車務狀況；真正的 A→B 路線搜尋仍保留出行易。
+- [x] `pnpm test` 6 files／49 tests、`pnpm check`、`pnpm pages:build` 通過；375px browser 核對港鐵官方 href／新分頁及無橫向溢位。
+- [ ] PR 合併與公開 Pages 發布待完成；此新連結更新公開網站前須另行確認。
+
 ## 階段三｜直接結論與自動行程篩選（已完成）
 
 - [x] 首屏由宣傳式 hero 改為直接行動結論：照常出發、留意、預留時間、改路／延後，或來源不足時「未能完整確認」。
