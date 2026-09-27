@@ -620,7 +620,7 @@ type FetchResult<T> = { data: T; source: TrafficSource };
 
 async function fetchJson(url: string, timeoutMs = 9000): Promise<unknown> {
   const response = await fetch(url, {
-    headers: { "User-Agent": "HK-Traffic-Alert/0.1 (public-data prototype)" },
+    headers: typeof window === "undefined" ? { "User-Agent": "HK-Traffic-Alert/0.1 (public-data prototype)" } : undefined,
     signal: AbortSignal.timeout(timeoutMs),
   });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -636,7 +636,7 @@ async function fetchSource<T>(
 ): Promise<FetchResult<T>> {
   const checkedAt = new Date().toISOString();
   try {
-    const response = await fetch(url, { headers: { "User-Agent": "HK-Traffic-Alert/0.1 (public-data prototype)" }, signal: AbortSignal.timeout(timeoutMs) });
+    const response = await fetch(url, { headers: typeof window === "undefined" ? { "User-Agent": "HK-Traffic-Alert/0.1 (public-data prototype)" } : undefined, signal: AbortSignal.timeout(timeoutMs) });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await parse(response);
     return { data, source: { id, label, url, status: "ok", checkedAt } };

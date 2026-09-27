@@ -2,6 +2,12 @@
 
 **現階段：** 手機優先的 alert-first Web App 原型。這是一份持續開發中的工程專案，不要只看 README 就假設所有 TODO 已完成。
 
+## 公開網站
+
+GitHub Pages：<https://cw91020251212.github.io/hk-traffic-alert/>
+
+Pages 不能運行 Express／tRPC，因此公開網站直接從瀏覽器讀取已核實支援跨域的運輸署特別交通消息、天文台警告及港鐵資料，頁面每 60 秒重新檢查並清楚顯示來源故障。TDAS 的 POST 路線車速仍保留在 server 版，兩者不可混稱。
+
 ## 新接手 AI／開發者的閱讀次序
 
 1. [`HANDOFF_AI_SUMMARY.md`](HANDOFF_AI_SUMMARY.md) — 快速接手、公開／預覽網址分別、犯錯回顧、目前缺口及下一步。
@@ -36,6 +42,7 @@ pnpm dev
 pnpm check
 pnpm test
 pnpm build
+pnpm pages:build
 ```
 
 最近驗證為 41 項測試通過、TypeScript 檢查通過、正式 build 成功，並完成 375px 展開路線表單、地區推斷、Google Maps URL、localStorage 及橫向溢位檢查。若在一般 Node 環境啟動 Manus 模板，OAuth／DB 等平台整合要用正式環境 secrets；**不要將 `.env`、token 或使用者憑證放入 GitHub／交接 ZIP**。

@@ -10,7 +10,8 @@
 - A→B 已移到首屏；輸入香港地名後在本機推斷相關地區並自動篩選，無法辨認時才讓使用者補充地區。
 - 新增 `client/src/lib/journeyDecision.ts` 及測試；現為 5 個 test files、41 tests 通過，TypeScript 與 production build 通過。
 - 已完成 375×812 展開表單實測：金鐘站→大埔墟站、公共交通、Google Maps URL、localStorage 及橫向溢位均已核驗。
-- 已補 manifest／SVG app icon。仍然沒有精確 route geometry、背景推播或正式 production deployment；不可誤稱已完成。
+- 已補 manifest／SVG app icon。仍然沒有精確 route geometry、背景推播或長駐 Express server deployment；不可誤稱已完成。
+- GitHub Pages 已設定於 <https://cw91020251212.github.io/hk-traffic-alert/>，由 `gh-pages` branch 發布。由於 Pages 無 server runtime，該版本在瀏覽器直接讀取已核實 CORS 的道路消息、港鐵及天文台來源，每 60 秒更新；TDAS POST 路線車速及完整 Express／tRPC 功能仍需 server hosting。
 
 ## 先把這三種網址分清楚
 
@@ -18,7 +19,7 @@
    Repository visibility 已查證為 **Public**，預設分支 `main`。這條是程式碼，不是可長期承諾的正式網站。
 2. **目前可直接分享的 WebDev 預覽**：<https://3000-ih1j11rgdevjk1295tsun-ba280051.sg2.manus.computer>  
    可用手機直向開啟給人試用；這是 sandbox preview，可能隨環境而變，**不是正式長期部署網址**。
-3. **正式公開網站**：目前 **未部署、未產生正式 production URL**。GitHub repo 已公開不會自動變網站。此 app 有 Express/tRPC server，不能只用 GitHub Pages。Cloudflare Workers 官方直接上傳流程已查閱、account workers.dev subdomain 查到 `cw9102025`，但我們**沒有建立／上傳／發布 Worker**。所以不可以假裝已有穩定正式網址。
+3. **正式公開網站**：GitHub Pages 版已設定於 <https://cw91020251212.github.io/hk-traffic-alert/>，在瀏覽器每 60 秒讀取支援 CORS 的核心警報來源。GitHub Pages 不能運行 Express/tRPC，TDAS POST 路線車速及其他 server 功能未包含。Cloudflare Workers 尚未建立／發布；不可把 Pages 稱為長駐 API server。
 
 ## 使用者要的產品（以此作為需求準繩）
 
@@ -69,7 +70,7 @@
 3. 繼續校正 alert-only UX／classifier：有效 severity 放最前；普通雨、普通 ETA、已取消訊號不能誤報；來源暫不可用一定另顯示。用真實 TD/HKO payload 做 false positive/negative tests。
 4. 擴充 TDAS 主要道路 preset 前，逐路線核實座標、兩個方向、距離及回應時間。需要逐段車速／車流時須另接相應 sensor feed，不能以 TDAS route average 代替。
 5. 提升精確 route-to-alert matching 前，先確認能安全合法取得 route geometry，並有帶座標的交通事故 feed／geocoding；本版只做手選沿線地區「可能相關」，不可稱自動避封路。
-6. 建立正式長期部署 URL：公共 GitHub repo 已在；正式網站未有。上一次查過 Cloudflare Workers direct-upload 官方機制、`workers.dev` subdomain `cw9102025`；沒有建立資源也沒有部署。應先用免費方案部署到新的 worker name，再從真正外網測首頁與 `/api/trpc`；只有通過，才把 URL 宣佈為正式分享網址。任何平台政策、限額／費用及帳戶開關先實測，不假設免費等於永遠不變。
+6. GitHub Pages 靜態版已完成，核心警報來源每 60 秒由瀏覽器查詢。若下一階段要 TDAS POST、完整 ETA 及真正 `/api/trpc`，才部署長駐 server／Worker，並從外網驗證首頁與 API。
 7. 完成使用者之前要求但未做的手機 app icon／Manifest/PWA；見 `todo.md`。
 8. 擴充停課、水浸、更多公共通告以前，先確認有權威且 machine-readable 的即時來源；目前 `政府公告與警報選項.md` 只列研究結果。DSD water blackspots 不是實況、EDB RSS 不是專用停課 feed。
 9. Web push/background monitor 最後才考慮；本版關頁後不監察、不推送。

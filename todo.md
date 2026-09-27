@@ -12,6 +12,13 @@
 - [x] `pnpm check`、5 個 test files／41 tests、`pnpm build` 通過。
 - [x] Playwright 實測 375×812：展開表單、金鐘站→大埔墟站、公共交通、自動推斷港島→新界／離島、Google Maps URL、本機收藏及無橫向溢位。
 
+## 階段四｜GitHub Pages 公開版
+
+- [x] 新增獨立靜態 Pages 入口，使用 `gh-pages` branch 發布。
+- [x] Pages 版直接從瀏覽器讀取已核實 CORS 的道路消息、港鐵及天文台來源，每 60 秒更新；TDAS POST 路線車速維持 server 版。
+- [x] 手機 375×812 驗證首頁、A→B、Google Maps URL、零橫向溢位及零瀏覽器 console error。
+- [x] GitHub Pages 設定為公開、HTTPS 及 `gh-pages` branch deployment。
+
 ## 階段一｜已完成
 
 - [x] 手機優先繁體中文交通警報器 Web App 原型與官方來源目錄。
