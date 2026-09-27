@@ -25,4 +25,5 @@
 - [`2026-09-28-source-health-diagnostic-ux.md`](2026-09-28-source-health-diagnostic-ux.md) — 撤回對一般用戶不友善的 raw API 跳轉，改為易讀的連線診斷，含 Pages 部署及線上驗收結果。
 - [`2026-09-28-source-health-summary-lights.md`](2026-09-28-source-health-summary-lights.md) — 在收合摘要顯示七粒綠／紅／灰燈，直接找到未成功或未確認的資料來源。
 - [`2026-09-28-railway-status-direct-link.md`](2026-09-28-railway-status-direct-link.md) — 將一般公共交通路線搜尋入口改為港鐵官方車務狀況直達頁。
+- [`2026-09-28-mtr-live-status-anchor.md`](2026-09-28-mtr-live-status-anchor.md) — 更正港鐵圖例頁誤作即時狀態頁；入口改為直達官方即時路綫狀況清單。
 - [`TEMPLATE.md`](TEMPLATE.md) — 後續每項工作的報告範本。

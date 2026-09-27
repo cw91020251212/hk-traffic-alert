@@ -361,13 +361,13 @@ export default function Home() {
                 const sourceUnavailable = activeSources.find((source) => source.id === `mtr-${train.line.toLowerCase()}`)?.status === "unavailable";
                 return <div className="train-line-card" key={train.line}>
                   <strong>{train.label}</strong>
-                  {train.message ? <a className="train-service-alert" href="https://www.mtr.com.hk/ch/customer/main/service_status.html" target="_blank" rel="noreferrer">{train.message} · 查看港鐵官方車務狀況<ArrowUpRight size={13} /></a>
+                  {train.message ? <a className="train-service-alert" href="https://www.mtr.com.hk/ch/customer/main/index.html#RYGLineStatus" target="_blank" rel="noreferrer">{train.message} · 查看港鐵官方車務狀況<ArrowUpRight size={13} /></a>
                     : sourceUnavailable ? <span className="train-no-data">目前無法讀取此綫到站資料</span>
-                      : <>{train.serviceDelayed && <a className="train-service-alert" href="https://www.mtr.com.hk/ch/customer/main/service_status.html" target="_blank" rel="noreferrer">港鐵官方 API 標記此綫服務延誤；查看港鐵車務狀況<ArrowUpRight size={13} /></a>}{train.arrivals.length ? <div className="train-arrivals">{train.arrivals.map((arrival) => <span key={arrival.direction}><small>{arrival.direction}</small><b>{arrival.minutes === "0" ? "即將到站" : `${arrival.minutes} 分鐘`}</b>{arrival.platform ? <i>{arrival.platform} 號月台</i> : null}</span>)}</div> : <span className="train-no-data">API 暫未提供到站預報</span>}</>}
+                      : <>{train.serviceDelayed && <a className="train-service-alert" href="https://www.mtr.com.hk/ch/customer/main/index.html#RYGLineStatus" target="_blank" rel="noreferrer">港鐵官方 API 標記此綫服務延誤；查看港鐵即時車務狀況<ArrowUpRight size={13} /></a>}{train.arrivals.length ? <div className="train-arrivals">{train.arrivals.map((arrival) => <span key={arrival.direction}><small>{arrival.direction}</small><b>{arrival.minutes === "0" ? "即將到站" : `${arrival.minutes} 分鐘`}</b>{arrival.platform ? <i>{arrival.platform} 號月台</i> : null}</span>)}</div> : <span className="train-no-data">API 暫未提供到站預報</span>}</>}
                   <small className="train-line-time">{train.currentTime ? `資料時間 ${formatHkt(train.currentTime)} HKT` : "資料時間以港鐵回應為準"}</small>
                 </div>;
               })}
-              {!data?.trains?.length && <div className="train-no-data">{dashboard.isLoading ? "正在讀取港鐵資料…" : "港鐵到站資料暫時未能讀取。"}　<a href="https://www.mtr.com.hk/ch/customer/main/service_status.html" target="_blank" rel="noreferrer">查看港鐵車務狀況（官方）</a></div>}
+              {!data?.trains?.length && <div className="train-no-data">{dashboard.isLoading ? "正在讀取港鐵資料…" : "港鐵到站資料暫時未能讀取。"}　<a href="https://www.mtr.com.hk/ch/customer/main/index.html#RYGLineStatus" target="_blank" rel="noreferrer">查看港鐵即時車務狀況（官方）</a></div>}
             </div>
           </div>
           <div className="mobility-panel">
