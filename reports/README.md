@@ -22,5 +22,5 @@
 
 - [`2026-09-27-official-source-health-panel.md`](2026-09-27-official-source-health-panel.md) — 官方資料來源狀態面板：功能、測試、PR 合併及 GitHub Pages 發布結果。
 - [`2026-09-27-source-health-mobile-tap-target.md`](2026-09-27-source-health-mobile-tap-target.md) — 整列來源連結修正、行動版觸控驗收及發布狀態。
-- [`2026-09-28-source-health-diagnostic-ux.md`](2026-09-28-source-health-diagnostic-ux.md) — 撤回對一般用戶不友善的 raw API 跳轉，改為易讀的連線診斷（待發布狀態依報告記錄）。
+- [`2026-09-28-source-health-diagnostic-ux.md`](2026-09-28-source-health-diagnostic-ux.md) — 撤回對一般用戶不友善的 raw API 跳轉，改為易讀的連線診斷，含 Pages 部署及線上驗收結果。
 - [`TEMPLATE.md`](TEMPLATE.md) — 後續每項工作的報告範本。

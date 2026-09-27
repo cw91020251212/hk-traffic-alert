@@ -21,7 +21,7 @@
 - Pages 版已加入標準／大／特大文字、本機常用行程，以及道路事故慢速呼吸警示；`prefers-reduced-motion` 會關閉動畫。
 - 2026-09-27 使用者實機截圖證實港鐵官網維護頁不可用；介面內鐵路外連已改用已核實的運輸署 HKeMobility 後備入口。港鐵 API 讀取邏輯不變。
 - `client/src/pages/StaticHome.tsx` 的 Pages 公開版提供預設收合的資料連線診斷：可見官方來源是否成功讀取及檢查時間。一般用戶應看警報卡與易讀官方入口；不要將內部 JSON/API 點擊連結當成主要產品功能。原始健康面板詳見 PR #1 和報告 [`2026-09-27-official-source-health-panel.md`](reports/2026-09-27-official-source-health-panel.md)。
-- 使用者指出 PR #3 曾發布的整列 raw API 連結會打開一般人看不懂的 JSON／程式碼。現行 `main` 已將面板改為「資料連線檢查」：保留預設收合、易讀繁體名稱、讀取狀態和檢查時間，移除 API 外連及箭頭，並說明連線成功不代表內容最新或列車準時。`pnpm test` 6 files／44 tests、`pnpm check`、`pnpm pages:build` 通過；瀏覽器確認 7 項顯示友善名稱、無來源連結／raw 技術代碼／箭頭，警報卡與易讀官方入口正常。GitHub [PR #6](https://github.com/cw91020251212/hk-traffic-alert/pull/6) 已 merge 至 `main` commit `b27ee1ef8ccb77f72c62e76b74fdd03988db6932`。**尚未發布；公開 Pages 仍是 `gh-pages` `fdb17c6` raw API 連結版，等待使用者確認部署。** 詳見 [`reports/2026-09-28-source-health-diagnostic-ux.md`](reports/2026-09-28-source-health-diagnostic-ux.md)。
+- 使用者指出 PR #3 曾發布的整列 raw API 連結會打開一般人看不懂的 JSON／程式碼。現行版本改為「資料連線檢查」：易讀中文來源名、讀取狀態和時間，不保留 raw API 外連／箭頭，並說明連線成功不代表內容最新或列車準時。`pnpm test` 6 files／44 tests、`pnpm check`、`pnpm pages:build` 通過。GitHub [PR #6](https://github.com/cw91020251212/hk-traffic-alert/pull/6) 合併至 `main` `b27ee1e` 後，依使用者確認將正式 Pages 更新至 `gh-pages` commit `bc42bc837e1be592ed44c2979baf186b1887008b`。正式頁實測 7 項易讀名稱、0 個來源 raw API 連結、無技術字串／箭頭，警報卡和易讀官方入口均正常。詳見 [`reports/2026-09-28-source-health-diagnostic-ux.md`](reports/2026-09-28-source-health-diagnostic-ux.md)。
 
 ## 先把這三種網址分清楚
 
