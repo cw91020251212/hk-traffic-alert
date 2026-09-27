@@ -75,6 +75,7 @@ export default function StaticHome() {
   const routeAreas = useMemo(() => inferRouteAreas(origin, destination), [origin, destination]);
   const relatedAlerts = useMemo(() => selectAlertsForRouteAreas(alerts, routeAreas, mode), [alerts, routeAreas, mode]);
   const unavailableSources = dashboard ? dashboard.sources.filter((source) => source.status === "unavailable") : [];
+  const availableSourceCount = dashboard ? dashboard.sources.length - unavailableSources.length : 0;
   const degraded = loadError || unavailableSources.length > 0;
   const decisionAlerts = routeReady ? relatedAlerts : alerts;
   const hasIncident = alerts.some((alert) => alert.kind === "road" && /事故|故障|封閉|意外|阻塞/.test(`${alert.title} ${alert.detail}`));
@@ -133,6 +134,22 @@ export default function StaticHome() {
         <div className="priority-header"><div><div className="eyebrow small-eyebrow">只顯示重要事項</div><h2 id="alerts-heading">真正會影響出行嘅事</h2></div></div>
         {degraded && <div className="priority-degraded"><TriangleAlert size={19} /><div><strong>部分官方來源暫時未能讀取。</strong><span>唔會將資料不足當成一切正常。</span></div></div>}
         {decisionAlerts.length ? <div className="priority-list">{decisionAlerts.slice(0, 5).map((alert) => <AlertCard key={alert.id} alert={alert} />)}</div> : <div className="priority-clear"><span className="clear-icon"><ShieldAlert size={20} /></span><div><strong>{degraded ? "目前未能完整確認。" : "目前沒有符合門檻的重大警報。"}</strong><span>{degraded ? "請稍後重新載入或查看官方消息。" : "普通天氣、AQHI 和常規 ETA 不會混入警報。"}</span></div></div>}
+        <details className="source-health">
+          <summary>
+            <span className="source-health-copy"><strong>官方資料來源狀態</strong><small>{dashboard ? `${availableSourceCount} 項可讀取${unavailableSources.length ? ` · ${unavailableSources.length} 項暫不可用` : ""}` : loadError ? "暫時未能取得來源狀態" : "正在檢查官方來源"}</small></span>
+            <ChevronRight className="source-health-chevron" size={17} aria-hidden="true" />
+          </summary>
+          {dashboard ? <>
+            <ul className="source-health-list">
+              {dashboard.sources.map((source) => <li className={`source-health-item source-${source.status}`} key={source.id}>
+                <span className="source-status-dot" aria-hidden="true" />
+                <span className="source-health-copy"><strong>{source.label}</strong><small>{source.status === "ok" ? `可讀取 · ${formatHkt(source.checkedAt)} HKT 檢查` : `暫不可用 · ${source.message || "無法讀取"}`}</small></span>
+                <a href={source.url} target="_blank" rel="noreferrer" aria-label={`開啟${source.label}官方資料`}><ArrowUpRight size={15} /></a>
+              </li>)}
+            </ul>
+            <p className="source-health-note">「可讀取」只代表剛才成功取得資料；內容更新時間及完整性以官方公告為準。</p>
+          </> : <p className="source-health-note">目前未能取得來源明細；請稍後重新載入，或直接查看下方官方入口。</p>}
+        </details>
         <div className="quick-detail-links"><a href="https://www.td.gov.hk/tc/special_news/spnews.htm" target="_blank" rel="noreferrer"><CarFront size={17} /> 運輸署路況 <ArrowUpRight size={14} /></a><a href="https://www.hkemobility.gov.hk/tc/route-search/pt" target="_blank" rel="noreferrer"><TrainFront size={17} /> 鐵路事故後備入口（香港出行易） <ArrowUpRight size={14} /></a><a href="https://www.hko.gov.hk/tc/index.html" target="_blank" rel="noreferrer"><CloudLightning size={17} /> 天文台警告 <ArrowUpRight size={14} /></a></div>
         <div className="prototype-footnote"><ShieldAlert size={13} /> GitHub Pages 版直接讀取支援瀏覽器跨域的官方警報來源；TDAS 路線平均車速仍只在 server 版。遇緊急情況以官方公告為準。</div>
       </section>

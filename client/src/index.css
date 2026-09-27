@@ -619,6 +619,21 @@ button { -webkit-tap-highlight-color: transparent; }
 .quick-detail-links a { min-height:45px; display:flex; align-items:center; gap:8px; padding:9px 12px; border:1px solid #e2e8e2; border-radius:9px; color:#526d67; background:#fafcf9; font-size:10px; font-weight:750; text-decoration:none; }
 .quick-detail-links a svg:last-child { margin-left:auto; }
 .pages-app .quick-detail-links { grid-template-columns:repeat(3,1fr); }
+.source-health { margin-top:10px; overflow:hidden; border:1px solid #e3e9e3; border-radius:10px; background:#fff; }
+.source-health > summary { min-height:52px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 13px; color:#385a51; cursor:pointer; list-style:none; }
+.source-health > summary::-webkit-details-marker { display:none; }
+.source-health-copy { min-width:0; display:flex; flex-direction:column; gap:4px; }
+.source-health-copy strong { color:#38574f; font-size:11px; line-height:1.4; }
+.source-health-copy small { color:#778780; font-size:9px; line-height:1.45; overflow-wrap:anywhere; }
+.source-health-chevron { flex:0 0 auto; color:#74847e; transition:transform .18s ease; }
+.source-health[open] .source-health-chevron { transform:rotate(90deg); }
+.source-health-list { display:grid; gap:0; margin:0; padding:0 13px; list-style:none; }
+.source-health-item { display:grid; grid-template-columns:9px minmax(0,1fr) 28px; align-items:center; gap:9px; padding:10px 0; border-top:1px solid #eff2ef; }
+.source-status-dot { width:8px; height:8px; border-radius:50%; background:#4f9a71; box-shadow:0 0 0 3px #e7f3ea; }
+.source-unavailable .source-status-dot { background:#cd6857; box-shadow:0 0 0 3px #fff0eb; }
+.source-health-item a { width:28px; height:28px; display:grid; place-items:center; border-radius:7px; color:#58736b; background:#f3f7f3; }
+.source-health-item.source-unavailable a { color:#984d40; background:#fff3ee; }
+.source-health-note { margin:0; padding:9px 13px 11px; border-top:1px solid #eff2ef; color:#75847d; font-size:9px; line-height:1.55; }
 .pages-app .top-actions { margin-left:auto; }
 
 @media (max-width:620px) {
@@ -672,6 +687,8 @@ button { -webkit-tap-highlight-color: transparent; }
 .pages-text-large .route-planner-primary > summary strong,.pages-text-large .priority-card h3 { font-size:15px; }
 .pages-text-large .route-planner-primary > summary small,.pages-text-large .priority-card p,.pages-text-large .priority-clear span { font-size:12px; }
 .pages-text-large .route-inputs label,.pages-text-large .route-mode-switch button,.pages-text-large .quick-detail-links a { font-size:12px; }
+.pages-text-large .source-health-copy strong { font-size:13px; }
+.pages-text-large .source-health-copy small,.pages-text-large .source-health-note { font-size:11px; }
 .pages-text-xlarge .decision-hero h1 { font-size:64px; }
 .pages-text-xlarge .decision-hero > p { font-size:18px; }
 .pages-text-xlarge .decision-kicker,.pages-text-xlarge .decision-primary { font-size:14px; }
@@ -679,6 +696,8 @@ button { -webkit-tap-highlight-color: transparent; }
 .pages-text-xlarge .route-planner-primary > summary strong,.pages-text-xlarge .priority-card h3 { font-size:17px; }
 .pages-text-xlarge .route-planner-primary > summary small,.pages-text-xlarge .priority-card p,.pages-text-xlarge .priority-clear span { font-size:14px; }
 .pages-text-xlarge .route-inputs label,.pages-text-xlarge .route-mode-switch button,.pages-text-xlarge .quick-detail-links a { font-size:14px; }
+.pages-text-xlarge .source-health-copy strong { font-size:15px; }
+.pages-text-xlarge .source-health-copy small,.pages-text-xlarge .source-health-note { font-size:13px; }
 
 @media (max-width:620px) {
   .pages-app .preview-pill { display:none; }
@@ -690,6 +709,8 @@ button { -webkit-tap-highlight-color: transparent; }
   .pages-text-large .route-planner-primary > summary strong,.pages-text-large .priority-card h3 { font-size:14px; }
   .pages-text-large .route-planner-primary > summary small,.pages-text-large .priority-card p,.pages-text-large .priority-clear span { font-size:12px; }
   .pages-text-large .route-inputs label,.pages-text-large .route-mode-switch button,.pages-text-large .quick-detail-links a { font-size:12px; }
+  .pages-text-large .source-health-copy strong { font-size:12px; }
+  .pages-text-large .source-health-copy small,.pages-text-large .source-health-note { font-size:10px; }
   .pages-text-xlarge .decision-hero h1 { font-size:38px; }
   .pages-text-xlarge .decision-hero > p { font-size:15px; }
   .pages-text-xlarge .decision-kicker,.pages-text-xlarge .decision-primary { font-size:13px; }
@@ -697,9 +718,12 @@ button { -webkit-tap-highlight-color: transparent; }
   .pages-text-xlarge .route-planner-primary > summary strong,.pages-text-xlarge .priority-card h3 { font-size:16px; }
   .pages-text-xlarge .route-planner-primary > summary small,.pages-text-xlarge .priority-card p,.pages-text-xlarge .priority-clear span { font-size:14px; }
   .pages-text-xlarge .route-inputs label,.pages-text-xlarge .route-mode-switch button,.pages-text-xlarge .quick-detail-links a { font-size:14px; }
+  .pages-text-xlarge .source-health-copy strong { font-size:14px; }
+  .pages-text-xlarge .source-health-copy small,.pages-text-xlarge .source-health-note { font-size:12px; }
 }
 
 @media (prefers-reduced-motion:reduce) {
   .alert-breathing-light,.incident-active .incident-beacon,.incident-card { animation:none !important; }
+  .source-health-chevron { transition:none; }
   .alert-breathing-light { box-shadow:0 0 0 5px rgba(255,111,88,.18); }
 }
