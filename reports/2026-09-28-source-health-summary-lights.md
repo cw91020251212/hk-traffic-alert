@@ -1,10 +1,11 @@
 # 資料來源摘要列：七粒狀態燈
 
 - 日期（香港時間）：2026-09-28
-- 狀態：程式修改、驗證及 main 合併完成；公開 Pages 發布待使用者確認
+- 狀態：完成、已合併及正式發布
 - 分支：`feat/source-health-summary-lights`
 - 相關 PR：[PR #9](https://github.com/cw91020251212/hk-traffic-alert/pull/9)，已合併
 - main 合併 commit：`ac3ad6566063fb9cb691b92877a7584e1ac02f5a`
+- Pages deploy commit：`4a671bcb155cf5908674c32013fd926e5e0c2ee5`
 - 相關功能：[易讀來源診斷報告](2026-09-28-source-health-diagnostic-ux.md)
 - 使用者需求：在第一行直接看到七個來源是否成功；全部正常便無需展開，有異常才點開檢查。
 
@@ -27,8 +28,8 @@
 - 375px iframe 手機視窗檢查：viewport width 375px、layout client width 360px；收合和展開狀態 `scrollWidth === clientWidth`，沒有水平溢位，七燈容器寬 94px。標準／大／特大三種字級均無水平溢位。
 - Browser 量度成功／失敗／未知燈實際色值分別為綠 `rgb(79, 154, 113)`、紅 `rgb(205, 104, 87)`、灰 `rgb(174, 184, 178)`。有「讀取失敗／未能確認」文字及每燈 aria-label，不單靠色彩辨識。
 
-正式網站目前仍為 `gh-pages` `bc42bc8` 易讀診斷版；PR #9 已將七燈程式合併至 `main`，但尚未更新公開 Pages。發布公開首頁前先取得使用者確認。
+依使用者確認，正式網站已從 PR #9 合併後的最新 `main` 建置並發布到 GitHub Pages。`gh-pages` commit `4a671bcb155cf5908674c32013fd926e5e0c2ee5` 引用 `assets/index-DxRgyE_4.js` 和 `assets/index-Bdnsa4iv.css`。正式頁驗收：7 粒燈均綠、摘要「7 項資料均成功讀取」、展開後 7 個來源順序完全相同、來源清單內 0 個 raw API 外連；警報卡存在、3 個易讀官方入口存在。官方 feed 及頁面正常。
 
 ## 預計 GitHub 操作
 
-本次程式以 [PR #9](https://github.com/cw91020251212/hk-traffic-alert/pull/9) 合併至 `main` commit `ac3ad6566063fb9cb691b92877a7584e1ac02f5a`。此報告另經文件 PR 備份。公開 Pages 尚未更新；收到使用者確認後才從最新 `main` 建置部署，並在線上核對七粒燈／列表同序、紅灰異常提示、警報卡與易讀官方入口。
+本次程式以 [PR #9](https://github.com/cw91020251212/hk-traffic-alert/pull/9) 合併至 `main` commit `ac3ad6566063fb9cb691b92877a7584e1ac02f5a`，部署至 `gh-pages` commit `4a671bcb155cf5908674c32013fd926e5e0c2ee5`。部署結果與驗收隨後經文件 PR 更新至 `main` 備份。

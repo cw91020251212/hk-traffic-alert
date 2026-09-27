@@ -32,7 +32,7 @@
 - [x] 燈號與展開清單使用相同固定來源順序；每粒燈有可存取名稱，明確文字狀態亦保留。
 - [x] `pnpm test`（6 files／49 tests）、`pnpm check`、`pnpm pages:build` 通過；375px browser 收合／展開與標準／大／特大字級均無水平溢位，七燈和七列順序一致；綠紅灰 computed colors 正確。
 - [x] PR #9 已合併到 `main` commit `ac3ad65`。
-- [ ] Pages 發布需使用者確認；目前公開站仍為 `gh-pages` `bc42bc8`。
+- [x] 經使用者確認，發布至 `gh-pages` commit `4a671bc`；正式頁驗收 7 燈均綠、7 列同序、0 raw API 連結，警報卡及 3 個易讀官方入口正常。
 
 ## 階段三｜直接結論與自動行程篩選（已完成）
 
