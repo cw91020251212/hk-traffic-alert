@@ -1,7 +1,7 @@
 # 港鐵入口修正：直達即時路綫狀態
 
 - 日期（香港時間）：2026-09-28
-- 狀態：程式已合併並驗證；公開 Pages 發布待使用者確認
+- 狀態：已合併、按使用者確認發布並完成正式驗收
 - 分支：`fix/mtr-live-status-anchor`
 - 前置入口修正：[鐵路事故後備入口報告](2026-09-28-railway-status-direct-link.md)
 
@@ -35,6 +35,6 @@
 
 ## 合併與發布
 
-- PR #16 已合併到 `main` commit `398fffdd877a255ad73c7f2604c5e3af4238080d`；正式 GitHub Pages 仍是前一版 `ad2bf46`，尚未包含本次錨點修正。
-- 正式發布至 `gh-pages` 前需另行取得使用者確認；部署後重驗正式頁 DOM 的 href、錨點和新分頁行為。
-- 若發布後要回復，可 revert 對應 Pages deployment commit；不改動港鐵服務。
+- PR #16 已合併到 `main` commit `398fffdd877a255ad73c7f2604c5e3af4238080d`。按使用者於 2026-09-28 確認，從最新 main build `da527e8548dbaa00b75f42099ce8593b31ff6573` 發布至 `gh-pages` commit `993361c0026ac851ff986d87feed0dc55e9eab1a`。
+- 公開 CDN 已確認載入新 bundle `assets/index-C6nSl6QM.js`，包含即時狀態錨點而不含舊 `service_status.html` 入口。正式頁 DOM 實測顯示文字「港鐵即時車務狀況（官方）」、href `https://www.mtr.com.hk/ch/customer/main/index.html#RYGLineStatus`、`target="_blank"`；運輸署和天文台入口維持不變。
+- 如需回復，可 revert Pages commit `993361c`；此部署只更新網站前端，不改動港鐵服務。
