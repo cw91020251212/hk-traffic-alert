@@ -1,10 +1,11 @@
 # 官方來源狀態：一般用戶易讀化
 
 - 日期（香港時間）：2026-09-28
-- 狀態：程式修改、驗證及 main 合併完成；公開網站尚未發布
+- 狀態：完成、已合併、已發布並線上驗收
 - 分支：`fix/source-health-human-friendly`
 - 相關來源互動 PR：[PR #6](https://github.com/cw91020251212/hk-traffic-alert/pull/6)，已合併
 - main 合併 commit：`b27ee1ef8ccb77f72c62e76b74fdd03988db6932`
+- GitHub Pages 部署 commit：`bc42bc837e1be592ed44c2979baf186b1887008b`
 - 前一個 raw API 連結版本的 PR：[PR #3](https://github.com/cw91020251212/hk-traffic-alert/pull/3)
 - 使用者回饋：外連打開後顯示程式碼／原始資料，一般人看不懂，也不明白為甚麼顯示。
 
@@ -27,14 +28,15 @@
 - `pnpm test` — 6 個 test files，44 項測試通過（含 3 項新增名稱映射測試）。
 - `pnpm check` — TypeScript 檢查通過。
 - `pnpm pages:build` — Pages build 成功。
-- browser 預覽待資料載入後檢查 7 項來源：都顯示一般人可理解的中文名稱和「資料連線正常」及時間；面板內 `a[href]` 為 0，沒有 raw API URL、JSON／`warningInfo`／`qem`／`Next Train` 等技術名稱，沒有外連箭頭。警報卡、下方運輸署／HKeMobility／天文台易讀入口正常；診斷說明提醒連線成功不代表內容最新或列車準時。
+- 本機 browser 預覽檢查 7 項來源：都顯示中文名稱和「資料連線正常」及時間；面板內 `a[href]` 為 0，沒有 raw API URL、JSON／`warningInfo`／`qem`／`Next Train` 等技術名稱，沒有外連箭頭；警報卡和官方易讀入口正常。
+- 公開網站已載入 bundle `index-BtfdLZ-D.js` 及 CSS `index-C5gAprME.css`。正式頁展開後在線上 DOM 再驗證 7 項易讀名稱、7 條狀態列、來源面板 `a[href]` 為 0、無技術字串／箭頭，出行警報卡及三個官方易讀入口正常；提示語清楚寫明連線成功不代表內容最新或列車準時。
 - unknown source id 測試確認介面顯示通用中文名稱，不洩漏內部 id。
 
 ## 發布狀態與下一步
 
-本次修改已透過 [PR #6](https://github.com/cw91020251212/hk-traffic-alert/pull/6) 合併至 `main` commit `b27ee1ef8ccb77f72c62e76b74fdd03988db6932`，尚未發布至 GitHub Pages。公開網站仍為 `gh-pages` commit `fdb17c6`，展開來源診斷會連到 raw API。測試及本機 browser 驗收已完成。發布 Pages 前須先取得使用者對此介面更新的明確確認；之後從最新 `main` 建置及發布至 `gh-pages`，在線上確認來源列表沒有 raw API 外連、技術名稱不再出現，警報和易讀官方入口仍正常。
+本次修改已透過 [PR #6](https://github.com/cw91020251212/hk-traffic-alert/pull/6) 合併至 `main` commit `b27ee1ef8ccb77f72c62e76b74fdd03988db6932`。收到使用者明確確認後，從含最新報告文件的 `main` `070eef6168eadfc1e271ad01e9b3c2cb6f171b4f` 建置，發布至 `gh-pages` commit `bc42bc837e1be592ed44c2979baf186b1887008b`。正式網址 [https://cw91020251212.github.io/hk-traffic-alert/](https://cw91020251212.github.io/hk-traffic-alert/) 已載入新 bundle 並線上驗收，診斷列不再連到 raw API，警報和易讀官方入口正常。
 
-已發布 raw API 互動版本的詳細記錄見 [`2026-09-27-source-health-mobile-tap-target.md`](2026-09-27-source-health-mobile-tap-target.md)。如需回復舊版，可用 Git revert 追溯此次 PR 與 `gh-pages` 部署 commit，不要 force-push。
+已發布 raw API 互動版本的詳細記錄見 [`2026-09-27-source-health-mobile-tap-target.md`](2026-09-27-source-health-mobile-tap-target.md)。如需回復本次網站部署，可在 `gh-pages` revert `bc42bc837e1be592ed44c2979baf186b1887008b`；如需回復程式碼，revert PR #6，勿 force-push 或改寫歷史。
 
 ## 安全與資料注意事項
 
