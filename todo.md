@@ -26,6 +26,13 @@
 - [x] `pnpm test`（6 files／44 tests）、`pnpm check`、`pnpm pages:build` 通過；browser 確認 7 項為易讀名稱、沒有 raw API 連結或技術代碼，狀態與警報／易讀官方入口正常。
 - [x] PR #6 已合併至 `main` commit `b27ee1e`；收到使用者確認後已發布到 `gh-pages` commit `bc42bc8`，正式頁確認來源診斷 0 外連，警報卡與易讀入口正常。
 
+## 階段九｜來源摘要七粒狀態燈
+
+- [x] 摘要固定顯示七項來源燈：綠色成功、紅色失敗、灰色未確認；同步摘要異常數量。
+- [x] 燈號與展開清單使用相同固定來源順序；每粒燈有可存取名稱，明確文字狀態亦保留。
+- [x] `pnpm test`（6 files／49 tests）、`pnpm check`、`pnpm pages:build` 通過；375px browser 收合／展開與標準／大／特大字級均無水平溢位，七燈和七列順序一致；綠紅灰 computed colors 正確。
+- [ ] PR 合併／Pages 發布待完成；發布需使用者確認，目前公開站仍為 `gh-pages` `bc42bc8`。
+
 ## 階段三｜直接結論與自動行程篩選（已完成）
 
 - [x] 首屏由宣傳式 hero 改為直接行動結論：照常出發、留意、預留時間、改路／延後，或來源不足時「未能完整確認」。

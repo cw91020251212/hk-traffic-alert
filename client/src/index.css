@@ -622,6 +622,12 @@ button { -webkit-tap-highlight-color: transparent; }
 .source-health { margin-top:10px; overflow:hidden; border:1px solid #e3e9e3; border-radius:10px; background:#fff; }
 .source-health > summary { min-height:52px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 13px; color:#385a51; cursor:pointer; list-style:none; }
 .source-health > summary::-webkit-details-marker { display:none; }
+.source-health-summary { min-width:0; flex:1 1 auto; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.source-health-lights { flex:0 0 auto; display:grid; grid-template-columns:repeat(7,10px); gap:4px; align-items:center; margin-left:auto; }
+.source-health-light { width:10px; height:10px; border:1px solid rgba(25,55,45,.08); border-radius:50%; }
+.source-light-success { background:#4f9a71; box-shadow:0 0 0 2px #e7f3ea; }
+.source-light-failure { background:#cd6857; box-shadow:0 0 0 2px #fff0eb; }
+.source-light-unknown { background:#aeb8b2; box-shadow:0 0 0 2px #eef1ef; }
 .source-health-copy { min-width:0; display:flex; flex-direction:column; gap:4px; }
 .source-health-copy strong { color:#38574f; font-size:11px; line-height:1.4; }
 .source-health-copy small { color:#778780; font-size:9px; line-height:1.45; overflow-wrap:anywhere; }
@@ -630,7 +636,8 @@ button { -webkit-tap-highlight-color: transparent; }
 .source-health-list { display:grid; gap:0; margin:0; padding:0 13px; list-style:none; }
 .source-health-item { min-height:52px; display:grid; grid-template-columns:9px minmax(0,1fr); align-items:center; gap:9px; padding:9px 0; border-top:1px solid #eff2ef; }
 .source-status-dot { width:8px; height:8px; border-radius:50%; background:#4f9a71; box-shadow:0 0 0 3px #e7f3ea; }
-.source-unavailable .source-status-dot { background:#cd6857; box-shadow:0 0 0 3px #fff0eb; }
+.source-failure .source-status-dot { background:#cd6857; box-shadow:0 0 0 3px #fff0eb; }
+.source-unknown .source-status-dot { background:#aeb8b2; box-shadow:0 0 0 3px #eef1ef; }
 .source-health-note { margin:0; padding:9px 13px 11px; border-top:1px solid #eff2ef; color:#75847d; font-size:9px; line-height:1.55; }
 .pages-app .top-actions { margin-left:auto; }
 
