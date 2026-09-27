@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, ArrowUpRight, CarFront, ChevronRight, CloudLightning, MapPinned, Navigation, RefreshCw, ShieldAlert, TrainFront, TriangleAlert, Zap } from "lucide-react";
 import { getJourneyDecision, inferRouteAreas, modeLabel } from "@/lib/journeyDecision";
-import { getSourceDisplayName } from "@/lib/sourceDisplay";
+import { countSourceIndicators, getSourceDisplayName, getSourceIndicatorLabel, getSourceIndicatorState, orderSourceItems, SOURCE_DISPLAY_ORDER } from "@/lib/sourceDisplay";
 import { buildDirectionsUrl, parseRouteBookmarks, ROUTE_BOOKMARKS_PREFERENCE_KEY, selectAlertsForRouteAreas, type RouteBookmark, type RouteMode } from "@/lib/routePlanner";
 import { getTransportDashboard, selectPriorityAlerts, type PriorityAlert, type TransportDashboard } from "../../../server/transportData";
 
@@ -75,8 +75,29 @@ export default function StaticHome() {
   const routeReady = Boolean(origin.trim() && destination.trim());
   const routeAreas = useMemo(() => inferRouteAreas(origin, destination), [origin, destination]);
   const relatedAlerts = useMemo(() => selectAlertsForRouteAreas(alerts, routeAreas, mode), [alerts, routeAreas, mode]);
-  const unavailableSources = dashboard ? dashboard.sources.filter((source) => source.status === "unavailable") : [];
-  const degraded = loadError || unavailableSources.length > 0;
+  const allSources = dashboard?.sources ?? [];
+  const sourceById = new Map(allSources.map((source) => [source.id, source]));
+  const knownSourceIds = new Set<string>(SOURCE_DISPLAY_ORDER);
+  const orderedSources = [
+    ...SOURCE_DISPLAY_ORDER.map((id) => sourceById.get(id)),
+    ...orderSourceItems(allSources.filter((source) => !knownSourceIds.has(source.id))),
+  ];
+  const sourceIndicators = orderedSources.map((source, index) => {
+    const id = source?.id ?? SOURCE_DISPLAY_ORDER[index] ?? `other-${index}`;
+    const state = getSourceIndicatorState(source?.status);
+    return { id, source, state, label: getSourceIndicatorLabel(state) };
+  });
+  const { failure: failedSourceCount, unknown: unconfirmedSourceCount } = countSourceIndicators(sourceIndicators.map(({ state }) => state));
+  const degraded = loadError || failedSourceCount > 0 || Boolean(dashboard && unconfirmedSourceCount > 0);
+  const sourceSummary = !dashboard
+    ? loadError ? "未能確認來源狀態，展開查看" : `正在檢查 ${sourceIndicators.length} 項官方資料`
+    : failedSourceCount && unconfirmedSourceCount
+      ? `${failedSourceCount} 項讀取失敗 · ${unconfirmedSourceCount} 項未能確認，展開查看`
+      : failedSourceCount
+        ? `${failedSourceCount} 項讀取失敗，展開查看`
+        : unconfirmedSourceCount
+          ? `${unconfirmedSourceCount} 項未能確認，展開查看`
+          : `${sourceIndicators.length} 項資料均成功讀取`;
   const decisionAlerts = routeReady ? relatedAlerts : alerts;
   const hasIncident = alerts.some((alert) => alert.kind === "road" && /事故|故障|封閉|意外|阻塞/.test(`${alert.title} ${alert.detail}`));
   const decision = getJourneyDecision(decisionAlerts, { loading: !dashboard && !loadError, degraded, routeReady });
@@ -136,17 +157,22 @@ export default function StaticHome() {
         {decisionAlerts.length ? <div className="priority-list">{decisionAlerts.slice(0, 5).map((alert) => <AlertCard key={alert.id} alert={alert} />)}</div> : <div className="priority-clear"><span className="clear-icon"><ShieldAlert size={20} /></span><div><strong>{degraded ? "目前未能完整確認。" : "目前沒有符合門檻的重大警報。"}</strong><span>{degraded ? "請稍後重新載入或查看官方消息。" : "普通天氣、AQHI 和常規 ETA 不會混入警報。"}</span></div></div>}
         <details className="source-health">
           <summary>
-            <span className="source-health-copy"><strong>資料連線檢查</strong><small>{dashboard ? unavailableSources.length ? `${unavailableSources.length} 項官方資料暫時未能更新` : "檢查官方資料是否成功讀取；不是即時班次時間" : loadError ? "暫時未能連接官方資料" : "正在檢查官方資料"}</small></span>
+            <span className="source-health-summary">
+              <span className="source-health-copy"><strong>資料連線檢查</strong><small>{sourceSummary}</small></span>
+              <span className="source-health-lights" role="group" aria-label={`${sourceIndicators.length} 項官方資料狀態`}>
+                {sourceIndicators.map(({ id, state, label }) => <span className={`source-health-light source-light-${state}`} key={id} title={`${getSourceDisplayName(id)}：${label}`} role="img" aria-label={`${getSourceDisplayName(id)}：${label}`} />)}
+              </span>
+            </span>
             <ChevronRight className="source-health-chevron" size={17} aria-hidden="true" />
           </summary>
           {dashboard ? <>
             <ul className="source-health-list">
-              {dashboard.sources.map((source) => <li className={`source-health-item source-${source.status}`} key={source.id}>
+              {sourceIndicators.map(({ id, source, state, label }) => <li className={`source-health-item source-${state}`} key={id}>
                 <span className="source-status-dot" aria-hidden="true" />
-                <span className="source-health-copy"><strong>{getSourceDisplayName(source.id)}</strong><small>{source.status === "ok" ? `資料連線正常 · ${formatHkt(source.checkedAt)} HKT 檢查` : `暫時無法更新 · ${formatHkt(source.checkedAt)} HKT 檢查`}</small></span>
+                <span className="source-health-copy"><strong>{getSourceDisplayName(id)}</strong><small>{source ? `${label} · ${formatHkt(source.checkedAt)} HKT 檢查` : `${label} · 未收到來源狀態`}</small></span>
               </li>)}
             </ul>
-            <p className="source-health-note">「連線正常」只代表剛才成功取得資料，不代表內容最新或列車準時。出行資訊請看上方警報；官方消息見下方易讀入口。</p>
+            <p className="source-health-note">綠燈＝成功讀取；紅燈＝讀取失敗；灰燈＝未能確認。燈號只表示是否剛成功取得資料，不代表內容完整、正確或最新，也不代表列車準時。出行資訊請看上方警報；官方消息見下方易讀入口。</p>
           </> : <p className="source-health-note">目前未能連接官方資料；請稍後再試。緊急情況請以運輸署、港鐵或天文台公告為準，入口見下方。</p>}
         </details>
         <div className="quick-detail-links"><a href="https://www.td.gov.hk/tc/special_news/spnews.htm" target="_blank" rel="noreferrer"><CarFront size={17} /> 運輸署路況 <ArrowUpRight size={14} /></a><a href="https://www.hkemobility.gov.hk/tc/route-search/pt" target="_blank" rel="noreferrer"><TrainFront size={17} /> 鐵路事故後備入口（香港出行易） <ArrowUpRight size={14} /></a><a href="https://www.hko.gov.hk/tc/index.html" target="_blank" rel="noreferrer"><CloudLightning size={17} /> 天文台警告 <ArrowUpRight size={14} /></a></div>
