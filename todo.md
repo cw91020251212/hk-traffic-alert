@@ -50,7 +50,8 @@
 - [x] Pages 版 quick link 與 Server 版三個服務／資料失效後備入口改至該錨點，並使用「港鐵即時車務狀況（官方）」文案。
 - [x] `pnpm test` 6 files／49 tests、`pnpm check`、`pnpm pages:build`、`pnpm build` 通過；375px viewport 確認新 href／新分頁和無橫向溢位。
 - [x] 官方 MTR 深層連結已實際確認會捲至 `#RYGLineStatus` 即時狀態列表。
-- [ ] 建立並合併程式 PR；正式 Pages 發布仍待使用者另行確認。
+- [x] PR #16 已合併到 `main` commit `398fffdd877a255ad73c7f2604c5e3af4238080d`。
+- [ ] 正式 Pages 發布仍待使用者另行確認；目前公開版為 `gh-pages` `ad2bf46`。
 
 ## 階段三｜直接結論與自動行程篩選（已完成）
 

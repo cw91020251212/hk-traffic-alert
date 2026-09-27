@@ -1,7 +1,7 @@
 # 港鐵入口修正：直達即時路綫狀態
 
 - 日期（香港時間）：2026-09-28
-- 狀態：程式修改及驗證完成；PR 待建立／合併，公開 Pages 發布待使用者確認
+- 狀態：程式已合併並驗證；公開 Pages 發布待使用者確認
 - 分支：`fix/mtr-live-status-anchor`
 - 前置入口修正：[鐵路事故後備入口報告](2026-09-28-railway-status-direct-link.md)
 
@@ -35,6 +35,6 @@
 
 ## 合併與發布
 
-- PR 尚未建立；正式 GitHub Pages 仍是前一版 `ad2bf46`，尚未包含本次錨點修正。
-- 合併到 `main` 之後，正式發布至 `gh-pages` 前需另行取得使用者確認；部署後重驗正式頁 DOM 的 href、錨點和新分頁行為。
+- PR #16 已合併到 `main` commit `398fffdd877a255ad73c7f2604c5e3af4238080d`；正式 GitHub Pages 仍是前一版 `ad2bf46`，尚未包含本次錨點修正。
+- 正式發布至 `gh-pages` 前需另行取得使用者確認；部署後重驗正式頁 DOM 的 href、錨點和新分頁行為。
 - 若發布後要回復，可 revert 對應 Pages deployment commit；不改動港鐵服務。
