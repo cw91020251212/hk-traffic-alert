@@ -142,12 +142,14 @@ export default function StaticHome() {
           {dashboard ? <>
             <ul className="source-health-list">
               {dashboard.sources.map((source) => <li className={`source-health-item source-${source.status}`} key={source.id}>
-                <span className="source-status-dot" aria-hidden="true" />
-                <span className="source-health-copy"><strong>{source.label}</strong><small>{source.status === "ok" ? `可讀取 · ${formatHkt(source.checkedAt)} HKT 檢查` : `暫不可用 · ${source.message || "無法讀取"}`}</small></span>
-                <a href={source.url} target="_blank" rel="noreferrer" aria-label={`開啟${source.label}官方資料`}><ArrowUpRight size={15} /></a>
+                <a className="source-health-link" href={source.url} target="_blank" rel="noreferrer" aria-label={`開啟${source.label}官方資料`}>
+                  <span className="source-status-dot" aria-hidden="true" />
+                  <span className="source-health-copy"><strong>{source.label}</strong><small>{source.status === "ok" ? `可讀取 · ${formatHkt(source.checkedAt)} HKT 檢查` : `暫不可用 · ${source.message || "無法讀取"}`}</small></span>
+                  <span className="source-health-open" aria-hidden="true"><ArrowUpRight size={17} /></span>
+                </a>
               </li>)}
             </ul>
-            <p className="source-health-note">「可讀取」只代表剛才成功取得資料；內容更新時間及完整性以官方公告為準。</p>
+            <p className="source-health-note">點按任何來源列可開啟其官方資料。「可讀取」只代表剛才成功取得資料；內容更新時間及完整性以官方公告為準。</p>
           </> : <p className="source-health-note">目前未能取得來源明細；請稍後重新載入，或直接查看下方官方入口。</p>}
         </details>
         <div className="quick-detail-links"><a href="https://www.td.gov.hk/tc/special_news/spnews.htm" target="_blank" rel="noreferrer"><CarFront size={17} /> 運輸署路況 <ArrowUpRight size={14} /></a><a href="https://www.hkemobility.gov.hk/tc/route-search/pt" target="_blank" rel="noreferrer"><TrainFront size={17} /> 鐵路事故後備入口（香港出行易） <ArrowUpRight size={14} /></a><a href="https://www.hko.gov.hk/tc/index.html" target="_blank" rel="noreferrer"><CloudLightning size={17} /> 天文台警告 <ArrowUpRight size={14} /></a></div>
