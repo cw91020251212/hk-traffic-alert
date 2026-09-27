@@ -1,10 +1,11 @@
 # 官方資料來源列：手機整列點擊修正
 
 - 日期（香港時間）：2026-09-27
-- 狀態：程式修正及驗證完成；已合併，公開發布待確認
+- 狀態：程式修正及驗證完成；已合併、已發布
 - 分支：`fix/source-health-row-tap-target`
 - 相關 PR：[PR #3](https://github.com/cw91020251212/hk-traffic-alert/pull/3)，已 squash merge
 - 合併 commit：`a79dde4d1c1095064728e8a158c34e7afc909716`
+- Pages 部署 commit：`fdb17c66464fe729dff351c464a74a251a05a947`
 - 相關使用者回報：手機版紅圈中的港鐵資料列「按下冇反應」
 
 ## 使用者目標
@@ -26,14 +27,16 @@
 - `pnpm pages:build` — Pages build 成功。
 - 瀏覽器檢查 7 個來源列：每列連結均為正確官方 URL、開新分頁、包含可存取名稱；每列約 53px 高，連結高 52px，連結左右邊界與來源列對齊。
 - 本機預覽實際顯示 7 列來源及新增提示文字；包含港鐵三線資料列。
+- 正式網站：[https://cw91020251212.github.io/hk-traffic-alert/](https://cw91020251212.github.io/hk-traffic-alert/) 已更新至 JS `index-M6OGvLOk.js` 與 CSS `index-un7t1hZT.css`；直接讀取公開 HTML／bundle／CSS 確認資產可用且含新觸控樣式。
+- 正式頁等待來源資料載入後，實際展開檢查七列連結和新增提示文字；三條金鐘港鐵 Next Train 列的連結高度均為 52px、左右邊界覆蓋全列，`target="_blank"` 和可存取名稱均正確。
 
 ## 合併與發布狀態
 
-修正已透過 [PR #3](https://github.com/cw91020251212/hk-traffic-alert/pull/3) 合併至 `main`（commit `a79dde4d1c1095064728e8a158c34e7afc909716`），但尚未推送新的 `gh-pages` build。正式網站 https://cw91020251212.github.io/hk-traffic-alert/ 仍使用上一版，因此目前手機可能仍只有右側箭頭點擊有效。公開 Pages 是廣泛受眾可見的網站；發布本次修正前須先取得使用者明確確認。
+修正已透過 [PR #3](https://github.com/cw91020251212/hk-traffic-alert/pull/3) 合併至 `main`（commit `a79dde4d1c1095064728e8a158c34e7afc909716`），並依使用者確認發布至 `gh-pages` commit `fdb17c66464fe729dff351c464a74a251a05a947`。正式網站已實際核對整列點擊體驗。
 
 ## 下一步與回復方式
 
-取得發布確認後，從合併後 `main` 執行 `pnpm pages:build` 並以正常 Git commit 更新 `gh-pages`，實際確認正式網站七列都可點。若有回歸，以 revert commit 回復造成此修正的變更，不使用 force-push。
+如日後出現回歸，可在 `gh-pages` 以 revert commit 回復部署 `fdb17c66464fe729dff351c464a74a251a05a947`，在 `main` revert PR #3 的程式碼變更；不可 force-push 或改寫歷史。
 
 ## 安全與資料注意事項
 
