@@ -40,7 +40,8 @@
 - [x] 改為港鐵官方繁體「車務狀況」頁 `https://www.mtr.com.hk/ch/customer/main/service_status.html`，連結文字改為「港鐵車務狀況（官方）」。
 - [x] Server 版列車延誤、服務消息和到站資料失效後備入口亦改指港鐵車務狀況；真正的 A→B 路線搜尋仍保留出行易。
 - [x] `pnpm test` 6 files／49 tests、`pnpm check`、`pnpm pages:build` 通過；375px browser 核對港鐵官方 href／新分頁及無橫向溢位。
-- [ ] PR 合併與公開 Pages 發布待完成；此新連結更新公開網站前須另行確認。
+- [x] PR #12 已合併到 `main` commit `6d4e226`。
+- [ ] 公開 Pages 尚為 `gh-pages` `4a671bc`；新直達入口發布前須另行取得確認。
 
 ## 階段三｜直接結論與自動行程篩選（已完成）
 
