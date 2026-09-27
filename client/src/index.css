@@ -654,3 +654,52 @@ button { -webkit-tap-highlight-color: transparent; }
   .priority-feed { margin-top:9px; }
   .priority-header h2 { font-size:18px; }
 }
+
+/* Pages accessibility controls and calm, non-strobing incident signal. */
+.font-size-toggle { min-height:38px; display:flex; align-items:center; gap:5px; padding:6px 10px; border:1px solid #dce3dc; border-radius:99px; color:#35564f; background:#fff; font-size:10px; font-weight:750; }
+.font-size-toggle b { color:#1d4f48; font-size:14px; line-height:1; }
+.alert-breathing-light { width:10px; height:10px; margin-right:auto; border-radius:50%; background:#ff6f58; box-shadow:0 0 0 0 rgba(255,111,88,.5); animation:incident-breathe 1.8s ease-in-out infinite; }
+.incident-active .incident-beacon { animation:incident-breathe-light 1.8s ease-in-out infinite; }
+.incident-card { box-shadow:0 0 0 0 rgba(225,90,61,.16); animation:incident-card-breathe 2.2s ease-in-out infinite; }
+@keyframes incident-breathe { 0%,100% { opacity:.58; transform:scale(.82); box-shadow:0 0 0 0 rgba(255,111,88,.42); } 50% { opacity:1; transform:scale(1.12); box-shadow:0 0 0 8px rgba(255,111,88,0); } }
+@keyframes incident-breathe-light { 0%,100% { opacity:.62; box-shadow:0 0 0 4px rgba(255,177,91,.12); } 50% { opacity:1; box-shadow:0 0 0 9px rgba(255,177,91,0); } }
+@keyframes incident-card-breathe { 0%,100% { box-shadow:0 0 0 0 rgba(225,90,61,.08); } 50% { box-shadow:0 0 0 5px rgba(225,90,61,.14); } }
+
+.pages-text-large .decision-hero h1 { font-size:58px; }
+.pages-text-large .decision-hero > p { font-size:16px; }
+.pages-text-large .decision-kicker,.pages-text-large .decision-primary { font-size:13px; }
+.pages-text-large .decision-meta,.pages-text-large .priority-area { font-size:11px; }
+.pages-text-large .route-planner-primary > summary strong,.pages-text-large .priority-card h3 { font-size:15px; }
+.pages-text-large .route-planner-primary > summary small,.pages-text-large .priority-card p,.pages-text-large .priority-clear span { font-size:12px; }
+.pages-text-large .route-inputs label,.pages-text-large .route-mode-switch button,.pages-text-large .quick-detail-links a { font-size:12px; }
+.pages-text-xlarge .decision-hero h1 { font-size:64px; }
+.pages-text-xlarge .decision-hero > p { font-size:18px; }
+.pages-text-xlarge .decision-kicker,.pages-text-xlarge .decision-primary { font-size:14px; }
+.pages-text-xlarge .decision-meta,.pages-text-xlarge .priority-area { font-size:12px; }
+.pages-text-xlarge .route-planner-primary > summary strong,.pages-text-xlarge .priority-card h3 { font-size:17px; }
+.pages-text-xlarge .route-planner-primary > summary small,.pages-text-xlarge .priority-card p,.pages-text-xlarge .priority-clear span { font-size:14px; }
+.pages-text-xlarge .route-inputs label,.pages-text-xlarge .route-mode-switch button,.pages-text-xlarge .quick-detail-links a { font-size:14px; }
+
+@media (max-width:620px) {
+  .pages-app .preview-pill { display:none; }
+  .font-size-toggle { min-width:78px; min-height:40px; justify-content:center; }
+  .pages-text-large .decision-hero h1 { font-size:34px; }
+  .pages-text-large .decision-hero > p { font-size:13px; }
+  .pages-text-large .decision-kicker,.pages-text-large .decision-primary { font-size:12px; }
+  .pages-text-large .decision-meta,.pages-text-large .priority-area { font-size:10px; }
+  .pages-text-large .route-planner-primary > summary strong,.pages-text-large .priority-card h3 { font-size:14px; }
+  .pages-text-large .route-planner-primary > summary small,.pages-text-large .priority-card p,.pages-text-large .priority-clear span { font-size:12px; }
+  .pages-text-large .route-inputs label,.pages-text-large .route-mode-switch button,.pages-text-large .quick-detail-links a { font-size:12px; }
+  .pages-text-xlarge .decision-hero h1 { font-size:38px; }
+  .pages-text-xlarge .decision-hero > p { font-size:15px; }
+  .pages-text-xlarge .decision-kicker,.pages-text-xlarge .decision-primary { font-size:13px; }
+  .pages-text-xlarge .decision-meta,.pages-text-xlarge .priority-area { font-size:11px; }
+  .pages-text-xlarge .route-planner-primary > summary strong,.pages-text-xlarge .priority-card h3 { font-size:16px; }
+  .pages-text-xlarge .route-planner-primary > summary small,.pages-text-xlarge .priority-card p,.pages-text-xlarge .priority-clear span { font-size:14px; }
+  .pages-text-xlarge .route-inputs label,.pages-text-xlarge .route-mode-switch button,.pages-text-xlarge .quick-detail-links a { font-size:14px; }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .alert-breathing-light,.incident-active .incident-beacon,.incident-card { animation:none !important; }
+  .alert-breathing-light { box-shadow:0 0 0 5px rgba(255,111,88,.18); }
+}

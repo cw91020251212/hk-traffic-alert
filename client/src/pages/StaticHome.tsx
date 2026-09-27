@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, ArrowUpRight, CarFront, ChevronRight, CloudLightning, MapPinned, Navigation, RefreshCw, ShieldAlert, TrainFront, TriangleAlert, Zap } from "lucide-react";
 import { getJourneyDecision, inferRouteAreas, modeLabel } from "@/lib/journeyDecision";
-import { buildDirectionsUrl, selectAlertsForRouteAreas, type RouteMode } from "@/lib/routePlanner";
+import { buildDirectionsUrl, parseRouteBookmarks, ROUTE_BOOKMARKS_PREFERENCE_KEY, selectAlertsForRouteAreas, type RouteBookmark, type RouteMode } from "@/lib/routePlanner";
 import { getTransportDashboard, selectPriorityAlerts, type PriorityAlert, type TransportDashboard } from "../../../server/transportData";
 
 function formatHkt(value?: string) {
@@ -13,13 +13,14 @@ function formatHkt(value?: string) {
 
 function AlertCard({ alert }: { alert: PriorityAlert }) {
   const label = alert.level === "critical" ? "立即留意" : alert.level === "high" ? "重大影響" : "出行提醒";
+  const isIncident = alert.kind === "road" && /事故|故障|封閉|意外|阻塞/.test(`${alert.title} ${alert.detail}`);
   const href = alert.kind === "rail"
     ? "https://www.mtr.com.hk/tc/customer/main/service_status.html"
     : alert.kind === "weather" || alert.kind === "earthquake"
       ? "https://www.hko.gov.hk/tc/index.html"
       : "https://www.td.gov.hk/tc/special_news/spnews.htm";
-  return <article className={`priority-card priority-${alert.level}`}>
-    <div className="priority-card-top"><span className="priority-level">{label}</span><span className="priority-area">{alert.area}</span></div>
+  return <article className={`priority-card priority-${alert.level}${isIncident ? " incident-card" : ""}`}>
+    <div className="priority-card-top"><span className="priority-level">{label}</span>{isIncident && <span className="alert-breathing-light" aria-label="道路事故警示" />}<span className="priority-area">{alert.area}</span></div>
     <h3>{alert.title}</h3>
     <p>{alert.detail}</p>
     <div className="priority-card-meta"><span>{alert.location}</span>{alert.updatedAt && <span>{formatHkt(alert.updatedAt)} HKT</span>}</div>
@@ -35,6 +36,23 @@ export default function StaticHome() {
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [mode, setMode] = useState<RouteMode>("transit");
+  const [fontSize, setFontSize] = useState<"normal" | "large" | "xlarge">(() => {
+    try {
+      const saved = window.localStorage.getItem("hk-traffic-alert:font-size");
+      return saved === "large" || saved === "xlarge" ? saved : "normal";
+    } catch { return "normal"; }
+  });
+  const [bookmarks, setBookmarks] = useState<RouteBookmark[]>(() => {
+    try { return parseRouteBookmarks(window.localStorage.getItem(ROUTE_BOOKMARKS_PREFERENCE_KEY)); }
+    catch { return []; }
+  });
+
+  useEffect(() => {
+    try { window.localStorage.setItem("hk-traffic-alert:font-size", fontSize); } catch { /* optional preference */ }
+  }, [fontSize]);
+  useEffect(() => {
+    try { window.localStorage.setItem(ROUTE_BOOKMARKS_PREFERENCE_KEY, JSON.stringify(bookmarks)); } catch { /* optional preference */ }
+  }, [bookmarks]);
 
   useEffect(() => {
     let active = true;
@@ -59,18 +77,34 @@ export default function StaticHome() {
   const unavailableSources = dashboard ? dashboard.sources.filter((source) => source.status === "unavailable") : [];
   const degraded = loadError || unavailableSources.length > 0;
   const decisionAlerts = routeReady ? relatedAlerts : alerts;
+  const hasIncident = alerts.some((alert) => alert.kind === "road" && /事故|故障|封閉|意外|阻塞/.test(`${alert.title} ${alert.detail}`));
   const decision = getJourneyDecision(decisionAlerts, { loading: !dashboard && !loadError, degraded, routeReady });
   const directionsUrl = routeReady ? buildDirectionsUrl(origin, destination, mode) : "";
+  const cycleFontSize = () => setFontSize((current) => current === "normal" ? "large" : current === "large" ? "xlarge" : "normal");
+  const saveRoute = () => {
+    if (!routeReady) return;
+    const cleanOrigin = origin.trim();
+    const cleanDestination = destination.trim();
+    const id = `${cleanOrigin.toLocaleLowerCase()}|${cleanDestination.toLocaleLowerCase()}|${mode}`;
+    const bookmark: RouteBookmark = { id, origin: cleanOrigin, destination: cleanDestination, mode, areas: routeAreas };
+    setBookmarks((current) => [bookmark, ...current.filter((item) => item.id !== id)].slice(0, 5));
+  };
+  const loadRoute = (bookmark: RouteBookmark) => {
+    setOrigin(bookmark.origin);
+    setDestination(bookmark.destination);
+    setMode(bookmark.mode);
+    setRouteOpen(true);
+  };
 
-  return <main className="traffic-app pages-app">
+  return <main className={`traffic-app pages-app pages-text-${fontSize}`}>
     <header className="topbar">
       <a className="brand" href="#top" aria-label="交通警報器首頁"><span className="brand-mark"><Zap size={19} fill="currentColor" /></span><span className="brand-copy"><strong>交通警報器</strong><small>HONG KONG · ACTION FIRST</small></span></a>
-      <div className="top-actions"><span className="preview-pill"><span /> 官方資料直讀</span></div>
+      <div className="top-actions"><span className="preview-pill"><span /> 官方資料直讀</span><button className="font-size-toggle" onClick={cycleFontSize} aria-label={`文字大小：${fontSize === "normal" ? "標準" : fontSize === "large" ? "大" : "特大"}；按一下切換`}><b>Aa</b><span>{fontSize === "normal" ? "標準" : fontSize === "large" ? "大" : "特大"}</span></button></div>
     </header>
 
     <div className="page-shell" id="top">
-      <section className={`decision-hero decision-${decision.tone}`} aria-live="polite">
-        <div className="decision-topline"><span className="decision-kicker"><i />{decision.kicker}</span><button className="decision-refresh" onClick={() => setReloadKey((value) => value + 1)} aria-label="重新載入警報"><RefreshCw size={16} /></button></div>
+      <section className={`decision-hero decision-${decision.tone}${hasIncident ? " incident-active" : ""}`} aria-live="polite">
+        <div className="decision-topline"><span className="decision-kicker"><i className={hasIncident ? "incident-beacon" : ""} />{decision.kicker}</span><button className="decision-refresh" onClick={() => setReloadKey((value) => value + 1)} aria-label="重新載入警報"><RefreshCw size={16} /></button></div>
         {routeReady && <div className="decision-route"><span>{origin.trim()}</span><ArrowRight size={15} /><span>{destination.trim()}</span><b>{modeLabel(mode)}</b></div>}
         <h1>{decision.title}</h1>
         <p>{decision.detail}</p>
@@ -89,6 +123,8 @@ export default function StaticHome() {
           {routeReady && <div className="route-inference"><span>自動篩選範圍</span><strong>{routeAreas.length ? routeAreas.join(" → ") : "只顯示全港警告"}</strong><small>按地名在此裝置估算；不讀取 GPS。</small></div>}
           {routeReady && <div className={`route-verdict route-verdict-${decision.tone}`}><span>{decision.kicker}</span><strong>{decision.title}</strong><p>{decision.detail}</p></div>}
           {directionsUrl ? <a className="route-submit" href={directionsUrl} target="_blank" rel="noreferrer"><Navigation size={16} /> 在 Google Maps 查看建議路線 <ArrowUpRight size={14} /></a> : <div className="route-submit disabled"><Navigation size={16} /> 輸入起點及目的地</div>}
+          <button type="button" className="route-save-button" disabled={!routeReady} onClick={saveRoute}>儲存呢程喺本機</button>
+          {bookmarks.length > 0 && <div className="saved-routes"><strong>已儲存行程</strong>{bookmarks.map((bookmark) => <div className="saved-route-row" key={bookmark.id}><button type="button" className="saved-route-select" onClick={() => loadRoute(bookmark)}>{bookmark.origin} → {bookmark.destination}<small>{modeLabel(bookmark.mode)}</small></button><button type="button" className="saved-route-remove" aria-label={`刪除 ${bookmark.origin} 至 ${bookmark.destination}`} onClick={() => setBookmarks((current) => current.filter((item) => item.id !== bookmark.id))}>×</button></div>)}</div>}
           <div className="route-safety-note">地區只由地名保守估算，並非精確封路比對；路線由 Google Maps 計算。</div>
         </div>
       </details>

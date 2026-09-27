@@ -12,6 +12,7 @@
 - 已完成 375×812 展開表單實測：金鐘站→大埔墟站、公共交通、Google Maps URL、localStorage 及橫向溢位均已核驗。
 - 已補 manifest／SVG app icon。仍然沒有精確 route geometry、背景推播或長駐 Express server deployment；不可誤稱已完成。
 - GitHub Pages 已設定於 <https://cw91020251212.github.io/hk-traffic-alert/>，由 `gh-pages` branch 發布。由於 Pages 無 server runtime，該版本在瀏覽器直接讀取已核實 CORS 的道路消息、港鐵及天文台來源，每 60 秒更新；TDAS POST 路線車速及完整 Express／tRPC 功能仍需 server hosting。
+- Pages 版已加入標準／大／特大文字、本機常用行程，以及道路事故慢速呼吸警示；`prefers-reduced-motion` 會關閉動畫。
 
 ## 先把這三種網址分清楚
 
