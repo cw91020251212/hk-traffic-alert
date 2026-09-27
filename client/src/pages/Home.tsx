@@ -223,7 +223,7 @@ export default function Home() {
       <header className="topbar">
         <a className="brand" href="#top" aria-label="交通警報器首頁">
           <span className="brand-mark"><Zap size={19} fill="currentColor" /></span>
-          <span className="brand-copy"><strong>交通警報器</strong><small>HONG KONG · MOVE SMARTER</small></span>
+          <span className="brand-copy"><strong>交通警報器</strong><small>香港 · 先看警報</small></span>
         </a>
         <nav className="top-nav" aria-label="主要導覽">
           <button className="nav-current" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>警報首頁</button>
@@ -274,14 +274,14 @@ export default function Home() {
             <button type="button" className="route-save-button" disabled={!routeDirectionsUrl} onClick={saveRouteBookmark}>儲存呢程喺本機</button>
             {routeBookmarks.length > 0 && <div className="saved-routes"><strong>常用行程</strong>{routeBookmarks.map((bookmark) => <div className="saved-route-row" key={bookmark.id}><button type="button" className="saved-route-select" onClick={() => loadRouteBookmark(bookmark)}>{bookmark.origin} → {bookmark.destination}<small>{modeLabel(bookmark.mode)} · {bookmark.areas.length ? bookmark.areas.join("／") : "全港警告"}</small></button><button type="button" className="saved-route-remove" aria-label={`刪除 ${bookmark.origin} 至 ${bookmark.destination} 常用路線`} onClick={() => setRouteBookmarks((current) => current.filter((item) => item.id !== bookmark.id))}>×</button></div>)}</div>}
             {routeReady && <div className="route-alerts"><strong>程式篩選結果</strong>{routeRelatedAlerts.length ? routeRelatedAlerts.slice(0, 3).map((alert) => <PriorityAlertCard key={`route-${alert.id}`} alert={alert} />) : <p>暫時未找到達到警報門檻、而且可能與呢程相關的事件。</p>}</div>}
-            <div className="route-safety-note">地區由輸入地名作保守估算，未有精確路線 geometry；實際路線由 Google Maps 計算。</div>
-            <a className="official-route-fallback" href="https://www.hkemobility.gov.hk/" target="_blank" rel="noreferrer">運輸署 HKeMobility 官方路線搜尋 <ArrowUpRight size={13} /></a>
+            <div className="route-safety-note">地區由輸入地名作保守估算，未有精確路線幾何資料；實際路線由 Google Maps 計算。</div>
+            <a className="official-route-fallback" href="https://www.hkemobility.gov.hk/tc/route-search/pt" target="_blank" rel="noreferrer">運輸署「香港出行易」官方路線搜尋 <ArrowUpRight size={13} /></a>
           </div>
         </details>
 
         <section className="priority-feed" aria-labelledby="priority-heading" id="priority-alerts">
           <div className="priority-header">
-            <div><div className="eyebrow small-eyebrow">RIGHT NOW · ACTION FIRST</div><h2 id="priority-heading">而家有冇事要留意？</h2></div>
+            <div><div className="eyebrow small-eyebrow">即時 · 出行優先</div><h2 id="priority-heading">而家有冇事要留意？</h2></div>
             <button className="refresh-button" onClick={() => { void dashboard.refetch(); void roadTraffic.refetch(); }} disabled={dashboard.isFetching || roadTraffic.isFetching}><RefreshCw size={15} className={dashboard.isFetching || roadTraffic.isFetching ? "spin" : ""} /> 更新警報</button>
           </div>
           {priorityFeed.kind === "loading" ? <div className="priority-state" aria-live="polite"><span className="priority-loader" /> 正在檢查運輸署、港鐵及天文台官方來源…</div>
@@ -304,7 +304,7 @@ export default function Home() {
           <summary><span><CarFront size={17} /> 查道路、列車、巴士及渡輪詳情</span><ChevronRight className="disclosure-chevron" size={17} /><small>指定路段／站點 ETA</small></summary>
           <section className="section-block transport-section" aria-labelledby="transport-heading">
           <div className="section-heading">
-            <div><div className="eyebrow small-eyebrow">TRANSPORT NETWORK</div><h2 id="transport-heading">交通網絡</h2></div>
+            <div><div className="eyebrow small-eyebrow">交通網絡</div><h2 id="transport-heading">交通網絡</h2></div>
             <button className="refresh-button" onClick={() => { void dashboard.refetch(); void mobility.refetch(); void roadTraffic.refetch(); void environment.refetch(); }} disabled={dashboard.isFetching}><RefreshCw size={15} className={dashboard.isFetching || mobility.isFetching || roadTraffic.isFetching || environment.isFetching ? "spin" : ""} /> 更新資料</button>
           </div>
           <div className="toolbar">
@@ -361,13 +361,13 @@ export default function Home() {
                 const sourceUnavailable = activeSources.find((source) => source.id === `mtr-${train.line.toLowerCase()}`)?.status === "unavailable";
                 return <div className="train-line-card" key={train.line}>
                   <strong>{train.label}</strong>
-                  {train.message ? <a className="train-service-alert" href="https://www.hkemobility.gov.hk/" target="_blank" rel="noreferrer">{train.message} · 使用運輸署後備入口<ArrowUpRight size={13} /></a>
+                  {train.message ? <a className="train-service-alert" href="https://www.hkemobility.gov.hk/tc/route-search/pt" target="_blank" rel="noreferrer">{train.message} · 使用「香港出行易」後備入口<ArrowUpRight size={13} /></a>
                     : sourceUnavailable ? <span className="train-no-data">目前無法讀取此綫到站資料</span>
-                      : <>{train.serviceDelayed && <a className="train-service-alert" href="https://www.hkemobility.gov.hk/" target="_blank" rel="noreferrer">港鐵官方 API 標記此綫服務延誤；使用運輸署後備入口<ArrowUpRight size={13} /></a>}{train.arrivals.length ? <div className="train-arrivals">{train.arrivals.map((arrival) => <span key={arrival.direction}><small>{arrival.direction}</small><b>{arrival.minutes === "0" ? "即將到站" : `${arrival.minutes} 分鐘`}</b>{arrival.platform ? <i>{arrival.platform} 號月台</i> : null}</span>)}</div> : <span className="train-no-data">API 暫未提供到站預報</span>}</>}
+                      : <>{train.serviceDelayed && <a className="train-service-alert" href="https://www.hkemobility.gov.hk/tc/route-search/pt" target="_blank" rel="noreferrer">港鐵官方 API 標記此綫服務延誤；使用「香港出行易」後備入口<ArrowUpRight size={13} /></a>}{train.arrivals.length ? <div className="train-arrivals">{train.arrivals.map((arrival) => <span key={arrival.direction}><small>{arrival.direction}</small><b>{arrival.minutes === "0" ? "即將到站" : `${arrival.minutes} 分鐘`}</b>{arrival.platform ? <i>{arrival.platform} 號月台</i> : null}</span>)}</div> : <span className="train-no-data">API 暫未提供到站預報</span>}</>}
                   <small className="train-line-time">{train.currentTime ? `資料時間 ${formatHkt(train.currentTime)} HKT` : "資料時間以港鐵回應為準"}</small>
                 </div>;
               })}
-              {!data?.trains?.length && <div className="train-no-data">{dashboard.isLoading ? "正在讀取港鐵資料…" : "港鐵到站資料暫時未能讀取。"}　<a href="https://www.hkemobility.gov.hk/" target="_blank" rel="noreferrer">使用運輸署後備入口</a></div>}
+              {!data?.trains?.length && <div className="train-no-data">{dashboard.isLoading ? "正在讀取港鐵資料…" : "港鐵到站資料暫時未能讀取。"}　<a href="https://www.hkemobility.gov.hk/tc/route-search/pt" target="_blank" rel="noreferrer">使用「香港出行易」後備入口</a></div>}
             </div>
           </div>
           <div className="mobility-panel">
@@ -393,9 +393,9 @@ export default function Home() {
           <div className="live-data-panel">
             <div className="live-panel-title"><span><CarFront size={15} /> 運輸署特別交通消息</span><span>{trafficUnavailable ? "暫時無法讀取" : dashboard.isLoading ? "正在讀取" : `${priorityTrafficEvents.filter((event) => !isClosed(event)).length} 則未完結 · ${trafficEvents.length} 則總消息`}</span></div>
             {trafficUnavailable && <div className="feed-empty">運輸署來源暫時未能連線；稍後可按「更新資料」重試，亦可直接查閱 <a href="https://www.td.gov.hk/tc/special_news/spnews.htm" target="_blank" rel="noreferrer">運輸署公告頁</a>。</div>}
-            {!trafficUnavailable && trafficEvents.length === 0 && <div className="feed-empty">目前官方 feed 沒有交通消息紀錄。</div>}
+            {!trafficUnavailable && trafficEvents.length === 0 && <div className="feed-empty">目前官方資料流沒有交通消息紀錄。</div>}
             {!trafficUnavailable && priorityTrafficEvents.slice(0, 5).map((event) => <TrafficEventRow key={event.id} event={event} />)}
-            <div className="live-panel-foot">官方 feed 更新時間：{activeSources.find((source) => source.id === "td-traffic") ? formatHkt(activeSources.find((source) => source.id === "td-traffic")?.checkedAt) : "—"} · 資料流列為即時；政府未公布延遲 SLA</div>
+            <div className="live-panel-foot">官方資料流更新時間：{activeSources.find((source) => source.id === "td-traffic") ? formatHkt(activeSources.find((source) => source.id === "td-traffic")?.checkedAt) : "—"} · 資料流列為即時；政府未公布延遲服務水平</div>
           </div>
           </section>
         </details>
@@ -404,7 +404,7 @@ export default function Home() {
           <summary><span><CloudRain size={17} /> 查看其他天氣、災害、預報及空氣質素</span><ChevronRight className="disclosure-chevron" size={17} /><small>普通落雨／AQHI 不屬重大警報</small></summary>
           <section className="hazard-section" id="weather">
           <div className="hazard-intro">
-            <div className="eyebrow small-eyebrow">WEATHER & PUBLIC SAFETY</div>
+            <div className="eyebrow small-eyebrow">天氣與公共安全</div>
             <h2>天氣轉變，<br /><span>出行計劃都要變。</span></h2>
             <p>直接讀取天文台公開警告與地震資料；交通影響及發布時間一併清楚顯示。</p>
             <a className="text-link" href="https://www.hko.gov.hk/tc/abouthko/opendata_intro.htm" target="_blank" rel="noreferrer">香港天文台開放數據說明 <ArrowRight size={16} /></a>
@@ -435,7 +435,7 @@ export default function Home() {
           </section>
 
           <section className="environment-section" id="weather-report">
-          <div className="section-heading"><div><div className="eyebrow small-eyebrow">WEATHER & ENVIRONMENT</div><h2>天氣與環境</h2></div><span className="example-label">天文台現況／九日預報 · 環保署 AQHI</span></div>
+          <div className="section-heading"><div><div className="eyebrow small-eyebrow">天氣與環境</div><h2>天氣與環境</h2></div><span className="example-label">天文台現況／九日預報 · 環保署 AQHI</span></div>
           <div className="environment-current-grid">
             <article className="environment-card"><span className="environment-label">天文台氣溫</span><strong>{environment.data?.current?.temperatures?.find((item) => item.place === "香港天文台")?.value ?? "—"}<small>{environment.data?.current?.temperatures?.some((item) => item.place === "香港天文台") ? " °C" : ""}</small></strong><span>香港天文台測站 · {formatHkt(environment.data?.current?.updatedAt)} HKT</span></article>
             <article className="environment-card"><span className="environment-label">相對濕度</span><strong>{environment.data?.current?.humidity ?? "—"}<small>{environment.data?.current?.humidity !== undefined ? "%" : ""}</small></strong><span>香港天文台 · {formatHkt(environment.data?.current?.humidityTime)} HKT</span></article>
@@ -452,7 +452,7 @@ export default function Home() {
         <details className="detail-accordion source-accordion" id="source-details" open={openPanels.sources} onToggle={(event) => setOpenPanels((current) => ({ ...current, sources: (event.currentTarget as HTMLDetailsElement).open }))}>
           <summary><span><ShieldAlert size={17} /> 資料來源、覆蓋範圍與限制</span><ChevronRight className="disclosure-chevron" size={17} /><small>透明列出未覆蓋範圍</small></summary>
           <section className="section-block example-section">
-          <div className="section-heading"><div><div className="eyebrow small-eyebrow">OFFICIAL DATA SOURCES</div><h2>已接入／已核實</h2></div><span className="example-label">來源狀態可見</span></div>
+          <div className="section-heading"><div><div className="eyebrow small-eyebrow">官方資料來源</div><h2>已接入／已核實</h2></div><span className="example-label">來源狀態可見</span></div>
           <div className="example-grid">
             {examples.map((example) => {
               const Icon = example.icon;
@@ -462,7 +462,7 @@ export default function Home() {
           </section>
 
           <section className="section-block source-directory" id="source-directory">
-          <div className="section-heading"><div><div className="eyebrow small-eyebrow">VERIFIED HONG KONG DATA</div><h2>政府及營辦商資料源地圖</h2></div><span className="example-label">已核實範圍／更新頻率</span></div>
+          <div className="section-heading"><div><div className="eyebrow small-eyebrow">已核實香港資料</div><h2>政府及營辦商資料源地圖</h2></div><span className="example-label">已核實範圍／更新頻率</span></div>
           <div className="catalog-grid">
             {sourceCatalog.map((item) => <article className="catalog-card" key={item.title}>
               <div className="catalog-top"><span>{item.category}</span><span className={item.status.startsWith("已接入") ? "catalog-status connected" : "catalog-status"}>{item.status}</span></div>
@@ -512,7 +512,7 @@ function PriorityFilters({ area, kind, counts, onAreaChange, onKindChange }: {
 function PriorityAlertCard({ alert }: { alert: PriorityAlert }) {
   const levelLabel = alert.level === "critical" ? "立即留意" : alert.level === "high" ? "重大影響" : "留意路況";
   const sourceUrl = alert.kind === "rail"
-    ? "https://www.hkemobility.gov.hk/"
+    ? "https://www.hkemobility.gov.hk/tc/route-search/pt"
     : alert.kind === "weather" || alert.kind === "earthquake"
       ? "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warningInfo&lang=tc"
       : "https://www.td.gov.hk/tc/special_news/spnews.htm";
