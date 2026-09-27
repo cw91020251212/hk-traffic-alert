@@ -36,5 +36,5 @@
 
 ## 後續與發布
 
-- 程式透過 [PR #12](https://github.com/cw91020251212/hk-traffic-alert/pull/12) 合併到 `main` commit `6d4e226ce38120646f522a5a7e0473a89886efcf`；部署報告及交接透過 [PR #13](https://github.com/cw91020251212/hk-traffic-alert/pull/13) 備份。依使用者確認，正式 Pages 已發布於 `gh-pages` commit `ad2bf46532ab62927525d1cde27f4480fdd6a21a`。
+- 程式透過 [PR #12](https://github.com/cw91020251212/hk-traffic-alert/pull/12) 合併到 `main` commit `6d4e226ce38120646f522a5a7e0473a89886efcf`；[PR #13](https://github.com/cw91020251212/hk-traffic-alert/pull/13) 備份合併但尚未發布的狀態，[PR #14](https://github.com/cw91020251212/hk-traffic-alert/pull/14) 備份已發布及線上驗收結果。依使用者確認，正式 Pages 已發布於 `gh-pages` commit `ad2bf46532ab62927525d1cde27f4480fdd6a21a`。
 - 如日後要回復，revert `ad2bf46` Pages deployment commit，再重新發布；不改動港鐵或出行易服務。
