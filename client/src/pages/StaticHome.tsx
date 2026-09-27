@@ -15,7 +15,7 @@ function AlertCard({ alert }: { alert: PriorityAlert }) {
   const label = alert.level === "critical" ? "立即留意" : alert.level === "high" ? "重大影響" : "出行提醒";
   const isIncident = alert.kind === "road" && /事故|故障|封閉|意外|阻塞/.test(`${alert.title} ${alert.detail}`);
   const href = alert.kind === "rail"
-    ? "https://www.mtr.com.hk/tc/customer/main/service_status.html"
+    ? "https://www.hkemobility.gov.hk/"
     : alert.kind === "weather" || alert.kind === "earthquake"
       ? "https://www.hko.gov.hk/tc/index.html"
       : "https://www.td.gov.hk/tc/special_news/spnews.htm";
@@ -133,7 +133,7 @@ export default function StaticHome() {
         <div className="priority-header"><div><div className="eyebrow small-eyebrow">ACTIONABLE ONLY</div><h2 id="alerts-heading">真正會影響出行嘅事</h2></div></div>
         {degraded && <div className="priority-degraded"><TriangleAlert size={19} /><div><strong>部分官方來源暫時未能讀取。</strong><span>唔會將資料不足當成一切正常。</span></div></div>}
         {decisionAlerts.length ? <div className="priority-list">{decisionAlerts.slice(0, 5).map((alert) => <AlertCard key={alert.id} alert={alert} />)}</div> : <div className="priority-clear"><span className="clear-icon"><ShieldAlert size={20} /></span><div><strong>{degraded ? "目前未能完整確認。" : "目前沒有符合門檻的重大警報。"}</strong><span>{degraded ? "請稍後重新載入或查看官方消息。" : "普通天氣、AQHI 和常規 ETA 不會混入警報。"}</span></div></div>}
-        <div className="quick-detail-links"><a href="https://www.td.gov.hk/tc/special_news/spnews.htm" target="_blank" rel="noreferrer"><CarFront size={17} /> 運輸署路況 <ArrowUpRight size={14} /></a><a href="https://www.mtr.com.hk/tc/customer/main/service_status.html" target="_blank" rel="noreferrer"><TrainFront size={17} /> 港鐵服務狀態 <ArrowUpRight size={14} /></a><a href="https://www.hko.gov.hk/tc/index.html" target="_blank" rel="noreferrer"><CloudLightning size={17} /> 天文台警告 <ArrowUpRight size={14} /></a></div>
+        <div className="quick-detail-links"><a href="https://www.td.gov.hk/tc/special_news/spnews.htm" target="_blank" rel="noreferrer"><CarFront size={17} /> 運輸署路況 <ArrowUpRight size={14} /></a><a href="https://www.hkemobility.gov.hk/" target="_blank" rel="noreferrer"><TrainFront size={17} /> 鐵路狀況後備入口 <ArrowUpRight size={14} /></a><a href="https://www.hko.gov.hk/tc/index.html" target="_blank" rel="noreferrer"><CloudLightning size={17} /> 天文台警告 <ArrowUpRight size={14} /></a></div>
         <div className="prototype-footnote"><ShieldAlert size={13} /> GitHub Pages 版直接讀取支援瀏覽器跨域的官方警報來源；TDAS 路線平均車速仍只在 server 版。遇緊急情況以官方公告為準。</div>
       </section>
     </div>
