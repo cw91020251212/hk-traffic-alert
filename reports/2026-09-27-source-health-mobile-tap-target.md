@@ -1,8 +1,10 @@
 # 官方資料來源列：手機整列點擊修正
 
 - 日期（香港時間）：2026-09-27
-- 狀態：程式修正及驗證完成；PR／公開發布待完成
+- 狀態：程式修正及驗證完成；已合併，公開發布待確認
 - 分支：`fix/source-health-row-tap-target`
+- 相關 PR：[PR #3](https://github.com/cw91020251212/hk-traffic-alert/pull/3)，已 squash merge
+- 合併 commit：`a79dde4d1c1095064728e8a158c34e7afc909716`
 - 相關使用者回報：手機版紅圈中的港鐵資料列「按下冇反應」
 
 ## 使用者目標
@@ -27,11 +29,11 @@
 
 ## 合併與發布狀態
 
-尚未合併至 `main`，亦未推送新的 `gh-pages` build。正式網站 https://cw91020251212.github.io/hk-traffic-alert/ 仍使用上一版，因此使用者目前的手機仍可能只在右側箭頭點擊有效。公開 Pages 是廣泛受眾可見的網站；完成 PR 後，發布修正前須依當時授權取得明確確認。
+修正已透過 [PR #3](https://github.com/cw91020251212/hk-traffic-alert/pull/3) 合併至 `main`（commit `a79dde4d1c1095064728e8a158c34e7afc909716`），但尚未推送新的 `gh-pages` build。正式網站 https://cw91020251212.github.io/hk-traffic-alert/ 仍使用上一版，因此目前手機可能仍只有右側箭頭點擊有效。公開 Pages 是廣泛受眾可見的網站；發布本次修正前須先取得使用者明確確認。
 
 ## 下一步與回復方式
 
-建立 PR、審閱與合併後，更新本節、handoff 及 todo。取得發布確認後，再從合併後 `main` 執行 `pnpm pages:build` 並以正常 Git commit 更新 `gh-pages`，實際確認七列都可點。若有回歸，以 revert commit 回復造成此修正的變更，不使用 force-push。
+取得發布確認後，從合併後 `main` 執行 `pnpm pages:build` 並以正常 Git commit 更新 `gh-pages`，實際確認正式網站七列都可點。若有回歸，以 revert commit 回復造成此修正的變更，不使用 force-push。
 
 ## 安全與資料注意事項
 
