@@ -65,7 +65,7 @@ export default function StaticHome() {
   return <main className="traffic-app pages-app">
     <header className="topbar">
       <a className="brand" href="#top" aria-label="交通警報器首頁"><span className="brand-mark"><Zap size={19} fill="currentColor" /></span><span className="brand-copy"><strong>交通警報器</strong><small>HONG KONG · ACTION FIRST</small></span></a>
-      <div className="top-actions"><span className="preview-pill"><span /> 官方資料快照</span></div>
+      <div className="top-actions"><span className="preview-pill"><span /> 官方資料直讀</span></div>
     </header>
 
     <div className="page-shell" id="top">
