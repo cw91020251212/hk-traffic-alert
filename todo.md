@@ -24,7 +24,7 @@
 - [x] 改為預設收合的「資料連線檢查」；狀態只作診斷、不連結到原始資料；名稱改用繁體中文，保留檢查時間。
 - [x] 說明區塊不是即時班次時間；實用交通內容看警報卡與下方易讀官方入口。
 - [x] `pnpm test`（6 files／44 tests）、`pnpm check`、`pnpm pages:build` 通過；browser 確認 7 項為易讀名稱、沒有 raw API 連結或技術代碼，狀態與警報／易讀官方入口正常。
-- [ ] PR／公開 Pages 發布待完成；發布前仍以 `gh-pages` `fdb17c6` 版本為準。
+- [x] PR #6 已合併至 `main` commit `b27ee1e`；公開 Pages 發布仍待使用者確認，目前 live 仍為 `gh-pages` `fdb17c6`。
 
 ## 階段三｜直接結論與自動行程篩選（已完成）
 
