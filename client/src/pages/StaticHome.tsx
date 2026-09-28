@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, ArrowUpRight, CarFront, ChevronRight, CloudLightning, Footprints, MapPinned, Navigation, RefreshCw, ShieldAlert, TrainFront, TriangleAlert, Zap } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Bell, CarFront, ChevronRight, CloudLightning, Footprints, MapPinned, Navigation, RefreshCw, ShieldAlert, TrainFront, TriangleAlert, Zap } from "lucide-react";
+import { AlertEffectsSettings } from "@/components/AlertEffectsSettings";
 import { PriorityAlertSignalIcon } from "@/components/PriorityAlertIcon";
 import { RouteLocationButton } from "@/components/RouteLocationButton";
+import { useAlertEffects } from "@/hooks/useAlertEffects";
 import { getJourneyDecision, inferRouteAreas, modeLabel } from "@/lib/journeyDecision";
 import { keepRefreshVisible, makeRefreshErrorFeedback, makeRefreshFeedback, type RefreshFeedback } from "@/lib/refreshFeedback";
 import { countSourceIndicators, getSourceDisplayName, getSourceIndicatorLabel, getSourceIndicatorState, orderSourceItems, SOURCE_DISPLAY_ORDER } from "@/lib/sourceDisplay";
@@ -17,14 +19,14 @@ function formatHkt(value?: string) {
 
 function AlertCard({ alert }: { alert: PriorityAlert }) {
   const label = alert.level === "critical" ? "立即留意" : alert.level === "high" ? "重大影響" : "出行提醒";
-  const isIncident = alert.kind === "road" && /事故|故障|封閉|意外|阻塞/.test(`${alert.title} ${alert.detail}`);
+  const isHighImpact = alert.level !== "watch";
   const href = alert.kind === "rail"
     ? "https://www.hkemobility.gov.hk/tc/route-search/pt"
     : alert.kind === "weather" || alert.kind === "earthquake"
       ? "https://www.hko.gov.hk/tc/index.html"
       : "https://www.td.gov.hk/tc/special_news/spnews.htm";
-  return <article className={`priority-card priority-${alert.level}${isIncident ? " incident-card" : ""}`}>
-    <div className="priority-card-top"><span className="priority-level">{label}</span>{isIncident && <span className="alert-breathing-light" aria-label="道路事故警示" />}<span className="priority-area">{alert.area}</span></div>
+  return <article className={`priority-card priority-${alert.level}${isHighImpact ? " incident-card" : ""}`}>
+    <div className="priority-card-top"><span className="priority-level">{label}</span>{isHighImpact && <span className="alert-breathing-light" aria-label="重大警報提示" />}<span className="priority-area">{alert.area}</span></div>
     <h3 className="priority-card-heading"><PriorityAlertSignalIcon alert={alert} /><span>{alert.title}</span></h3>
     <p>{alert.detail}</p>
     <div className="priority-card-meta"><span>{alert.location}</span>{alert.updatedAt && <span>{formatHkt(alert.updatedAt)} HKT</span>}</div>
@@ -78,6 +80,7 @@ export default function StaticHome() {
     earthquakes: dashboard.earthquakes,
     roadRoutes: [],
   }) : [], [dashboard]);
+  const alertEffects = useAlertEffects(alerts, Boolean(dashboard) || loadError);
   const routeReady = Boolean(origin.trim() && destination.trim());
   const routeAreas = useMemo(() => inferRouteAreas(origin, destination), [origin, destination]);
   const relatedAlerts = useMemo(() => selectAlertsForRouteAreas(alerts, routeAreas, mode), [alerts, routeAreas, mode]);
@@ -141,7 +144,7 @@ export default function StaticHome() {
     setRouteOpen(true);
   };
 
-  return <main className={`traffic-app pages-app pages-text-${fontSize}`}>
+  return <main className={`traffic-app pages-app pages-text-${fontSize}${alertEffects.preferences.breathing ? " alert-breathing-enabled" : ""}`}>
     <header className="topbar">
       <a className="brand" href="#top" aria-label="交通警報器首頁"><span className="brand-mark"><Zap size={19} fill="currentColor" /></span><span className="brand-copy"><strong>交通警報器</strong><small>香港 · 先看警報</small></span></a>
       <div className="top-actions"><span className="preview-pill"><span /> 官方資料直讀</span><button className="font-size-toggle" onClick={cycleFontSize} aria-label={`文字大小：${fontSize === "normal" ? "標準" : fontSize === "large" ? "大" : "特大"}；按一下切換`}><b>Aa</b><span>{fontSize === "normal" ? "標準" : fontSize === "large" ? "大" : "特大"}</span></button></div>
@@ -158,6 +161,9 @@ export default function StaticHome() {
         </div>
         <div className="decision-meta"><span>官方資料 {formatHkt(dashboard?.fetchedAt)} HKT</span><span>頁面每 60 秒更新</span><span>普通天氣／ETA 已略去</span></div>
       </section>
+
+      <AlertEffectsSettings preferences={alertEffects.preferences} status={alertEffects.status} setSoundEnabled={alertEffects.setSoundEnabled} setBreathingEnabled={alertEffects.setBreathingEnabled} testSound={alertEffects.testSound} />
+      {alertEffects.newAlertNotice && <div className="new-alert-notice" role="status" aria-live="polite"><Bell size={16} aria-hidden="true" />{alertEffects.newAlertNotice}</div>}
 
       <details className="route-planner route-planner-primary" open={routeOpen} onToggle={(event) => setRouteOpen((event.currentTarget as HTMLDetailsElement).open)}>
         <summary><MapPinned size={18} /><span><strong>我由邊度去邊度？</strong><small>按大區初步比對，不是實際路線檢查</small></span><ChevronRight size={17} /></summary>
