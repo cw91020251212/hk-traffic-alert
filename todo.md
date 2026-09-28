@@ -192,11 +192,20 @@
 - [x] Desktop 與 375px mobile 全頁首頁 preview 截圖核驗（route form 收合）。**尚未**在 375px 展開 route form 逐項驗長文字／溢位。
 
 
-## 階段十六｜手動更新按鈕回饋與快取繞過（PR #25 OPEN；未合併／未發布）
+## 階段十六｜手動更新按鈕回饋與快取繞過（PR #25 已合併及發布）
 
 - [x] 根因：Pages 點擊會再呼叫 60 秒快取中的 dashboard；Server 原先只 refetch 部分 query，server in-memory cache 仍可回傳舊資料；兩版都沒有明確的 loading／完成／來源失敗文案。
 - [x] Pages 手動重查會清 dashboard cache 後重新讀官方來源；Server 新增 refresh mutation，清警報／港鐵／道路／環境四組 cache、重新讀取並更新 client query cache。
 - [x] 650 ms 最低可見 spinner 時間、持續旋轉／完成彈動、HKT 檢查時間、部分失敗數、整體錯誤保留舊資料；狀態以 `aria-live` 公告並尊重 reduced-motion。
 - [x] `pnpm test` 10 files／88 tests、`pnpm check`、Pages／Server build、`git diff --check` 通過；375×812 Playwright 真實點擊確認新增官方來源請求、loading／完成文案及 reduced-motion。
 - [x] 報告與兩張手機預覽圖已加入 `reports/`。
-- [x] 推送 commit `f0ff9b354a29adf8af6f4be33912b4e75cba1fe7` 並建立 [PR #25](https://github.com/cw91020251212/hk-traffic-alert/pull/25)（OPEN／MERGEABLE；GitHub 未報 CI checks）；公開部署需就本次改動另行明確確認。
+- [x] PR #25 已合併，merge commit `2dc3d47e0dd5bfcb86666db922db581128712771`；Pages commit `219f4a6dbce459625fa4e01de1061ba26465fb2b`，workflow #36412068254 成功；公開 HTML 載入預期 JS／CSS，均 HTTP 200。
+
+
+## 階段十七｜官方來源入口 icon 置中（PR #26 OPEN；未合併／未發布）
+
+- [x] 根因確認：`.quick-detail-links a svg:last-child` 同時匹配外側箭頭及巢狀 chip 內的 SVG；`margin-left:auto` 破壞 icon chip 的 grid 置中。button 選擇器有同一風險。
+- [x] 選擇器改成只對直接子元素的箭頭套用 margin，內層道路／鐵路／天氣圖示保留中心對齊。
+- [x] `pnpm test` 10 files／88 tests、`pnpm check`、Pages／Server build、`git diff --check` 通過；375px Playwright 三個圖示中心差均 0px、外箭頭距右側 13px、無水平溢位。
+- [x] 報告和手機截圖已加入 `reports/`。
+- [x] 已推送 commit `b42983bd0580bab0d0a240be0ee4af654d55ecf9` 並建立 [PR #26](https://github.com/cw91020251212/hk-traffic-alert/pull/26)（OPEN／MERGEABLE；GitHub 未報 CI checks）；**未更新公開站**，需對這項新修正另行明確確認後才部署。

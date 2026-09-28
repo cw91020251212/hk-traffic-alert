@@ -674,9 +674,9 @@ button { -webkit-tap-highlight-color: transparent; }
 .route-verdict-watch { color:#5e5527; background:#fff9df; }
 .quick-detail-links { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-top:12px; }
 .quick-detail-links button { min-height:45px; display:flex; align-items:center; gap:8px; padding:9px 12px; border:1px solid #e2e8e2; border-radius:9px; color:#526d67; background:#fafcf9; font-size:10px; font-weight:750; text-align:left; }
-.quick-detail-links button svg:last-child { margin-left:auto; }
+.quick-detail-links button > svg:last-child { margin-left:auto; }
 .quick-detail-links a { min-height:45px; display:flex; align-items:center; gap:8px; padding:9px 12px; border:1px solid #e2e8e2; border-radius:9px; color:#526d67; background:#fafcf9; font-size:10px; font-weight:750; text-decoration:none; }
-.quick-detail-links a svg:last-child { margin-left:auto; }
+.quick-detail-links a > svg:last-child { margin-left:auto; }
 .quick-detail-icon { width:26px; height:26px; display:grid; place-items:center; flex:none; border:1px solid transparent; border-radius:8px; }
 .quick-detail-icon--road { color:#b45309; background:#fff7ed; border-color:#fdba74; }
 .quick-detail-icon--rail { color:#1d4ed8; background:#eff6ff; border-color:#bfdbfe; }
