@@ -289,6 +289,7 @@ describe("alert-first selection and status", () => {
       warnings: normalizeWeatherWarnings({ details: [{ warningStatementCode: "WRAIN", subtype: "WRAINR", contents: ["紅色暴雨警告生效中"] }] }),
     });
     expect(filterPriorityAlerts(alerts, "港島", "all").map((item) => item.kind)).toEqual(["weather"]);
+    expect(alerts.find((item) => item.kind === "weather")).toMatchObject({ warningCode: "WRAIN", warningSubtype: "WRAINR" });
     expect(filterPriorityAlerts(alerts, "新界／離島", "all").map((item) => item.kind).sort()).toEqual(["road", "weather"]);
     expect(filterPriorityAlerts(alerts, "全部", "road")).toHaveLength(1);
   });

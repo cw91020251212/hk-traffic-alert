@@ -22,7 +22,7 @@ import {
   Waves,
   Zap,
 } from "lucide-react";
-import { PriorityAlertIcon } from "@/components/PriorityAlertIcon";
+import { PriorityAlertSignalIcon } from "@/components/PriorityAlertIcon";
 import { trpc } from "@/lib/trpc";
 import { ALERT_AREA_OPTIONS, ALERT_AREA_PREFERENCE_KEY, parseAlertAreaPreference, type AlertAreaPreference } from "@/lib/alertPreferences";
 import { getJourneyDecision, inferRouteAreas, modeLabel } from "@/lib/journeyDecision";
@@ -519,7 +519,7 @@ function PriorityAlertCard({ alert }: { alert: PriorityAlert }) {
       : "https://www.td.gov.hk/tc/special_news/spnews.htm";
   return <article className={`priority-card priority-${alert.level}`}>
     <div className="priority-card-top"><span className="priority-level">{levelLabel}</span><span className="priority-area">{alert.area} · {alert.kind === "road" ? "道路" : alert.kind === "rail" ? "鐵路" : alert.kind === "weather" ? "天氣警告" : "地震"}</span></div>
-    <h3 className="priority-card-heading"><PriorityAlertIcon kind={alert.kind} /><span>{alert.title}</span></h3><p>{alert.detail}</p>
+    <h3 className="priority-card-heading"><PriorityAlertSignalIcon alert={alert} /><span>{alert.title}</span></h3><p>{alert.detail}</p>
     <div className="priority-card-meta"><span>{alert.location}</span>{alert.updatedAt && <span>官方更新 {formatHkt(alert.updatedAt)} HKT</span>}</div>
     <a href={sourceUrl} target="_blank" rel="noreferrer">查看官方消息 <ArrowUpRight size={13} /></a>
   </article>;

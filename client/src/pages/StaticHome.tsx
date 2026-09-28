@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, ArrowUpRight, CarFront, ChevronRight, CloudLightning, MapPinned, Navigation, RefreshCw, ShieldAlert, TrainFront, TriangleAlert, Zap } from "lucide-react";
-import { PriorityAlertIcon } from "@/components/PriorityAlertIcon";
+import { PriorityAlertSignalIcon } from "@/components/PriorityAlertIcon";
 import { getJourneyDecision, inferRouteAreas, modeLabel } from "@/lib/journeyDecision";
 import { countSourceIndicators, getSourceDisplayName, getSourceIndicatorLabel, getSourceIndicatorState, orderSourceItems, SOURCE_DISPLAY_ORDER } from "@/lib/sourceDisplay";
 import { buildDirectionsUrl, parseRouteBookmarks, ROUTE_BOOKMARKS_PREFERENCE_KEY, selectAlertsForRouteAreas, type RouteBookmark, type RouteMode } from "@/lib/routePlanner";
@@ -23,7 +23,7 @@ function AlertCard({ alert }: { alert: PriorityAlert }) {
       : "https://www.td.gov.hk/tc/special_news/spnews.htm";
   return <article className={`priority-card priority-${alert.level}${isIncident ? " incident-card" : ""}`}>
     <div className="priority-card-top"><span className="priority-level">{label}</span>{isIncident && <span className="alert-breathing-light" aria-label="道路事故警示" />}<span className="priority-area">{alert.area}</span></div>
-    <h3 className="priority-card-heading"><PriorityAlertIcon kind={alert.kind} /><span>{alert.title}</span></h3>
+    <h3 className="priority-card-heading"><PriorityAlertSignalIcon alert={alert} /><span>{alert.title}</span></h3>
     <p>{alert.detail}</p>
     <div className="priority-card-meta"><span>{alert.location}</span>{alert.updatedAt && <span>{formatHkt(alert.updatedAt)} HKT</span>}</div>
     <a href={href} target="_blank" rel="noreferrer">查看官方消息 <ArrowUpRight size={13} /></a>

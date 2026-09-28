@@ -63,6 +63,15 @@
 - [x] 使用者於 2026-09-28 09:21 明確要求發布；最新 main build 已發布到 `gh-pages` commit `88f701817cb17f010a55b7370b1bb7eccff430bd`。
 - [x] 正式站確認載入 `index-CHkeEldJ.js`／`index-DssHhgsp.css`；目前道路事故卡含 `道路交通` SVG icon 與中文 aria-label。
 
+## 階段十三｜暴雨及風球信號加色（進行中）
+
+- [x] 天文台官方資料確認：黃／紅／黑暴雨警告各有正式顏色；風球以信號號碼區分，一／三／八／九／十號及八號方向需保留文字。
+- [x] 警告資料保留 HKO code/subtype；黃／紅／黑雨顯示對應色 chip，風球顯示 1／3／8／9／10 號分級色 chip。
+- [x] 非官方風球顏色僅作產品視覺提示，不宣稱為天文台定義；未識別 signal 不猜顏色，信號文字仍可獨立辨識。
+- [x] `pnpm test` 8 files／71 tests、`pnpm check`、`pnpm pages:build`、`pnpm build`、`git diff --check` 通過。
+- [x] Chromium 375×812 預覽確認八種信號 chip 可讀、文字與方向保留；全部 chip 文字對比度高於 4.5:1。
+- [ ] 建立／合併 PR；公開 Pages 發布須再取得使用者確認。
+
 ## 階段三｜直接結論與自動行程篩選（已完成）
 
 - [x] 首屏由宣傳式 hero 改為直接行動結論：照常出發、留意、預留時間、改路／延後，或來源不足時「未能完整確認」。
