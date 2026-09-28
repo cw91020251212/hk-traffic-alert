@@ -1,11 +1,13 @@
 # 事故警報卡加入分類圖示
 
 - 日期（香港時間）：2026-09-28
-- 狀態：實作、驗證及合併完成；依使用者指示不發布公開 Pages
+- 狀態：實作、驗證、合併及公開部署完成
 - 分支：`feat/incident-type-icons`
 - 主線基線：`f3fb150512d010a45e934fb4681faedaf0b386a6`
 - 相關 PR：[PR #19](https://github.com/cw91020251212/hk-traffic-alert/pull/19)（已合併）
 - main merge commit：`ad2c8bf96fd408d4a0c6b2e67d9d4725dbb7ca30`
+- 使用者於 2026-09-28 09:21 明確要求發布
+- Pages 部署 commit：`88f701817cb17f010a55b7370b1bb7eccff430bd`
 
 ## 使用者需求
 
@@ -25,9 +27,13 @@
 - `pnpm check`、`pnpm pages:build`、`pnpm build` 全部通過。
 - Desktop 與 375px browser preview：4 張代表性警報卡均顯示預期 Lucide SVG 和中文分類；375px 頁寬維持 375px，4 個標題 scrollWidth 均不大於 clientWidth，沒有橫向溢位。
 - 驗收為本機示意卡視覺測試，不代表真實事故 feed 當時剛好同時有四種類型。
+- 從最新 `main` (`c1d66116466f0d0bc70f1e2cafd1abe0d011523a`) 重跑 8 files／54 tests、型別檢查、Pages build 和 Server build，全部通過。
+- 正式 CDN 提供 bundle `assets/index-CHkeEldJ.js` 和 `assets/index-DssHhgsp.css`，均為 200；JS 含四種 Lucide 元件，CSS 含道路／鐵路／天氣／地震圖示類別。
+- 正式瀏覽器載入新版 bundle；DOM 確認目前道路事故卡標題為「道路事故 · 交通意外」，圖示有 SVG，無障礙名稱為「道路交通」。
 
 ## 發布狀態與下一步
 
-- PR #19 已合併至 `main`。使用者確認「只做 code review／PR／報告，不發布網站」；因此沒有改動 `gh-pages`。
-- 公開 Pages 仍是舊版，未包含事故分類圖示。除非使用者日後明確要求，不要發布此變更。
-- 後續 AI 請以本報告及 `HANDOFF_AI_SUMMARY.md` 為準，不要將尚未部署說成已上線。
+- PR #19 已合併至 `main`。使用者後來於 09:21 明確更改先前的決定，要求發布；所以已更新 `gh-pages`，公開版包含事故分類圖示。
+- 公開網址：<https://cw91020251212.github.io/hk-traffic-alert/>。
+- 桌面／手機預覽截圖：`/home/ubuntu/screenshots/4179-i65syqhcnf0d4i8_2026-09-28_00-47-29_8803.webp`、`/home/ubuntu/screenshots/4179-i65syqhcnf0d4i8_2026-09-28_00-53-46_9223.webp`。
+- 後續 AI 請以本報告及 `HANDOFF_AI_SUMMARY.md` 為準；圖示是固定分類輔助，實際事故內容仍以文字和官方公告為準。
