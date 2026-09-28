@@ -120,3 +120,6 @@
 
 
 - 2026-09-28 17:22 發布狀態更新：已推送程式 commit `70add062cef06d39d6b1258c59d22ad30a580bd4` 並建立 [PR #24](https://github.com/cw91020251212/hk-traffic-alert/pull/24)；PR OPEN／MERGEABLE，建立時 GitHub 未報 CI checks。PR branch 及報告已備份到 GitHub；尚未合併、未更新 `gh-pages`、公開網站維持舊版。新的 route planner 要等使用者另行明確確認發布。
+
+
+- 2026-09-28 18:04 最終發布核實：使用者已於 17:57 明確批准合併並發布。PR #24 merged，merge commit `f83cbc74025cad84cccafb20800bdfc4187e3c01`。主線 build 後推送 Pages commit `075f022a27bd16184b019ad1df2377c1d79b20fc`；Pages workflow [#36406863148](https://github.com/cw91020251212/hk-traffic-alert/actions/runs/36406863148) success；公開首頁已載入新 JS/CSS，兩個資產 HTTP 200。詳見 `reports/2026-09-28-route-check-and-gps.md`。

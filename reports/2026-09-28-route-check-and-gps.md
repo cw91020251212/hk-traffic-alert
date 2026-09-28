@@ -1,9 +1,9 @@
 # 行程警報比對簡化與按需 GPS 起點
 
 - 日期（香港時間）：2026-09-28
-- 狀態：功能及本機 QA 完成；PR #24 已建立、保持開啟並可合併；未合併、未發布至公開網站
+- 狀態：PR #24 已合併；GitHub Pages 部署及公開資產核實成功
 - 分支：`feat/route-check-simplify`
-- 相關 PR／Issue：[PR #24](https://github.com/cw91020251212/hk-traffic-alert/pull/24)（OPEN；建立時未有 CI checks 報告）
+- 相關 PR／Issue：[PR #24](https://github.com/cw91020251212/hk-traffic-alert/pull/24)（MERGED）
 - 程式 commit：`70add062cef06d39d6b1258c59d22ad30a580bd4`
 
 ## 使用者目標
@@ -35,22 +35,22 @@
 ## 發布與交付
 
 - 目標環境：GitHub Pages 靜態版和 Server 版，經 PR 合併後另行部署。
-- 目前分支：`feat/route-check-simplify`。
-- PR #24：OPEN、MERGEABLE；目前未有 CI checks 報告。
-- 程式 commit：`70add062cef06d39d6b1258c59d22ad30a580bd4`。
-- 使用者可見網址：<https://cw91020251212.github.io/hk-traffic-alert/>（目前仍是已發布舊版，本功能尚未公開）。
-- 狀態：未發布；此次新功能沒有取得公開部署確認。
+- PR #24 已於 2026-09-28 合併；主線 merge commit：`f83cbc74025cad84cccafb20800bdfc4187e3c01`。
+- GitHub Pages 部署 commit：`075f022a27bd16184b019ad1df2377c1d79b20fc`。
+- [Pages workflow #36406863148](https://github.com/cw91020251212/hk-traffic-alert/actions/runs/36406863148) — success。
+- 公開網址：<https://cw91020251212.github.io/hk-traffic-alert/>；HTML 已載入 `assets/index-Cr6dghH4.js` 與 `assets/index-BtK7HkjM.css`，兩者 HTTP 200。
+- 狀態：GitHub Pages 靜態版已發布。Server production build 已驗證，但此工作沒有另外部署 Server 服務。
 
 ## 未完成事項與限制
 
 - 本次刻意沒有精確計算 Google Maps／其他導航服務的路線幾何，故不會知道事故與封路是否實際落在該路線。
 - GPS 只用官方行政區多邊形估算粗略大區；離線 polygon 為減少前端負擔而簡化，區界附近 120 米範圍回報未知；這仍不是實際路線 geometry、道路級事故或封路比對。運輸署事故資料本身多為文字地點且未全面使用事故座標。
 - Google Maps URL 只在用家點擊外部導航連結時打開，路線由 Google Maps 自行計算；不代表本程式取得或驗證 Google 的替代路線。
-- 使用者尚未要求公開部署本次 route planner 功能；PR 合併前後均不得把新 bundle 推到 `gh-pages`。
+- 已按使用者於 2026-09-28 明確確認發布；目前 `gh-pages` 指向部署 commit `075f022a27bd16184b019ad1df2377c1d79b20fc`。
 
 ## 下一步／回復方式
 
-- 等候使用者 review PR #24；合併前後都不把此功能推至 Pages。公開部署需本功能的明確發佈指示，現有 `gh-pages` 保持不變。
+- 發布及公開資產 HTTP 200 已核實；如要撤回，須以後續回復 commit 更新 `gh-pages`，並核實網站回復完成。
 - 如需撤回，可 revert 相關 PR／commit；GPS 僅單次呼叫，沒有持續 watch 或自動座標上傳。
 
 ## 安全與資料注意事項
