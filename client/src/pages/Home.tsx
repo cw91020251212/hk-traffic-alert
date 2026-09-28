@@ -27,6 +27,7 @@ import { RouteLocationButton } from "@/components/RouteLocationButton";
 import { trpc } from "@/lib/trpc";
 import { ALERT_AREA_OPTIONS, ALERT_AREA_PREFERENCE_KEY, parseAlertAreaPreference, type AlertAreaPreference } from "@/lib/alertPreferences";
 import { getJourneyDecision, inferRouteAreas, modeLabel } from "@/lib/journeyDecision";
+import { keepRefreshVisible, makeRefreshErrorFeedback, makeRefreshFeedback, type RefreshFeedback } from "@/lib/refreshFeedback";
 import { buildDirectionsUrl, parseRouteBookmarks, ROUTE_BOOKMARKS_PREFERENCE_KEY, routePlaceLabel, selectAlertsForRouteAreas, type RouteArea, type RouteBookmark, type RouteMode } from "@/lib/routePlanner";
 import { filterPriorityAlerts, getPriorityFeedState, mergeEndpointFailureSources, prioritizeTrafficEvents, selectPriorityAlerts, type AQHIStation, type EarthquakeBulletin, type MobilityDemo, type PriorityAlert, type TrafficEvent, type WeatherWarning } from "../../../server/transportData";
 
@@ -129,6 +130,7 @@ export default function Home() {
   const [activeMode, setActiveMode] = useState("all");
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState("");
+  const [refreshFeedback, setRefreshFeedback] = useState<RefreshFeedback | null>(null);
   useEffect(() => {
     try { window.localStorage.setItem(ALERT_AREA_PREFERENCE_KEY, alertArea); } catch { /* local preference is optional */ }
   }, [alertArea]);
@@ -147,6 +149,9 @@ export default function Home() {
   });
   const roadTraffic = trpc.transport.roadTraffic.useQuery(undefined, { refetchInterval: 5 * 60_000, refetchOnWindowFocus: true, retry: 1 });
   const environment = trpc.transport.environment.useQuery(undefined, { refetchInterval: 5 * 60_000, refetchOnWindowFocus: true, retry: 1 });
+
+  const utils = trpc.useUtils();
+  const refreshAll = trpc.transport.refresh.useMutation();
 
   const visibleModes = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -210,6 +215,20 @@ export default function Home() {
     window.setTimeout(() => document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
   };
   const togglePanel = (panel: "transport" | "weather" | "sources") => setOpenPanels((current) => ({ ...current, [panel]: !current[panel] }));
+  const refreshOfficialData = async () => {
+    if (refreshAll.isPending) return;
+    setRefreshFeedback(null);
+    try {
+      const result = await keepRefreshVisible(refreshAll.mutateAsync());
+      utils.transport.dashboard.setData(undefined, result.dashboard);
+      utils.transport.mobility.setData(undefined, result.mobility);
+      utils.transport.roadTraffic.setData(undefined, result.roadTraffic);
+      utils.transport.environment.setData(undefined, result.environment);
+      setRefreshFeedback(makeRefreshFeedback(result.sources, result.checkedAt));
+    } catch {
+      setRefreshFeedback(makeRefreshErrorFeedback());
+    }
+  };
   const saveRouteBookmark = () => {
     const origin = routeOrigin.trim();
     const destination = routeDestination.trim();
@@ -251,8 +270,9 @@ export default function Home() {
         <section className={`decision-hero decision-${journeyDecision.tone}`} id="overview" aria-live="polite">
           <div className="decision-topline">
             <span className="decision-kicker"><i />{journeyDecision.kicker}</span>
-            <button className="decision-refresh" onClick={() => { void dashboard.refetch(); void roadTraffic.refetch(); }} disabled={dashboard.isFetching || roadTraffic.isFetching} aria-label="重新檢查官方警報">
-              <RefreshCw size={16} className={dashboard.isFetching || roadTraffic.isFetching ? "spin" : ""} />
+            {(refreshAll.isPending || refreshFeedback) && <span className={`decision-refresh-status${refreshAll.isPending ? " is-loading" : ` is-${refreshFeedback?.kind ?? "success"}`}`} role="status" aria-live="polite">{refreshAll.isPending ? "正在重新檢查…" : refreshFeedback?.message}</span>}
+            <button className={`decision-refresh${refreshAll.isPending ? " is-refreshing" : ""}${refreshFeedback ? ` has-refresh-feedback feedback-${refreshFeedback.kind}` : ""}`} onClick={() => void refreshOfficialData()} disabled={refreshAll.isPending} aria-label={refreshAll.isPending ? "正在重新檢查官方警報" : "重新檢查官方警報"} aria-busy={refreshAll.isPending}>
+              <RefreshCw size={16} className={refreshAll.isPending ? "refresh-icon-spinning" : refreshFeedback ? "refresh-icon-complete" : ""} />
             </button>
           </div>
           <h1>{journeyDecision.title}</h1>
