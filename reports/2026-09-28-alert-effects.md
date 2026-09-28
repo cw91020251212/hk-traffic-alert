@@ -2,7 +2,7 @@
 
 **Date:** 2026-09-28  
 **Scope:** opt-in new-major-alert chime and breathing animation for both the server dashboard and GitHub Pages/static dashboard.  
-**Release status:** code review/PR only; **not merged or deployed**.
+**Release status:** PR #28 merged and published to the user's GitHub Pages site on 2026-09-29; the public assets were independently verified.
 
 ## User-facing behavior
 
@@ -42,7 +42,15 @@
 - Keep both defaults false; the product requirement is explicit opt-in for sound **and** motion.
 - Do not add browser push/background-notification claims without a separate service-worker permission flow and deployment design.
 - Review both dashboard variants when changing alert identifiers, severity definitions, polling cadence or preferences.
-- This PR is intentionally not published to the public GitHub Pages site. Public deployment requires the user's explicit approval after review.
+- Keep the report's implementation/test notes aligned with the current live release; this feature is deployed, not merely available on the feature branch.
+
+## Release verification
+
+- User explicitly approved merging PR #28 and updating the public GitHub Pages site.
+- PR #28 merged into `main` at commit `0b3cff5dfd67a648e3bbeb0fc15b29b6f31a5121`.
+- Production static assets from `pnpm pages:build` were published to `gh-pages` at commit `7fa10bdb8bd954073fffda77c5bcea8bbd6e4e47`.
+- GitHub Pages deployment workflow [36455311382](https://github.com/cw91020251212/hk-traffic-alert/actions/runs/36455311382) completed successfully.
+- Live site: <https://cw91020251212.github.io/hk-traffic-alert/>. The returned HTML referenced `index-RniW6zKx.js` and `index-BDziGqjb.css`; both returned HTTP 200. The deployed JavaScript contained the strings `突發警示設定`, `新重大警報聲音`, and `試聽一次`.
 
 ## Mobile preview
 
