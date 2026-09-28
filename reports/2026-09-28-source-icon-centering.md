@@ -1,10 +1,10 @@
 # 官方來源入口圖示置中修正
 
 - 日期（香港時間）：2026-09-28
-- 狀態：CSS 修正及手機 QA 完成；[PR #26 已建立並開啟](https://github.com/cw91020251212/hk-traffic-alert/pull/26)；尚未合併或發布。
+- 狀態：**[PR #26 已合併並發布到公開 GitHub Pages](https://github.com/cw91020251212/hk-traffic-alert/pull/26)**；部署 workflow 成功，公開手機畫面實測通過。
 - 分支：`fix/center-source-link-icons`
-- Commit：`b42983bd0580bab0d0a240be0ee4af654d55ecf9`；PR 狀態 OPEN／MERGEABLE；GitHub 未報 CI checks。
-- 本次不包含 Pages 部署；上一個已發布版本的外層箭頭選擇器缺陷由這份後續修正處理。
+- 修正 commit：`b42983bd0580bab0d0a240be0ee4af654d55ecf9`；merge commit：`48da40c7ed36d93e4abb8fe049bdfeb170fce029`。
+- Pages commit：`eacdae362d635648c66c20de4249be3f5c75b585`；workflow [#36413603189 成功](https://github.com/cw91020251212/hk-traffic-alert/actions/runs/36413603189)。
 
 ## 使用者觀察與根因
 
@@ -22,9 +22,10 @@
 - `pnpm check`、`pnpm pages:build`、`pnpm build`、`git diff --check`：全部通過。
 - Playwright 375×812 實測道路、鐵路、天氣三個 SVG 的相對 chip 中心差 `dx=0px, dy=0px`；外側連結箭頭右方留白 13px；文件寬度 375px、無水平溢位。
 - 手機截圖：[source-icons-centered-375.png](./assets/source-icons-centered-375.png)。
+- 公開頁 live 375×812 實測亦確認三個中心差為 0×0px、右側箭頭留白 13px、無水平溢位；[live 驗收截圖](./assets/source-icons-live-centered-375.png)。
 
 ## 發布界線
 
-- 這是針對截圖中新發現的 UI bug 的獨立後續修正，已推送到 PR #26；目前尚未合併，也未把它發布到 `gh-pages`。
-- 先前更新刷新按鈕的 Pages 部署 workflow #36412068254 成功；公開 HTML 正載入刷新按鈕 bundle `index-vH88dwkP.js` 及 CSS `index-h2S6oUv9.css`，兩者 HTTP 200。但上述 icon-centering selector 修正是在那次部署之後修改的。
-- 若要將置中修正更新至公開站，先確認 PR #26 狀態；只在得到這項新修正的明確發布確認後才合併，從合併版 main 重建及發布。
+- PR #26 已在使用者明確批准後合併；從合併版 main `48da40c7ed36d93e4abb8fe049bdfeb170fce029` 重建，再以 Pages commit `eacdae362d635648c66c20de4249be3f5c75b585` 發布。
+- Pages workflow #36413603189 成功；公開 HTML 載入 `index-CGYbP6S9.js` 和 `index-DuqCFk-i.css`，兩者 HTTP 200；公開 CSS 已包含直接子元素限定規則。
+- 公開網站：<https://cw91020251212.github.io/hk-traffic-alert/>。

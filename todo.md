@@ -202,10 +202,10 @@
 - [x] PR #25 已合併，merge commit `2dc3d47e0dd5bfcb86666db922db581128712771`；Pages commit `219f4a6dbce459625fa4e01de1061ba26465fb2b`，workflow #36412068254 成功；公開 HTML 載入預期 JS／CSS，均 HTTP 200。
 
 
-## 階段十七｜官方來源入口 icon 置中（PR #26 OPEN；未合併／未發布）
+## 階段十七｜官方來源入口 icon 置中（PR #26 已合併及發布）
 
 - [x] 根因確認：`.quick-detail-links a svg:last-child` 同時匹配外側箭頭及巢狀 chip 內的 SVG；`margin-left:auto` 破壞 icon chip 的 grid 置中。button 選擇器有同一風險。
 - [x] 選擇器改成只對直接子元素的箭頭套用 margin，內層道路／鐵路／天氣圖示保留中心對齊。
 - [x] `pnpm test` 10 files／88 tests、`pnpm check`、Pages／Server build、`git diff --check` 通過；375px Playwright 三個圖示中心差均 0px、外箭頭距右側 13px、無水平溢位。
 - [x] 報告和手機截圖已加入 `reports/`。
-- [x] 已推送 commit `b42983bd0580bab0d0a240be0ee4af654d55ecf9` 並建立 [PR #26](https://github.com/cw91020251212/hk-traffic-alert/pull/26)（OPEN／MERGEABLE；GitHub 未報 CI checks）；**未更新公開站**，需對這項新修正另行明確確認後才部署。
+- [x] 使用者確認發布後，PR #26 以 merge commit `48da40c7ed36d93e4abb8fe049bdfeb170fce029` 合併；Pages commit `eacdae362d635648c66c20de4249be3f5c75b585`，workflow #36413603189 成功；公開 375px DOM 三個圖示中心差 0px、無水平溢位。

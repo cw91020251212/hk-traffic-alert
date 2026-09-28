@@ -138,3 +138,6 @@
 
 
 - 2026-09-28 19:00 PR update: centering fix commit `b42983bd0580bab0d0a240be0ee4af654d55ecf9` pushed to [PR #26](https://github.com/cw91020251212/hk-traffic-alert/pull/26), state OPEN／MERGEABLE; GitHub reported no CI checks. The previous refresh commit remains live. The centered-icon CSS update is not merged and not deployed; wait for explicit confirmation before updating `gh-pages`.
+
+
+- 2026-09-28 19:07 final release status (supersedes the 19:00 pending-deploy note): user explicitly approved PR #26 merge/deploy. PR #26 merged at `48da40c7ed36d93e4abb8fe049bdfeb170fce029`; Pages deployment commit `eacdae362d635648c66c20de4249be3f5c75b585`; workflow [#36413603189](https://github.com/cw91020251212/hk-traffic-alert/actions/runs/36413603189) succeeded. Public HTML loads `index-CGYbP6S9.js` and `index-DuqCFk-i.css` (both HTTP 200); CSS selector verified. Playwright on the public page at 375×812 measured road/rail/weather centers 0×0px, arrow right gap 13px and no horizontal overflow. Live screenshot: `reports/assets/source-icons-live-centered-375.png`; complete report: `reports/2026-09-28-source-icon-centering.md`.
