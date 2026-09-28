@@ -192,11 +192,11 @@
 - [x] Desktop 與 375px mobile 全頁首頁 preview 截圖核驗（route form 收合）。**尚未**在 375px 展開 route form 逐項驗長文字／溢位。
 
 
-## 階段十六｜手動更新按鈕回饋與快取繞過（修正／QA 完成；待 PR）
+## 階段十六｜手動更新按鈕回饋與快取繞過（PR #25 OPEN；未合併／未發布）
 
 - [x] 根因：Pages 點擊會再呼叫 60 秒快取中的 dashboard；Server 原先只 refetch 部分 query，server in-memory cache 仍可回傳舊資料；兩版都沒有明確的 loading／完成／來源失敗文案。
 - [x] Pages 手動重查會清 dashboard cache 後重新讀官方來源；Server 新增 refresh mutation，清警報／港鐵／道路／環境四組 cache、重新讀取並更新 client query cache。
 - [x] 650 ms 最低可見 spinner 時間、持續旋轉／完成彈動、HKT 檢查時間、部分失敗數、整體錯誤保留舊資料；狀態以 `aria-live` 公告並尊重 reduced-motion。
 - [x] `pnpm test` 10 files／88 tests、`pnpm check`、Pages／Server build、`git diff --check` 通過；375×812 Playwright 真實點擊確認新增官方來源請求、loading／完成文案及 reduced-motion。
 - [x] 報告與兩張手機預覽圖已加入 `reports/`。
-- [ ] 推送分支並建立 PR；GitHub Pages 上線需就本次刷新按鈕改動另行明確確認。
+- [x] 推送 commit `f0ff9b354a29adf8af6f4be33912b4e75cba1fe7` 並建立 [PR #25](https://github.com/cw91020251212/hk-traffic-alert/pull/25)（OPEN／MERGEABLE；GitHub 未報 CI checks）；公開部署需就本次改動另行明確確認。

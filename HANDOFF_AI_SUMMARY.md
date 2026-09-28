@@ -127,3 +127,6 @@
 
 
 - 2026-09-28 18:37 手動更新掣新工作（分支 `feat/refresh-button-feedback`）：根因是 Pages 按鈕只重讀有 60 秒記憶體快取的 `getTransportDashboard()`，Server 按鈕只 refetch 部分 tRPC query，而後端來源快取仍會回舊資料；兩版又欠缺 loading／完成狀態，所以用家看不出更新是否執行。已改 Pages 手動 cache bypass、Server `transport.refresh` 清除四類 server cache 並以 mutation 結果更新四個 tRPC client caches；按鈕至少轉 650 ms，顯示「正在重新檢查…」、成功 HKT 時間、來源失敗數或整體失敗文案。加入 reduced-motion、aria busy/live feedback、快取刷新及狀態單元測試。`pnpm test` 10 files／88 tests、`pnpm check`、Pages build、Server build、`git diff --check` 通過；375×812 Playwright 用來源 mock 驗證多發出官方 request、loading／完成提示及 reduced-motion。證據：`reports/assets/refresh-button-progress-375.png`、`refresh-button-complete-375.png`；完整原因和限制在 `reports/2026-09-28-refresh-button-feedback.md`。**尚未推送／開 PR／部署；須對這項新改動另行取得公開發布確認。**
+
+
+- 2026-09-28 18:39 PR 狀態更新（覆蓋上一行「尚未推送／開 PR」）：功能 commit `f0ff9b354a29adf8af6f4be33912b4e75cba1fe7` 已推送，GitHub [PR #25](https://github.com/cw91020251212/hk-traffic-alert/pull/25) OPEN／MERGEABLE；建立時 GitHub 未報 CI checks。報告與兩張 mobile QA 截圖已在 PR branch。仍未合併／未部署；刷新按鈕這項新改動的公開發布尚待使用者另行確認。

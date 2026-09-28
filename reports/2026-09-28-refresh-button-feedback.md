@@ -1,8 +1,9 @@
 # 手動更新按鈕：真正重新檢查、動作回饋與錯誤狀態
 
 - 日期（香港時間）：2026-09-28
-- 狀態：修正及本機驗證完成；待 PR 建立／合併；**本次改動尚未發布到公開網站**。
+- 狀態：修正及本機驗證完成；[PR #25 已建立並開啟](https://github.com/cw91020251212/hk-traffic-alert/pull/25)；**本次改動尚未合併或發布到公開網站**。
 - 分支：`feat/refresh-button-feedback`
+- 功能 commit：`f0ff9b354a29adf8af6f4be33912b4e75cba1fe7`；PR 狀態：OPEN／MERGEABLE；GitHub 未報 CI checks。
 - 適用介面：GitHub Pages 靜態版及 Server 版。
 - 公開網站目前網址：<https://cw91020251212.github.io/hk-traffic-alert/>
 
@@ -52,14 +53,14 @@
 
 ## 待辦／發布邊界
 
-- 目前程式只在本地 feature branch；建立 PR 後可供 review。
+- 程式已推到 GitHub 並放入 PR #25 供 review；目前仍未合併。
 - **未更新 `gh-pages`，亦未改公開網站。**使用者先前要求改善刷新按鈕，但沒有對這項新改動給出公開發布確認；如要更新網站，須另行確認後再合併／發布。
 - 目前沒有引入 AI、第三方 API、API key 或任何付費服務。
 - 舊 build 會提示 Server JS chunk 超過 500 kB；本次不是新引入路由拆分工作，應留作後續效能改善，不影響本次 build 成功。
 
 ## 下一位 AI 接手建議
 
-1. 先查 `git status --short --branch`，確認仍在 `feat/refresh-button-feedback`。
-2. 先重新跑 `pnpm test && pnpm check && pnpm pages:build && pnpm build && git diff --check`。
-3. 確認 PR 描述清楚說明：cache bypass + 650 ms loading + 成功／部分失敗狀態；公開部署尚未確認。
-4. 若用家確認發布，從合併後的 main 重建 Pages、部署至 `gh-pages`，再核實 Pages workflow 與公開 JS/CSS HTTP 200，更新本報告的發布狀態。
+1. PR #25 是唯一本次變更的 GitHub review 入口；先查 `git status --short --branch` 及 PR 狀態。
+2. 修改後重跑 `pnpm test && pnpm check && pnpm pages:build && pnpm build && git diff --check`。
+3. PR #25 建立時沒有 CI checks；不要把此事誤報成 CI 已通過。
+4. 若用家確認發布，才合併；從合併後 main 重建 Pages、部署至 `gh-pages`，核實 Pages workflow 與公開 JS/CSS HTTP 200，並更新本報告。
