@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { PriorityAlert } from "../../../server/transportData";
-import { buildDirectionsUrl, parseRouteBookmarks, selectAlertsForRouteAreas } from "./routePlanner";
+import { buildDirectionsUrl, formatGpsOrigin, parseRouteBookmarks, routePlaceLabel, selectAlertsForRouteAreas } from "./routePlanner";
 
 const alerts: PriorityAlert[] = [
   { id: "road-1", kind: "road", level: "high", title: "吐露港公路塞車", detail: "行車緩慢", location: "大埔", area: "新界／離島", updatedAt: "2026-09-27T10:00:00+08:00" },
@@ -16,6 +16,21 @@ describe("route planner", () => {
     expect(url.searchParams.get("origin")).toBe("港鐵金鐘站");
     expect(url.searchParams.get("destination")).toBe("大埔墟站");
     expect(url.searchParams.get("travelmode")).toBe("transit");
+  });
+
+  it("formats valid device coordinates to five decimals without storing them", () => {
+    expect(formatGpsOrigin(22.3193, 114.1694)).toBe("22.31930, 114.16940");
+  });
+
+  it("rejects invalid device coordinates", () => {
+    expect(formatGpsOrigin(Number.NaN, 114.1)).toBeNull();
+    expect(formatGpsOrigin(91, 114.1)).toBeNull();
+    expect(formatGpsOrigin(22.3, 181)).toBeNull();
+  });
+
+  it("shows a readable GPS label instead of a raw coordinate pair", () => {
+    expect(routePlaceLabel("22.31930, 114.16940")).toBe("目前位置（GPS）");
+    expect(routePlaceLabel("金鐘站")).toBe("金鐘站");
   });
 
   it("matches driving and transit alerts to selected region and travel mode", () => {

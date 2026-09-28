@@ -37,6 +37,24 @@ export function buildDirectionsUrl(origin: string, destination: string, mode: Ro
   return url.toString();
 }
 
+export function formatGpsOrigin(latitude: number, longitude: number): string | null {
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+  if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) return null;
+  return `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+}
+
+export function isCoordinatePair(value: string): boolean {
+  const match = value.trim().match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/);
+  if (!match) return false;
+  const latitude = Number(match[1]);
+  const longitude = Number(match[2]);
+  return Number.isFinite(latitude) && Number.isFinite(longitude) && latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180;
+}
+
+export function routePlaceLabel(value: string): string {
+  return isCoordinatePair(value) ? "目前位置（GPS）" : value;
+}
+
 export function selectAlertsForRouteAreas(alerts: PriorityAlert[], areas: RouteArea[], mode: RouteMode): PriorityAlert[] {
   const rank: Record<string, number> = { critical: 0, urgent: 0, high: 1, watch: 2, info: 3 };
   const timestamp = (value?: string) => { const parsed = value ? Date.parse(value) : 0; return Number.isFinite(parsed) ? parsed : 0; };

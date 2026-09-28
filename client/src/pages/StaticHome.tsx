@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, ArrowUpRight, CarFront, ChevronRight, CloudLightning, Footprints, MapPinned, Navigation, RefreshCw, ShieldAlert, TrainFront, TriangleAlert, Zap } from "lucide-react";
 import { PriorityAlertSignalIcon } from "@/components/PriorityAlertIcon";
+import { RouteLocationButton } from "@/components/RouteLocationButton";
 import { getJourneyDecision, inferRouteAreas, modeLabel } from "@/lib/journeyDecision";
 import { countSourceIndicators, getSourceDisplayName, getSourceIndicatorLabel, getSourceIndicatorState, orderSourceItems, SOURCE_DISPLAY_ORDER } from "@/lib/sourceDisplay";
-import { buildDirectionsUrl, parseRouteBookmarks, ROUTE_BOOKMARKS_PREFERENCE_KEY, selectAlertsForRouteAreas, type RouteBookmark, type RouteMode } from "@/lib/routePlanner";
+import { buildDirectionsUrl, parseRouteBookmarks, ROUTE_BOOKMARKS_PREFERENCE_KEY, routePlaceLabel, selectAlertsForRouteAreas, type RouteBookmark, type RouteMode } from "@/lib/routePlanner";
 import { getTransportDashboard, selectPriorityAlerts, type PriorityAlert, type TransportDashboard } from "../../../server/transportData";
 
 function formatHkt(value?: string) {
@@ -35,6 +36,7 @@ export default function StaticHome() {
   const [loadError, setLoadError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [routeOpen, setRouteOpen] = useState(false);
+  const [routeChecked, setRouteChecked] = useState(false);
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [mode, setMode] = useState<RouteMode>("transit");
@@ -99,9 +101,10 @@ export default function StaticHome() {
         : unconfirmedSourceCount
           ? `${unconfirmedSourceCount} 項未能確認，展開查看`
           : `${sourceIndicators.length} 項資料均成功讀取`;
-  const decisionAlerts = routeReady ? relatedAlerts : alerts;
+  const decisionAlerts = alerts;
   const hasIncident = alerts.some((alert) => alert.kind === "road" && /事故|故障|封閉|意外|阻塞/.test(`${alert.title} ${alert.detail}`));
-  const decision = getJourneyDecision(decisionAlerts, { loading: !dashboard && !loadError, degraded, routeReady });
+  const decision = getJourneyDecision(decisionAlerts, { loading: !dashboard && !loadError, degraded });
+  const routeDecision = getJourneyDecision(relatedAlerts, { loading: !dashboard && !loadError, degraded, routeReady: routeChecked, routeAreas });
   const directionsUrl = routeReady ? buildDirectionsUrl(origin, destination, mode) : "";
   const cycleFontSize = () => setFontSize((current) => current === "normal" ? "large" : current === "large" ? "xlarge" : "normal");
   const saveRoute = () => {
@@ -128,27 +131,26 @@ export default function StaticHome() {
     <div className="page-shell" id="top">
       <section className={`decision-hero decision-${decision.tone}${hasIncident ? " incident-active" : ""}`} aria-live="polite">
         <div className="decision-topline"><span className="decision-kicker"><i className={hasIncident ? "incident-beacon" : ""} />{decision.kicker}</span><button className="decision-refresh" onClick={() => setReloadKey((value) => value + 1)} aria-label="重新載入警報"><RefreshCw size={16} /></button></div>
-        {routeReady && <div className="decision-route"><span>{origin.trim()}</span><ArrowRight size={15} /><span>{destination.trim()}</span><b>{modeLabel(mode)}</b></div>}
         <h1>{decision.title}</h1>
         <p>{decision.detail}</p>
         <div className="decision-actions">
-          {directionsUrl ? <a className="decision-primary" href={directionsUrl} target="_blank" rel="noreferrer"><Navigation size={17} /> 開啟路線建議 <ArrowUpRight size={14} /></a> : <button className="decision-primary" onClick={() => setRouteOpen(true)}><MapPinned size={17} /> 設定我的行程</button>}
+          <button className="decision-primary" onClick={() => setRouteOpen(true)}><MapPinned size={17} /> 設定我的行程</button>
           {decisionAlerts.length > 0 && <a className="decision-secondary" href="#alerts">查看影響 · {decisionAlerts.length}</a>}
         </div>
         <div className="decision-meta"><span>官方資料 {formatHkt(dashboard?.fetchedAt)} HKT</span><span>頁面每 60 秒更新</span><span>普通天氣／ETA 已略去</span></div>
       </section>
 
       <details className="route-planner route-planner-primary" open={routeOpen} onToggle={(event) => setRouteOpen((event.currentTarget as HTMLDetailsElement).open)}>
-        <summary><MapPinned size={18} /><span><strong>我由邊度去邊度？</strong><small>輸入一次，程式替你篩走無關資料</small></span><ChevronRight size={17} /></summary>
+        <summary><MapPinned size={18} /><span><strong>我由邊度去邊度？</strong><small>按大區初步比對，不是實際路線檢查</small></span><ChevronRight size={17} /></summary>
         <div className="route-planner-body">
-          <div className="route-inputs"><label>起點<input aria-label="起點" value={origin} onChange={(event) => setOrigin(event.target.value)} placeholder="例如：金鐘站" /></label><span className="route-arrow">↓</span><label>目的地<input aria-label="目的地" value={destination} onChange={(event) => setDestination(event.target.value)} placeholder="例如：大埔墟站" /></label></div>
-          <div className="route-mode-switch" role="group" aria-label="出行方式">{(["driving", "transit", "walking"] as RouteMode[]).map((item) => { const Icon = item === "driving" ? CarFront : item === "transit" ? TrainFront : Footprints; return <button type="button" key={item} className={`route-mode-${item}${mode === item ? " active" : ""}`} aria-pressed={mode === item} onClick={() => setMode(item)}><Icon size={16} aria-hidden="true" focusable="false" />{modeLabel(item)}</button>; })}</div>
-          {routeReady && <div className="route-inference"><span>自動篩選範圍</span><strong>{routeAreas.length ? routeAreas.join(" → ") : "只顯示全港警告"}</strong><small>按地名在此裝置估算；不讀取 GPS。</small></div>}
-          {routeReady && <div className={`route-verdict route-verdict-${decision.tone}`}><span>{decision.kicker}</span><strong>{decision.title}</strong><p>{decision.detail}</p></div>}
+          <div className="route-inputs"><div className="route-origin-group"><label>起點<input aria-label="起點" value={routePlaceLabel(origin)} onFocus={(event) => { if (routePlaceLabel(origin) !== origin) event.currentTarget.select(); }} onChange={(event) => { setOrigin(event.target.value); setRouteChecked(false); }} placeholder="例如：金鐘站" /></label><RouteLocationButton onLocate={(value) => { setOrigin(value); setRouteChecked(false); }} /></div><span className="route-arrow">↓</span><label>目的地<input aria-label="目的地" value={destination} onChange={(event) => { setDestination(event.target.value); setRouteChecked(false); }} placeholder="例如：大埔墟站" /></label></div>
+          <div className="route-mode-switch" role="group" aria-label="出行方式">{(["driving", "transit", "walking"] as RouteMode[]).map((item) => { const Icon = item === "driving" ? CarFront : item === "transit" ? TrainFront : Footprints; return <button type="button" key={item} className={`route-mode-${item}${mode === item ? " active" : ""}`} aria-pressed={mode === item} onClick={() => { setMode(item); setRouteChecked(false); }}><Icon size={16} aria-hidden="true" focusable="false" />{modeLabel(item)}</button>; })}</div>
+          {routeReady && <button type="button" className="route-check-button" onClick={() => setRouteChecked(true)}>檢查這程的地區警報</button>}
+          {routeChecked && <div className={`route-verdict route-verdict-${routeDecision.tone}`}><span>{routeDecision.kicker}</span><strong>{routeDecision.title}</strong><p>{routeDecision.detail}</p><small>本次比對：{routeAreas.length ? routeAreas.join("、") : "只顯示全港警報"} · {modeLabel(mode)} · 命中 {relatedAlerts.length} 項。只按大區篩選，沒有核對實際道路路線。</small></div>}
           {directionsUrl ? <a className="route-submit" href={directionsUrl} target="_blank" rel="noreferrer"><Navigation size={16} /> 在 Google Maps 查看建議路線 <ArrowUpRight size={14} /></a> : <div className="route-submit disabled"><Navigation size={16} /> 輸入起點及目的地</div>}
-          <button type="button" className="route-save-button" disabled={!routeReady} onClick={saveRoute}>儲存呢程喺本機</button>
-          {bookmarks.length > 0 && <div className="saved-routes"><strong>已儲存行程</strong>{bookmarks.map((bookmark) => <div className="saved-route-row" key={bookmark.id}><button type="button" className="saved-route-select" onClick={() => loadRoute(bookmark)}>{bookmark.origin} → {bookmark.destination}<small>{modeLabel(bookmark.mode)}</small></button><button type="button" className="saved-route-remove" aria-label={`刪除 ${bookmark.origin} 至 ${bookmark.destination}`} onClick={() => setBookmarks((current) => current.filter((item) => item.id !== bookmark.id))}>×</button></div>)}</div>}
-          <div className="route-safety-note">地區只由地名保守估算，並非精確封路比對；路線由 Google Maps 計算。</div>
+          {routeChecked && <details className="route-alert-details"><summary>查看命中的官方警報（{relatedAlerts.length}）</summary>{relatedAlerts.length ? relatedAlerts.slice(0, 5).map((alert) => <AlertCard key={`route-${alert.id}`} alert={alert} />) : <p>在目前可辨認的大區和出行方式下，沒有找到符合門檻的警報。</p>}</details>}
+          <details className="route-extra-details"><summary>常用行程</summary><button type="button" className="route-save-button" disabled={!routeReady} onClick={saveRoute}>儲存呢程喺本機</button>{bookmarks.length > 0 && <div className="saved-routes">{bookmarks.map((bookmark) => <div className="saved-route-row" key={bookmark.id}><button type="button" className="saved-route-select" onClick={() => { loadRoute(bookmark); setRouteChecked(false); }}>{routePlaceLabel(bookmark.origin)} → {routePlaceLabel(bookmark.destination)}<small>{modeLabel(bookmark.mode)}</small></button><button type="button" className="saved-route-remove" aria-label={`刪除 ${bookmark.origin} 至 ${bookmark.destination}`} onClick={() => setBookmarks((current) => current.filter((item) => item.id !== bookmark.id))}>×</button></div>)}</div>}</details>
+          <div className="route-safety-note">定位只在你按按鈕後讀取，不會背景追蹤。若按「常用行程」保存，該起點會保存於此裝置；若開啟 Google Maps，起點和目的地會交給 Google。這是大區初步提示，不是封路確認或安全保證。</div>
         </div>
       </details>
 
