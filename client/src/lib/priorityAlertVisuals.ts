@@ -37,14 +37,15 @@ const TYPHOON_SIGNALS: Record<string, WeatherSignalVisual> = {
 };
 
 export function getWeatherSignalVisual(code?: string, subtype?: string): WeatherSignalVisual | undefined {
-  if (code === "WRAIN") return subtype ? RAINSTORM_SIGNALS[subtype] : undefined;
+  if (code === "WRAIN") {
+    return subtype && Object.prototype.hasOwnProperty.call(RAINSTORM_SIGNALS, subtype) ? RAINSTORM_SIGNALS[subtype] : undefined;
+  }
   if (code !== "WTCSGNL" || !subtype) return undefined;
 
-  const match = /^TC(10|9|8|3|1)([A-Z]{2})?$/.exec(subtype);
-  if (!match) return undefined;
-  const signal = TYPHOON_SIGNALS[`TC${match[1]}`];
-  if (match[1] !== "8" || !match[2]) return signal;
+  if (Object.prototype.hasOwnProperty.call(TYPHOON_SIGNALS, subtype)) return TYPHOON_SIGNALS[subtype];
 
+  const match = /^TC8(NE|NW|SE|SW)$/.exec(subtype);
+  if (!match) return undefined;
   const direction: Record<string, string> = { NE: "東北", NW: "西北", SE: "東南", SW: "西南" };
-  return { ...signal, ariaLabel: `八號${direction[match[2]]}烈風或暴風信號` };
+  return { ...TYPHOON_SIGNALS.TC8, ariaLabel: `八號${direction[match[1]]}烈風或暴風信號` };
 }

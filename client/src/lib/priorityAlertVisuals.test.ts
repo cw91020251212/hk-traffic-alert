@@ -38,8 +38,11 @@ describe("getWeatherSignalVisual", () => {
   });
 
   it("does not guess colors for unsupported or cancelled warning subtypes", () => {
-    expect(getWeatherSignalVisual("WTCSGNL", "CANCEL")).toBeUndefined();
+    for (const subtype of ["CANCEL", "TC8XX", "TC8NORTH", "TC8NEBAD", "TC1NE", "TC9NW", "toString"]) {
+      expect(getWeatherSignalVisual("WTCSGNL", subtype)).toBeUndefined();
+    }
     expect(getWeatherSignalVisual("WRAIN", "UNKNOWN")).toBeUndefined();
+    expect(getWeatherSignalVisual("WRAIN", "toString")).toBeUndefined();
     expect(getWeatherSignalVisual("WL", "")).toBeUndefined();
   });
 });
