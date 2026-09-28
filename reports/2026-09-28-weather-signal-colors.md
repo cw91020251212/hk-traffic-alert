@@ -5,7 +5,7 @@
 - 分支：`feat/incident-icon-colors`
 - 主線基線：`7453243abcf9d0ebdce7476d50cb81658dfeb9c9`（開始本次修改時的 `main`）
 - 相關 PR：[PR #22](https://github.com/cw91020251212/hk-traffic-alert/pull/22)（Open）
-- 功能 commit：`eb0429099a88366a8ef9ecfd6bc460ef1d2e8366`
+- 功能 commit：`eb0429099a88366a8ef9ecfd6bc460ef1d2e8366`；畸形 subtype 防護：`9b837398e2e4949544e728c33e4e7c2025afdac9`
 - 部署 commit：無
 
 ## 使用者目標
@@ -18,10 +18,10 @@
 - 暴雨 `WRAINY`／`WRAINR`／`WRAINB` 分別顯示黃雨、紅雨、黑雨 chip 及雲雨圖示。
 - 熱帶氣旋 `TC1`／`TC3`／`TC8`／`TC9`／`TC10` 顯示風圖示及號碼；八號信號保留東北／西北／東南／西南方向文字。
 - 雨警 chip 使用對應警告色；風球藍／黃／橙／紅／深色 chip 是本產品自行採用的視覺分級，**不是天文台官方色標**。顏色只供快速辨識，正式信號級別仍以號碼與中文文字為準。
-- 未識別／取消的 signal 不推測顏色，退回一般天氣分類圖示。
+- 未識別／取消的 signal 不推測顏色，退回一般天氣分類圖示；八號只接受 NE／NW／SE／SW 四個方向，其他格式或方向不輸出錯誤標籤。
 - badge 使用 Lucide 本地 SVG、繁體中文 `aria-label` 和說明 tooltip；非顏色資訊（雨警／風球號碼與標題）亦會直接顯示。
 - 主要檔案：`client/src/components/PriorityAlertIcon.tsx`、`client/src/lib/priorityAlertVisuals.ts`、`client/src/index.css`、`client/src/pages/Home.tsx`、`client/src/pages/StaticHome.tsx`、`server/transportData.ts`。
-- 加入 code mapping、四個八號方向、元件輸出和 transport alert metadata 測試。
+- 加入 code mapping、四個八號方向、未知／畸形 subtype、元件輸出和 transport alert metadata 測試。
 
 ## 驗證結果
 
