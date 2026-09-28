@@ -1,8 +1,9 @@
 # 官方來源入口圖示置中修正
 
 - 日期（香港時間）：2026-09-28
-- 狀態：CSS 修正及本機手機 QA 完成；待 PR／合併／公開更新。
+- 狀態：CSS 修正及手機 QA 完成；[PR #26 已建立並開啟](https://github.com/cw91020251212/hk-traffic-alert/pull/26)；尚未合併或發布。
 - 分支：`fix/center-source-link-icons`
+- Commit：`b42983bd0580bab0d0a240be0ee4af654d55ecf9`；PR 狀態 OPEN／MERGEABLE；GitHub 未報 CI checks。
 - 本次不包含 Pages 部署；上一個已發布版本的外層箭頭選擇器缺陷由這份後續修正處理。
 
 ## 使用者觀察與根因
@@ -24,6 +25,6 @@
 
 ## 發布界線
 
-- 這是針對截圖中新發現的 UI bug 的獨立後續修正；目前尚未推送／合併此修正，也未把它發布到 `gh-pages`。
+- 這是針對截圖中新發現的 UI bug 的獨立後續修正，已推送到 PR #26；目前尚未合併，也未把它發布到 `gh-pages`。
 - 先前更新刷新按鈕的 Pages 部署 workflow #36412068254 成功；公開 HTML 正載入刷新按鈕 bundle `index-vH88dwkP.js` 及 CSS `index-h2S6oUv9.css`，兩者 HTTP 200。但上述 icon-centering selector 修正是在那次部署之後修改的。
-- 若要將置中修正一起更新至公開站，先建立 PR，並在得到這項新修正的明確發布確認後，從合併版 main 重建及發布。
+- 若要將置中修正更新至公開站，先確認 PR #26 狀態；只在得到這項新修正的明確發布確認後才合併，從合併版 main 重建及發布。
