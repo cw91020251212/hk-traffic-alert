@@ -70,7 +70,8 @@
 - [x] 非官方風球顏色僅作產品視覺提示，不宣稱為天文台定義；未識別 signal 不猜顏色，信號文字仍可獨立辨識。
 - [x] `pnpm test` 8 files／71 tests、`pnpm check`、`pnpm pages:build`、`pnpm build`、`git diff --check` 通過。
 - [x] Chromium 375×812 預覽確認八種信號 chip 可讀、文字與方向保留；全部 chip 文字對比度高於 4.5:1。
-- [ ] 建立／合併 PR；公開 Pages 發布須再取得使用者確認。
+- [x] PR #22 已建立並推送（commit `eb0429099a88366a8ef9ecfd6bc460ef1d2e8366`）；目前尚未合併，GitHub 未回報 CI checks。
+- [ ] 等待 PR 審查／合併；公開 Pages 發布須再取得使用者明確確認。
 
 ## 階段三｜直接結論與自動行程篩選（已完成）
 
