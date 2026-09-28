@@ -1,10 +1,11 @@
 # 首頁常駐介面圖示加色
 
 - 日期（香港時間）：2026-09-28
-- 狀態：修正及本機驗證完成；PR／公開 Pages 更新待處理（此前已取得使用者發布授權）
+- 狀態：修正、本機驗證、PR #23 合併及公開 Pages 發布完成
 - 分支：`fix/always-visible-interface-icon-colors`
-- 相關 PR：待建立
-- 公開部署：尚未更新
+- 相關 PR：[PR #23](https://github.com/cw91020251212/hk-traffic-alert/pull/23)（已合併）
+- Main merge commit：`640b354060a3637aab61a620f0da17011b91ba0b`
+- GitHub Pages deployment commit：`deab64efe92a98c94d52c91716564a340b191c86`
 
 ## 使用者回報與原因
 
@@ -34,14 +35,16 @@
 - Playwright／Chromium 375 × 812 手機預覽：三個官方來源 icon、三種出行方式 icon 均有顏色；文件寬度等於 viewport 375px，沒有水平溢位。
 - Server 版 375 × 812 預覽：手機底部警報／交通／天氣／更多四個 icon 的 computed style 為青綠／橙／藍／紫，四個入口均在畫面內可見。
 - source icon 對比率（前景／淡色底）：道路 4.73:1、鐵路 6.16:1、天氣 5.26:1；行程未選中 icon 對比率至少 4.43:1，選中圖示 5.55:1–6.31:1。
+- GitHub Pages Actions run [36373869213](https://github.com/cw91020251212/hk-traffic-alert/actions/runs/36373869213) 成功；公開 JS／CSS asset 回應 HTTP 200。
+- 正式網站 browser computed style 已核實道路／鐵路／天氣入口的橙／藍／青綠底色和 icon；駕車／公共交通／步行 icon 為橙／淺藍／青綠。
 - 預覽截圖：[`assets/interface-icons-preview-375.png`](assets/interface-icons-preview-375.png)。
 - Server 手機導覽截圖：[`assets/server-mobile-navigation-preview-375.png`](assets/server-mobile-navigation-preview-375.png)。
 
 ## 發布狀態及下一步
 
-- 使用者已明確要求顏色改善完成後發布；本 follow-up 程式碼已完成本機驗證，尚未合併和部署。
-- 建立 PR，核對合併後的 main，再更新 GitHub Pages `gh-pages`。
-- 發布後確認正式網站載入新 CSS／JS，並更新本報告記錄 merge／deployment commits 及 Pages workflow 結果。
+- 使用者已明確要求顏色改善完成後發布；PR #23 已合併至 `main` commit `640b354060a3637aab61a620f0da17011b91ba0b`。
+- GitHub Pages 已更新至 `gh-pages` commit `deab64efe92a98c94d52c91716564a340b191c86`；workflow 成功，公開頁目前載入 `index-CZWRhGAG.js`／`index-Dr0yaiPE.css`。
+- 正式網址：<https://cw91020251212.github.io/hk-traffic-alert/>。
 
 ## 安全回復
 
