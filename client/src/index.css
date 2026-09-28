@@ -202,8 +202,8 @@ button { -webkit-tap-highlight-color: transparent; }
 .brand { display: flex; align-items: center; gap: 11px; color: #173849; text-decoration: none; }
 .brand-mark { width: 36px; height: 36px; display: grid; place-items: center; color: #fff; background: #ed8f49; border-radius: 11px 11px 11px 4px; box-shadow: 0 5px 12px #ed8f4938; }
 .brand-copy { display: flex; flex-direction: column; gap: 2px; }
-.brand-copy strong { font-size: 16px; letter-spacing: .02em; }
-.brand-copy small { color: #8a9895; font-size: 8px; letter-spacing: .17em; font-weight: 700; }
+.brand-copy strong { font-size: 18px; letter-spacing: .02em; }
+.brand-copy small { color: #8a9895; font-size: 9px; letter-spacing: .17em; font-weight: 700; }
 .top-nav { display: flex; align-items: center; gap: 33px; height: 100%; }
 .top-nav a { color: #788589; text-decoration: none; font-size: 12px; font-weight: 650; transition: color .18s ease-out; }
 .top-nav a:hover, .top-nav .nav-current { color: #1c4656; }
@@ -796,4 +796,25 @@ button { -webkit-tap-highlight-color: transparent; }
   .alert-breathing-light { box-shadow:0 0 0 5px rgba(255,111,88,.18); }
   .refresh-icon-spinning,.refresh-icon-complete,.decision-refresh.has-refresh-feedback { animation:none !important; }
   .decision-refresh { transition:none; }
+}
+
+
+/* Make the app identity readable at phone size and keep it in sync with the text-size control. */
+@media (max-width:620px) {
+  .topbar { min-height:66px; height:auto; }
+  .brand { gap:10px; min-width:0; }
+  .brand-mark { width:40px; height:40px; flex:0 0 auto; }
+  .brand-mark svg { width:24px; height:24px; }
+  .brand-copy { min-width:0; }
+  .brand-copy strong { font-size:22px; line-height:1.1; letter-spacing:.01em; }
+  .brand-copy small { font-size:11px; line-height:1.25; letter-spacing:.08em; }
+  .pages-text-large .brand-copy strong { font-size:26px; }
+  .pages-text-large .brand-copy small { font-size:12px; }
+  .pages-text-xlarge .brand-copy strong { font-size:30px; }
+  .pages-text-xlarge .brand-copy small { font-size:14px; }
+}
+@media (max-width:360px) {
+  .topbar { padding-left:12px; padding-right:12px; }
+  .top-actions { gap:6px; }
+  .font-size-toggle { min-width:74px; padding-left:8px; padding-right:8px; }
 }
