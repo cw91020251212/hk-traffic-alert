@@ -147,3 +147,6 @@
 
 
 - 2026-09-28 19:29 title-size backup update (supersedes “not yet PR’d” above): code commit `b934d2b3e9430946a3537a2c9d829ae888d6b633` is pushed to [PR #27](https://github.com/cw91020251212/hk-traffic-alert/pull/27), OPEN／MERGEABLE, no CI checks reported. PR includes the title-size report, index, roadmap, handoff and screenshot. It remains unmerged and unpublished; ask before Pages deployment.
+
+
+- 2026-09-28 19:35 final title-size release status (supersedes the 19:29 pending note): user approved publication; [PR #27](https://github.com/cw91020251212/hk-traffic-alert/pull/27) merged at `397b151647b7b01cd4b1d6145f3df95df380ddc1`; Pages commit `0ad625dae42c29242cd67c28bae64ca8a2748b68`; workflow [#36416381354](https://github.com/cw91020251212/hk-traffic-alert/actions/runs/36416381354) succeeded. Public page: https://cw91020251212.github.io/hk-traffic-alert/. Live Playwright 375px verified 特大 title 30px, subtitle 14px, 71.5px gap before text control, no horizontal overflow; live screenshot `reports/assets/header-brand-live-375.png`; report `reports/2026-09-28-header-brand-size.md`.

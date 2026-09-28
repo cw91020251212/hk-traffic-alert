@@ -211,11 +211,11 @@
 - [x] 使用者確認發布後，PR #26 以 merge commit `48da40c7ed36d93e4abb8fe049bdfeb170fce029` 合併；Pages commit `eacdae362d635648c66c20de4249be3f5c75b585`，workflow #36413603189 成功；公開 375px DOM 三個圖示中心差 0px、無水平溢位。
 
 
-## 階段十八｜頁首「交通警報器」標題放大（PR #27 OPEN；未合併／未發布）
+## 階段十八｜頁首「交通警報器」標題放大（PR #27 已合併及發布）
 
 - [x] 根因：mobile `.brand-copy strong` 固定 14px；「特大」設定沒有覆寫 header brand，因此截圖中正文放大，圈出的標題仍細。
 - [x] 手機標題／副標分別調整為標準 22/11px、大 26/12px、特大 30/14px；desktop 18/9px。Logo tile 40px，header 最少 66px。
 - [x] 320、344、360、375、390、430px Playwright 驗收文字大小按鈕與品牌不重疊、頁面無橫向溢位；375px 特大模式截圖已存。
 - [x] `pnpm test` 10 files／88 tests、`pnpm check`、Pages／Server build、`git diff --check` 通過。
 - [x] AI 接手報告已寫於 `reports/2026-09-28-header-brand-size.md` 並加到報告索引。
-- [x] 已推送程式 commit `b934d2b3e9430946a3537a2c9d829ae888d6b633` 並建立 [PR #27](https://github.com/cw91020251212/hk-traffic-alert/pull/27)（OPEN／MERGEABLE；GitHub 未報 CI checks）；本次標題變更尚未發布，部署需另行明確確認。
+- [x] 使用者確認發布後，PR #27 以 merge commit `397b151647b7b01cd4b1d6145f3df95df380ddc1` 合併；Pages commit `0ad625dae42c29242cd67c28bae64ca8a2748b68`、workflow #36416381354 成功。公開 375px Playwright 實測特大標題 30px／副標 14px，無溢位；驗收截圖 `reports/assets/header-brand-live-375.png`。
