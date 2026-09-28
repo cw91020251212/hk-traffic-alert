@@ -30,4 +30,5 @@
 - [`2026-09-28-weather-signal-colors.md`](2026-09-28-weather-signal-colors.md) — 事故類別圖示配色、雨警／風球信號 chip、手機驗收及發布結果。
 - [`2026-09-28-interface-icon-colors.md`](2026-09-28-interface-icon-colors.md) — 首頁常駐行程／官方來源入口圖示配色，解釋前版為何只在警報出現時看到顏色。
 - [`2026-09-28-route-check-and-gps.md`](2026-09-28-route-check-and-gps.md) — 簡化行程比對，按需使用 GPS，清楚交代只作大區提示、不作實際路線安全判斷。
+- [`2026-09-28-ai-handoff-and-lessons.md`](2026-09-28-ai-handoff-and-lessons.md) — 最新 repo／部署狀態、行程功能限制，以及圖示仍顯黑白的根因和後續 AI 驗收指引。
 - [`TEMPLATE.md`](TEMPLATE.md) — 後續每項工作的報告範本。
