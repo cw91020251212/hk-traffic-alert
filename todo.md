@@ -67,10 +67,10 @@
 
 - [x] 天文台官方資料確認：黃／紅／黑暴雨警告各有正式顏色；風球以信號號碼區分，一／三／八／九／十號及八號方向需保留文字。
 - [x] 警告資料保留 HKO code/subtype；黃／紅／黑雨顯示對應色 chip，風球顯示 1／3／8／9／10 號分級色 chip。
-- [x] 非官方風球顏色僅作產品視覺提示，不宣稱為天文台定義；未識別 signal 不猜顏色，信號文字仍可獨立辨識。
+- [x] 非官方風球顏色僅作產品視覺提示，不宣稱為天文台定義；未知／取消 signal 不猜顏色，八號方向只接受 NE／NW／SE／SW。
 - [x] `pnpm test` 8 files／71 tests、`pnpm check`、`pnpm pages:build`、`pnpm build`、`git diff --check` 通過。
 - [x] Chromium 375×812 預覽確認八種信號 chip 可讀、文字與方向保留；全部 chip 文字對比度高於 4.5:1。
-- [x] PR #22 已建立並推送（commit `eb0429099a88366a8ef9ecfd6bc460ef1d2e8366`）；目前尚未合併，GitHub 未回報 CI checks。
+- [x] PR #22 已建立並推送（包含方向防護 commit `9b837398e2e4949544e728c33e4e7c2025afdac9`）；尚未合併，GitHub 未回報 CI checks。
 - [ ] 等待 PR 審查／合併；公開 Pages 發布須再取得使用者明確確認。
 
 ## 階段三｜直接結論與自動行程篩選（已完成）
