@@ -1,7 +1,8 @@
 # 手機頁首品牌標題放大
 
 - 日期（香港時間）：2026-09-28
-- 狀態：本機修正及手機驗收完成；分支 `fix/header-brand-size`；尚未建立 PR／未發布。
+- 狀態：本機修正及手機驗收完成；[PR #27 已建立並開啟](https://github.com/cw91020251212/hk-traffic-alert/pull/27)；尚未合併／發布。
+- 程式 commit：`b934d2b3e9430946a3537a2c9d829ae888d6b633`；PR 狀態 OPEN／MERGEABLE；GitHub 未報 CI checks。
 - 影響：公開 Pages 首頁和 Server 應用共用 `.brand-copy` header 樣式。
 
 ## 使用者回報及原因
@@ -25,4 +26,4 @@
 
 ## 發布界線
 
-此 CSS 改動尚在 feature branch，尚未合併或更新 GitHub Pages。需先建立 PR；公開網站發布需對本次標題放大另行取得使用者明確確認。
+此 CSS 改動已推送到 PR #27，但尚未合併或更新 GitHub Pages。公開網站發布需對本次標題放大另行取得使用者明確確認。

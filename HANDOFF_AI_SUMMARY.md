@@ -144,3 +144,6 @@
 
 
 - 2026-09-28 19:27 header title follow-up on `fix/header-brand-size`: user says the circled “交通警報器” title is still too small. Cause: mobile `.brand-copy strong` was fixed at 14px and the Pages normal/large/xlarge classes never overrode it. Local CSS now sets title/subtitle 22/11px standard, 26/12px large, 30/14px extra-large, logo tile 40px, min header height 66px. Full 88 tests, typecheck, Pages/Server builds pass; Playwright confirms no title/control overlap or page overflow at widths 320–430px. Report/screenshot: `reports/2026-09-28-header-brand-size.md`, `reports/assets/header-brand-large-375.png`. Not yet PR’d, merged or deployed; public publication needs explicit confirmation for this new change.
+
+
+- 2026-09-28 19:29 title-size backup update (supersedes “not yet PR’d” above): code commit `b934d2b3e9430946a3537a2c9d829ae888d6b633` is pushed to [PR #27](https://github.com/cw91020251212/hk-traffic-alert/pull/27), OPEN／MERGEABLE, no CI checks reported. PR includes the title-size report, index, roadmap, handoff and screenshot. It remains unmerged and unpublished; ask before Pages deployment.
