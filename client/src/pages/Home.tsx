@@ -23,7 +23,9 @@ import {
   Zap,
 } from "lucide-react";
 import { PriorityAlertSignalIcon } from "@/components/PriorityAlertIcon";
+import { AlertEffectsSettings } from "@/components/AlertEffectsSettings";
 import { RouteLocationButton } from "@/components/RouteLocationButton";
+import { useAlertEffects } from "@/hooks/useAlertEffects";
 import { trpc } from "@/lib/trpc";
 import { ALERT_AREA_OPTIONS, ALERT_AREA_PREFERENCE_KEY, parseAlertAreaPreference, type AlertAreaPreference } from "@/lib/alertPreferences";
 import { getJourneyDecision, inferRouteAreas, modeLabel } from "@/lib/journeyDecision";
@@ -199,6 +201,7 @@ export default function Home() {
   const routeRelatedAlerts = useMemo(() => selectAlertsForRouteAreas(priorityAlerts, effectiveRouteAreas, routeMode), [priorityAlerts, effectiveRouteAreas, routeMode]);
   const hasUnavailableAlerts = priorityFeed.kind === "unavailable";
   const displayAlerts = hasUnavailableAlerts ? priorityFeed.alerts : priorityFeed.kind === "alerts" ? priorityFeed.alerts : [];
+  const alertEffects = useAlertEffects(priorityAlerts, !dashboard.isLoading && !roadTraffic.isLoading);
   const journeyDecision = getJourneyDecision(displayAlerts, {
     loading: priorityFeed.kind === "loading",
     degraded: hasUnavailableAlerts,
@@ -247,7 +250,7 @@ export default function Home() {
   };
 
   return (
-    <main className="traffic-app">
+    <main className={`traffic-app${alertEffects.preferences.breathing ? " alert-breathing-enabled" : ""}`}>
       <header className="topbar">
         <a className="brand" href="#top" aria-label="交通警報器首頁">
           <span className="brand-mark"><Zap size={19} fill="currentColor" /></span>
@@ -283,6 +286,9 @@ export default function Home() {
           </div>
           <div className="decision-meta"><span>官方資料 {dashboard.isFetching ? "更新中" : "已檢查"}</span><span>{lastUpdated} HKT</span><span>普通天氣／ETA 已略去</span></div>
         </section>
+
+        <AlertEffectsSettings preferences={alertEffects.preferences} status={alertEffects.status} setSoundEnabled={alertEffects.setSoundEnabled} setBreathingEnabled={alertEffects.setBreathingEnabled} testSound={alertEffects.testSound} />
+        {alertEffects.newAlertNotice && <div className="new-alert-notice" role="status" aria-live="polite"><Bell size={16} aria-hidden="true" />{alertEffects.newAlertNotice}</div>}
 
         {notice && <div className="inline-notice" role="status">{notice}<button onClick={() => setNotice("")} aria-label="關閉">×</button></div>}
 
@@ -536,12 +542,13 @@ function PriorityFilters({ area, kind, counts, onAreaChange, onKindChange }: {
 
 function PriorityAlertCard({ alert }: { alert: PriorityAlert }) {
   const levelLabel = alert.level === "critical" ? "立即留意" : alert.level === "high" ? "重大影響" : "留意路況";
+  const incidentClass = alert.level === "watch" ? "" : " incident-card";
   const sourceUrl = alert.kind === "rail"
     ? "https://www.hkemobility.gov.hk/tc/route-search/pt"
     : alert.kind === "weather" || alert.kind === "earthquake"
       ? "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warningInfo&lang=tc"
       : "https://www.td.gov.hk/tc/special_news/spnews.htm";
-  return <article className={`priority-card priority-${alert.level}`}>
+  return <article className={`priority-card priority-${alert.level}${incidentClass}`}>
     <div className="priority-card-top"><span className="priority-level">{levelLabel}</span><span className="priority-area">{alert.area} · {alert.kind === "road" ? "道路" : alert.kind === "rail" ? "鐵路" : alert.kind === "weather" ? "天氣警告" : "地震"}</span></div>
     <h3 className="priority-card-heading"><PriorityAlertSignalIcon alert={alert} /><span>{alert.title}</span></h3><p>{alert.detail}</p>
     <div className="priority-card-meta"><span>{alert.location}</span>{alert.updatedAt && <span>官方更新 {formatHkt(alert.updatedAt)} HKT</span>}</div>
