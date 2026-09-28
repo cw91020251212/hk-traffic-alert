@@ -408,10 +408,10 @@ button { -webkit-tap-highlight-color: transparent; }
 .priority-card-heading { display:flex; align-items:flex-start; gap:9px; }
 .priority-card-heading > span:last-child { min-width:0; flex:1; }
 .priority-card-icon { width:30px; height:30px; flex:0 0 auto; display:grid; place-items:center; border-radius:8px; }
-.priority-card-icon--road { color:#a64e3e; background:#f9e7dc; }
-.priority-card-icon--rail { color:#486481; background:#e7eef7; }
-.priority-card-icon--weather { color:#426f8c; background:#e5f1f7; }
-.priority-card-icon--earthquake { color:#76588b; background:#f1e8f6; }
+.priority-card-icon--road { color:#B45309; background:#FFF7ED; border:1px solid #FDBA74; }
+.priority-card-icon--rail { color:#1D4ED8; background:#EFF6FF; border:1px solid #BFDBFE; }
+.priority-card-icon--weather { color:#0F766E; background:#ECFEFF; border:1px solid #99F6E4; }
+.priority-card-icon--earthquake { color:#7E22CE; background:#FAF5FF; border:1px solid #D8B4FE; }
 .priority-card-signal { width:auto; min-width:48px; height:30px; padding:0 5px; display:inline-flex; align-items:center; justify-content:center; gap:3px; border:1px solid transparent; }
 .priority-card-signal strong { font-size:9px; line-height:1; white-space:nowrap; }
 .priority-card-signal--rain-yellow { color:#3c3000; background:#f5d65b; border-color:#b99726; }
