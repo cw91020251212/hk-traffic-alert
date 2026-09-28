@@ -29,4 +29,5 @@
 - [`2026-09-28-incident-type-icons.md`](2026-09-28-incident-type-icons.md) — Pages／Server 事故卡新增道路、鐵路、天氣和地震固定圖示與驗收結果。
 - [`2026-09-28-weather-signal-colors.md`](2026-09-28-weather-signal-colors.md) — 事故類別圖示配色、雨警／風球信號 chip、手機驗收及發布結果。
 - [`2026-09-28-interface-icon-colors.md`](2026-09-28-interface-icon-colors.md) — 首頁常駐行程／官方來源入口圖示配色，解釋前版為何只在警報出現時看到顏色。
+- [`2026-09-28-route-check-and-gps.md`](2026-09-28-route-check-and-gps.md) — 簡化行程比對，按需使用 GPS，清楚交代只作大區提示、不作實際路線安全判斷。
 - [`TEMPLATE.md`](TEMPLATE.md) — 後續每項工作的報告範本。

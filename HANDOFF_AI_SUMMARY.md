@@ -111,3 +111,9 @@
 - 避免全量顯示。主畫面預設只篩出可核實、具出行影響的事件；其他放詳情，並讓嚴重警報視覺上即刻分辨。
 - 若功能未完成，直講未完成，提供最短下一步；不得把預覽、repo、deployment 混為一談。
 - 每棒更新 `todo.md`、工程交接與驗證數字；此承諾對第二位、第三位接手者同樣有效。
+
+
+- 使用者於 2026-09-28 表示想用外部地圖提供路線，但選擇先改善實際路線與警報的比對、不加 AI、不啟用付費 API；亦要求起點可按需 GPS，並避免把所有邏輯／欄位同時攤開。已改為 `feat/route-check-simplify`：Pages／Server 的行程卡預設收合；GPS 只在按鈕後請求，顯示「目前位置（GPS）」和裝置估算精度，權限拒絕可手動輸入；按「檢查這程」後明示大區／方式／命中警報數，沒有核對實際路線或事故是否在該路段。整體首頁警報也不再用「安全」或「照常出發」作無根據承諾。GPS 不會自動存入 localStorage；使用者明確保存常用行程才留在本機；點 Google Maps 時才把起點／目的地交給 Google。`pnpm test` 9 files／80 tests、`pnpm check`、Pages／Server build、`git diff --check` 全通過；Playwright 375×812 驗證初始收合、點擊才取 GPS、拒絕 fallback、座標未自動持久化及無水平溢位。手機圖：[`reports/assets/route-planner-collapsed-375.png`](reports/assets/route-planner-collapsed-375.png)、[`reports/assets/route-planner-checked-375.png`](reports/assets/route-planner-checked-375.png)。詳見 [`reports/2026-09-28-route-check-and-gps.md`](reports/2026-09-28-route-check-and-gps.md)。目前待推送／開 PR；此 route-check 更新**未發布到公開 Pages**，需本功能的明確發布指示後才可更新 `gh-pages`。
+
+
+- 2026-09-28 17:19 補充：為免手繪 GPS bounding boxes 誤分類，改用民政事務總署公開 18 區多邊形（本地 0.001° 簡化資料）作點內判斷；離區界 120 米內會保守不猜大區。DATA.GOV.HK／官方 JSON 來源、測試與 375px 最終畫面記於 `reports/2026-09-28-route-check-and-gps.md`。`pnpm test` 80 tests、typecheck、Pages／Server build 通過；新的 route-check 功能尚未推送／發布。
