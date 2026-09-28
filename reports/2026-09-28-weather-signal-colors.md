@@ -34,7 +34,7 @@
 - `git diff --check` — 通過。
 - PR 檢查：建立後查詢為「no checks reported」；沒有 GitHub CI 結果可報告，以上本機驗證不等同 CI。
 - Pages GitHub Actions run [36372370048](https://github.com/cw91020251212/hk-traffic-alert/actions/runs/36372370048)：build、deploy、report-build-status 均成功。
-- 正式站 HTML 載入 `assets/index-BtxHvfan.js`／`assets/index-Bje58U3c.css`，兩者皆 HTTP 200；公開 CSS 確認含道路、鐵路、天氣、地震四色 selector。
+- 正式站 HTML 載入 `assets/index-BtxHvfan.js`／`assets/index-Bje58U3c.css`，兩者皆 HTTP 200；公開 CSS 確認含四色 selector，production browser 的 computed style 亦確認道路橙、鐵路藍、天氣青綠、地震紫背景／線條顏色。
 - 顏色文字對比計算（正常文字，WCAG AA 4.5:1 參考）：雨黃 9.07:1、雨紅 6.52:1、雨黑 14.67:1；風球 1 號 6.40:1、3 號 9.40:1、8 號 7.38:1、9 號 6.82:1、10 號 14.67:1。全部超過 4.5:1。
 - 分類圖示顏色對比：道路 4.73:1、鐵路 6.16:1、天氣 5.26:1、地震 6.51:1；均高於 4.5:1。
 - 手機視覺驗收：使用實際 React renderer 和 Pages CSS，於 Chromium **375 × 812** 本機預覽顯示三色暴雨警告及 1／3／8／9／10 號風球共八張示意卡；方向／正式文字清楚保留，未見卡片水平裁切。截圖：[`assets/weather-signals-preview-375.png`](assets/weather-signals-preview-375.png)。

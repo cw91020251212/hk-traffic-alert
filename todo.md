@@ -76,7 +76,7 @@
 - [x] PR #22 已建立並推送（包含方向防護 commit `9b837398e2e4949544e728c33e4e7c2025afdac9`）；尚未合併，GitHub 未回報 CI checks。
 - [x] 使用者於 2026-09-28 10:58 明確要求發布；公開發布授權已取得。
 - [x] PR #22 合併至 `main` commit `a3a6759e5b8ebd4cafb398416e5d124366336d68`；Pages 部署 workflow 成功，`gh-pages` commit `797e827df38f5e14b9e48e7ed930cfa4246bf23c`。
-- [x] 正式網站 JS／CSS asset HTTP 200，CSS 確認含道路／鐵路／天氣／地震四色圖示 selector。
+- [x] 正式網站 JS／CSS asset HTTP 200，production browser computed style 確認道路橙／鐵路藍／天氣青綠／地震紫。
 
 ## 階段三｜直接結論與自動行程篩選（已完成）
 
