@@ -1,10 +1,10 @@
 # 行程警報比對簡化與按需 GPS 起點
 
 - 日期（香港時間）：2026-09-28
-- 狀態：功能及本機 QA 完成；待建立／合併 PR；未發布至公開網站
+- 狀態：功能及本機 QA 完成；PR #24 已建立、保持開啟並可合併；未合併、未發布至公開網站
 - 分支：`feat/route-check-simplify`
-- 相關 PR／Issue：待建立
-- 相關 commit：待 commit
+- 相關 PR／Issue：[PR #24](https://github.com/cw91020251212/hk-traffic-alert/pull/24)（OPEN；建立時未有 CI checks 報告）
+- 程式 commit：`70add062cef06d39d6b1258c59d22ad30a580bd4`
 
 ## 使用者目標
 
@@ -36,7 +36,8 @@
 
 - 目標環境：GitHub Pages 靜態版和 Server 版，經 PR 合併後另行部署。
 - 目前分支：`feat/route-check-simplify`。
-- PR／commit：待建立。
+- PR #24：OPEN、MERGEABLE；目前未有 CI checks 報告。
+- 程式 commit：`70add062cef06d39d6b1258c59d22ad30a580bd4`。
 - 使用者可見網址：<https://cw91020251212.github.io/hk-traffic-alert/>（目前仍是已發布舊版，本功能尚未公開）。
 - 狀態：未發布；此次新功能沒有取得公開部署確認。
 
@@ -49,7 +50,7 @@
 
 ## 下一步／回復方式
 
-- 推送此分支並建立 PR；讓使用者透過 PR review。未有本功能明確的公開發佈指示前，不合併部署至 Pages、不更新 `gh-pages`。
+- 等候使用者 review PR #24；合併前後都不把此功能推至 Pages。公開部署需本功能的明確發佈指示，現有 `gh-pages` 保持不變。
 - 如需撤回，可 revert 相關 PR／commit；GPS 僅單次呼叫，沒有持續 watch 或自動座標上傳。
 
 ## 安全與資料注意事項

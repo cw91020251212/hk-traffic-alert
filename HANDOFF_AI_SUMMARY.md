@@ -117,3 +117,6 @@
 
 
 - 2026-09-28 17:19 補充：為免手繪 GPS bounding boxes 誤分類，改用民政事務總署公開 18 區多邊形（本地 0.001° 簡化資料）作點內判斷；離區界 120 米內會保守不猜大區。DATA.GOV.HK／官方 JSON 來源、測試與 375px 最終畫面記於 `reports/2026-09-28-route-check-and-gps.md`。`pnpm test` 80 tests、typecheck、Pages／Server build 通過；新的 route-check 功能尚未推送／發布。
+
+
+- 2026-09-28 17:22 發布狀態更新：已推送程式 commit `70add062cef06d39d6b1258c59d22ad30a580bd4` 並建立 [PR #24](https://github.com/cw91020251212/hk-traffic-alert/pull/24)；PR OPEN／MERGEABLE，建立時 GitHub 未報 CI checks。PR branch 及報告已備份到 GitHub；尚未合併、未更新 `gh-pages`、公開網站維持舊版。新的 route planner 要等使用者另行明確確認發布。

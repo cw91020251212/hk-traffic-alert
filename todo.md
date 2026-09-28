@@ -87,14 +87,14 @@
 - [x] PR #23 已合併至 `main` commit `640b354060a3637aab61a620f0da17011b91ba0b`；Pages workflow [36373869213](https://github.com/cw91020251212/hk-traffic-alert/actions/runs/36373869213) 成功，公開 `gh-pages` commit 為 `deab64efe92a98c94d52c91716564a340b191c86`。
 - [x] 公開 HTML 載入新版 CSS／JS，HTTP 200；正式 browser computed styles 核實常駐來源入口和出行模式 icon 已着色。
 
-## 階段十五｜簡化行程警報比對及按需 GPS（功能／QA 已完成；待 PR；未發布）
+## 階段十五｜簡化行程警報比對及按需 GPS（PR #24 已建立；未合併／未發布）
 
 - [x] 首頁行程卡預設收合，顯示「按大區初步比對，不是實際路線檢查」；不再以「安全」／「照常出發」代表特定路線。
 - [x] GPS 只在用家按定位按鈕後請求；顯示人話標籤和精度，權限拒絕／逾時可手動輸入；未明確保存前不寫入 localStorage。座標在本機用民政事務總署官方 18 區多邊形分大區（0.001° 簡化），接近界線 120 米時不猜測。
 - [x] 按「檢查這程」才顯示被比對的大區、出行方式、命中數量和收合的官方警報列表；明示沒有檢查道路幾何／封路位置。
 - [x] `pnpm test` 9 files／80 tests、`pnpm check`、Pages／Server build、`git diff --check` 通過；Playwright 375×812 驗證 GPS 按需、拒絕 fallback、座標未自動持久化、無水平溢位。
 - [x] 建立本次繁體中文備份報告及收合／檢查後手機截圖。
-- [ ] 推送 PR，並在 `HANDOFF_AI_SUMMARY.md` 記錄遠端狀態。
+- [x] 已推送分支並建立 [PR #24](https://github.com/cw91020251212/hk-traffic-alert/pull/24)；狀態 OPEN／MERGEABLE，建立時未有 CI checks 報告；程式 commit `70add062cef06d39d6b1258c59d22ad30a580bd4`。
 - [ ] 公開網站部署需另行明確確認；目前不要推送 `gh-pages`。
 
 ## 階段三｜直接結論與自動行程篩選（已完成）
