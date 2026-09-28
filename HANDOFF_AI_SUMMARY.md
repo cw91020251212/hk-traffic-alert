@@ -141,3 +141,9 @@
 
 
 - 2026-09-28 19:07 final release status (supersedes the 19:00 pending-deploy note): user explicitly approved PR #26 merge/deploy. PR #26 merged at `48da40c7ed36d93e4abb8fe049bdfeb170fce029`; Pages deployment commit `eacdae362d635648c66c20de4249be3f5c75b585`; workflow [#36413603189](https://github.com/cw91020251212/hk-traffic-alert/actions/runs/36413603189) succeeded. Public HTML loads `index-CGYbP6S9.js` and `index-DuqCFk-i.css` (both HTTP 200); CSS selector verified. Playwright on the public page at 375×812 measured road/rail/weather centers 0×0px, arrow right gap 13px and no horizontal overflow. Live screenshot: `reports/assets/source-icons-live-centered-375.png`; complete report: `reports/2026-09-28-source-icon-centering.md`.
+
+
+- 2026-09-28 19:27 header title follow-up on `fix/header-brand-size`: user says the circled “交通警報器” title is still too small. Cause: mobile `.brand-copy strong` was fixed at 14px and the Pages normal/large/xlarge classes never overrode it. Local CSS now sets title/subtitle 22/11px standard, 26/12px large, 30/14px extra-large, logo tile 40px, min header height 66px. Full 88 tests, typecheck, Pages/Server builds pass; Playwright confirms no title/control overlap or page overflow at widths 320–430px. Report/screenshot: `reports/2026-09-28-header-brand-size.md`, `reports/assets/header-brand-large-375.png`. Not yet PR’d, merged or deployed; public publication needs explicit confirmation for this new change.
+
+
+- 2026-09-28 19:29 title-size backup update (supersedes “not yet PR’d” above): code commit `b934d2b3e9430946a3537a2c9d829ae888d6b633` is pushed to [PR #27](https://github.com/cw91020251212/hk-traffic-alert/pull/27), OPEN／MERGEABLE, no CI checks reported. PR includes the title-size report, index, roadmap, handoff and screenshot. It remains unmerged and unpublished; ask before Pages deployment.

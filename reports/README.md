@@ -33,4 +33,5 @@
 - [`2026-09-28-ai-handoff-and-lessons.md`](2026-09-28-ai-handoff-and-lessons.md) — 最新 repo／部署狀態、行程功能限制，以及圖示仍顯黑白的根因和後續 AI 驗收指引。
 - [`2026-09-28-refresh-button-feedback.md`](2026-09-28-refresh-button-feedback.md) — 手動更新按鈕快取根因、強制重查、可見動態／文字回饋、測試與尚未部署狀態。
 - [`2026-09-28-source-icon-centering.md`](2026-09-28-source-icon-centering.md) — 修復道路／鐵路／天氣入口 SVG 的 flex 選擇器問題，附 375px 本機及公開頁 0px 置中驗收、PR 與 Pages 發布資料。
+- [`2026-09-28-header-brand-size.md`](2026-09-28-header-brand-size.md) — 放大交通警報器頁首品牌標題及副標、跟隨三檔字級，並於 320–430px 驗收沒有重疊。
 - [`TEMPLATE.md`](TEMPLATE.md) — 後續每項工作的報告範本。
