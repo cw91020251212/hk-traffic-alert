@@ -26,4 +26,5 @@
 - [`2026-09-28-source-health-summary-lights.md`](2026-09-28-source-health-summary-lights.md) — 在收合摘要顯示七粒綠／紅／灰燈，直接找到未成功或未確認的資料來源。
 - [`2026-09-28-railway-status-direct-link.md`](2026-09-28-railway-status-direct-link.md) — 將一般公共交通路線搜尋入口改為港鐵官方車務狀況直達頁。
 - [`2026-09-28-mtr-live-status-anchor.md`](2026-09-28-mtr-live-status-anchor.md) — 更正港鐵圖例頁誤作即時狀態頁；入口改為直達官方即時路綫狀況清單。
+- [`2026-09-28-incident-type-icons.md`](2026-09-28-incident-type-icons.md) — Pages／Server 事故卡新增道路、鐵路、天氣和地震固定圖示與驗收結果。
 - [`TEMPLATE.md`](TEMPLATE.md) — 後續每項工作的報告範本。

@@ -405,6 +405,13 @@ button { -webkit-tap-highlight-color: transparent; }
 .priority-critical .priority-level { color:#a3332b; background:#f8dedb; }
 .priority-watch .priority-level { color:#936d2d; background:#f8efd8; }
 .priority-card h3 { margin:10px 0 5px; color:#344d54; font-size:14px; line-height:1.45; }
+.priority-card-heading { display:flex; align-items:flex-start; gap:9px; }
+.priority-card-heading > span:last-child { min-width:0; flex:1; }
+.priority-card-icon { width:30px; height:30px; flex:0 0 auto; display:grid; place-items:center; border-radius:8px; }
+.priority-card-icon--road { color:#a64e3e; background:#f9e7dc; }
+.priority-card-icon--rail { color:#486481; background:#e7eef7; }
+.priority-card-icon--weather { color:#426f8c; background:#e5f1f7; }
+.priority-card-icon--earthquake { color:#76588b; background:#f1e8f6; }
 .priority-card p { margin:0; color:#657774; font-size:12px; line-height:1.6; }
 .priority-card-meta { display:flex; flex-wrap:wrap; gap:6px 12px; margin-top:10px; color:#8c9790; font-size:10px; }
 .priority-card a { display:inline-flex; align-items:center; gap:4px; margin-top:10px; color:#3d6c77; font-size:11px; font-weight:750; text-decoration:none; }
