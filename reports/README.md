@@ -32,4 +32,5 @@
 - [`2026-09-28-route-check-and-gps.md`](2026-09-28-route-check-and-gps.md) — 簡化行程比對，按需使用 GPS，清楚交代只作大區提示、不作實際路線安全判斷。
 - [`2026-09-28-ai-handoff-and-lessons.md`](2026-09-28-ai-handoff-and-lessons.md) — 最新 repo／部署狀態、行程功能限制，以及圖示仍顯黑白的根因和後續 AI 驗收指引。
 - [`2026-09-28-refresh-button-feedback.md`](2026-09-28-refresh-button-feedback.md) — 手動更新按鈕快取根因、強制重查、可見動態／文字回饋、測試與尚未部署狀態。
+- [`2026-09-28-source-icon-centering.md`](2026-09-28-source-icon-centering.md) — 修復道路／鐵路／天氣入口 SVG 被廣泛 flex 選擇器推離中心的 CSS 問題，附 375px 精確對齊驗收。
 - [`TEMPLATE.md`](TEMPLATE.md) — 後續每項工作的報告範本。

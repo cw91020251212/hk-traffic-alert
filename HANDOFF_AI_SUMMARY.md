@@ -130,3 +130,8 @@
 
 
 - 2026-09-28 18:39 PR 狀態更新（覆蓋上一行「尚未推送／開 PR」）：功能 commit `f0ff9b354a29adf8af6f4be33912b4e75cba1fe7` 已推送，GitHub [PR #25](https://github.com/cw91020251212/hk-traffic-alert/pull/25) OPEN／MERGEABLE；建立時 GitHub 未報 CI checks。報告與兩張 mobile QA 截圖已在 PR branch。仍未合併／未部署；刷新按鈕這項新改動的公開發布尚待使用者另行確認。
+
+
+- 2026-09-28 18:57 refresh release verification: PR #25 merged to main at `2dc3d47e0dd5bfcb86666db922db581128712771`; Pages commit `219f4a6dbce459625fa4e01de1061ba26465fb2b`; workflow [#36412068254](https://github.com/cw91020251212/hk-traffic-alert/actions/runs/36412068254) success. Public HTML loads `index-vH88dwkP.js` and `index-h2S6oUv9.css`, both HTTP 200; JS has loading/success copy. The first async watcher exited early because `jq` could not parse formatted CLI output; a direct `gh run list` plus `curl` verification subsequently confirmed the successful run and assets.
+
+- 2026-09-28 18:58 new screenshot bug fix, branch `fix/center-source-link-icons`: selectors `.quick-detail-links a svg:last-child` and button equivalent matched both the trailing external arrow and nested icon-chip SVGs, so `margin-left:auto` defeated grid centering. Changed to direct-child selectors (`a > svg:last-child`, `button > svg:last-child`). Full 88-test suite, typecheck, Pages/Server builds and whitespace check passed. At 375px, Playwright measured road/rail/weather icon center deltas of 0×0 px, 13px external-arrow right gap and no horizontal overflow; screenshot at `reports/assets/source-icons-centered-375.png`. CSS fix is not yet pushed/merged/deployed; user screenshot reported the visible issue. A separate report is `reports/2026-09-28-source-icon-centering.md`. Public deployment of this new fix requires explicit confirmation.
