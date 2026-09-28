@@ -36,6 +36,8 @@ export type PriorityAlert = {
   id: string;
   kind: "road" | "rail" | "weather" | "earthquake";
   level: "critical" | "high" | "watch";
+  warningCode?: string;
+  warningSubtype?: string;
   title: string;
   detail: string;
   location: string;
@@ -80,7 +82,7 @@ export function selectPriorityAlerts(input: {
     else if (warning.code === "WTMW") level = "critical";
     else if (warning.code === "WL" || warning.code === "WFNTSA") level = "high";
     if (!level) continue;
-    alerts.push({ id: `weather-${warning.code}-${subtype}`, kind: "weather", level, title: warning.label, detail: warning.content || "香港天文台官方警告目前生效。", location: "香港天文台官方訊號", area: "全港", updatedAt: warning.updatedAt });
+    alerts.push({ id: `weather-${warning.code}-${subtype}`, kind: "weather", level, warningCode: warning.code, warningSubtype: subtype || undefined, title: warning.label, detail: warning.content || "香港天文台官方警告目前生效。", location: "香港天文台官方訊號", area: "全港", updatedAt: warning.updatedAt });
   }
   for (const train of input.trains.filter((item) => item.serviceDelayed || Boolean(item.message))) {
     alerts.push({ id: `rail-${train.line}`, kind: "rail", level: "high", title: `${train.label}服務延誤／安排`, detail: train.message || "港鐵 API 標記此綫服務延誤；原因及最新安排請查看官方消息。", location: `${train.station} · 以港鐵公告為準`, area: alertArea(train.station), updatedAt: train.currentTime });
