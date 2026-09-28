@@ -63,7 +63,7 @@
 - [x] 使用者於 2026-09-28 09:21 明確要求發布；最新 main build 已發布到 `gh-pages` commit `88f701817cb17f010a55b7370b1bb7eccff430bd`。
 - [x] 正式站確認載入 `index-CHkeEldJ.js`／`index-DssHhgsp.css`；目前道路事故卡含 `道路交通` SVG icon 與中文 aria-label。
 
-## 階段十三｜暴雨及風球信號加色（進行中）
+## 階段十三｜事故分類與天氣信號加色（已完成）
 
 - [x] 按使用者補充，將道路／鐵路／一般天氣／地震圖示加強為橙／藍／青綠／紫四色，並保留警報文字與類別無障礙名稱。
 
@@ -75,7 +75,8 @@
 - [x] Chromium 375×812 類別圖示預覽確認四色清楚可辨；文字對比率 4.73:1 至 6.51:1。
 - [x] PR #22 已建立並推送（包含方向防護 commit `9b837398e2e4949544e728c33e4e7c2025afdac9`）；尚未合併，GitHub 未回報 CI checks。
 - [x] 使用者於 2026-09-28 10:58 明確要求發布；公開發布授權已取得。
-- [ ] 合併 PR #22，更新 `gh-pages`，並線上確認新 asset 已載入。
+- [x] PR #22 合併至 `main` commit `a3a6759e5b8ebd4cafb398416e5d124366336d68`；Pages 部署 workflow 成功，`gh-pages` commit `797e827df38f5e14b9e48e7ed930cfa4246bf23c`。
+- [x] 正式網站 JS／CSS asset HTTP 200，CSS 確認含道路／鐵路／天氣／地震四色圖示 selector。
 
 ## 階段三｜直接結論與自動行程篩選（已完成）
 
