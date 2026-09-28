@@ -53,13 +53,14 @@
 - [x] PR #16 已合併到 `main` commit `398fffdd877a255ad73c7f2604c5e3af4238080d`。
 - [x] 使用者更正暫不發布的選擇並明確確認發布；正式 Pages 已更新至 `gh-pages` commit `993361c0026ac851ff986d87feed0dc55e9eab1a`，線上 href／target 已驗收。
 
-## 階段十二｜事故警報圖示（進行中）
+## 階段十二｜事故警報圖示（程式完成；未發布）
 
 - [x] 固定類型 mapping：道路＝汽車、鐵路＝列車、天氣＝閃電雲、地震＝震波；使用 lucide-react，不逐宗產圖。
 - [x] Pages 與 Server 警報卡共用可存取圖示元件，並新增 mapping/component tests。
 - [x] `pnpm test` 8 files／54 tests、`pnpm check`、`pnpm pages:build`、`pnpm build` 全通過。
 - [x] Desktop／375px 預覽顯示四種圖示與中文 aria-label；手機頁寬 375px、標題無水平溢位。
-- [ ] 建立／合併 PR 並更新 GitHub 工作報告；正式 Pages 發布需另行確認。
+- [x] PR #19 已合併至 `main`，commit `ad2c8bf96fd408d4a0c6b2e67d9d4725dbb7ca30`；工作報告已更新。
+- [x] 依使用者明確指示，不發布公開 Pages；現有公開版未包含這批 icon。
 
 ## 階段三｜直接結論與自動行程篩選（已完成）
 

@@ -1,10 +1,11 @@
 # 事故警報卡加入分類圖示
 
 - 日期（香港時間）：2026-09-28
-- 狀態：實作及驗證完成；PR 待完成，公開 Pages 尚未發布
+- 狀態：實作、驗證及合併完成；依使用者指示不發布公開 Pages
 - 分支：`feat/incident-type-icons`
 - 主線基線：`f3fb150512d010a45e934fb4681faedaf0b386a6`
-- 相關 PR：待建立
+- 相關 PR：[PR #19](https://github.com/cw91020251212/hk-traffic-alert/pull/19)（已合併）
+- main merge commit：`ad2c8bf96fd408d4a0c6b2e67d9d4725dbb7ca30`
 
 ## 使用者需求
 
@@ -27,6 +28,6 @@
 
 ## 發布狀態與下一步
 
-- 公開 GitHub Pages 尚未更新；目前只是本機 build 預覽。
-- 下一步：建立並合併程式 PR；更新所有訪客可見的 Pages 前需另行確認。
+- PR #19 已合併至 `main`。使用者確認「只做 code review／PR／報告，不發布網站」；因此沒有改動 `gh-pages`。
+- 公開 Pages 仍是舊版，未包含事故分類圖示。除非使用者日後明確要求，不要發布此變更。
 - 後續 AI 請以本報告及 `HANDOFF_AI_SUMMARY.md` 為準，不要將尚未部署說成已上線。
