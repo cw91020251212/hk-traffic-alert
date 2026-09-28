@@ -3,9 +3,10 @@ import { ArrowRight, ArrowUpRight, CarFront, ChevronRight, CloudLightning, Footp
 import { PriorityAlertSignalIcon } from "@/components/PriorityAlertIcon";
 import { RouteLocationButton } from "@/components/RouteLocationButton";
 import { getJourneyDecision, inferRouteAreas, modeLabel } from "@/lib/journeyDecision";
+import { keepRefreshVisible, makeRefreshErrorFeedback, makeRefreshFeedback, type RefreshFeedback } from "@/lib/refreshFeedback";
 import { countSourceIndicators, getSourceDisplayName, getSourceIndicatorLabel, getSourceIndicatorState, orderSourceItems, SOURCE_DISPLAY_ORDER } from "@/lib/sourceDisplay";
 import { buildDirectionsUrl, parseRouteBookmarks, ROUTE_BOOKMARKS_PREFERENCE_KEY, routePlaceLabel, selectAlertsForRouteAreas, type RouteBookmark, type RouteMode } from "@/lib/routePlanner";
-import { getTransportDashboard, selectPriorityAlerts, type PriorityAlert, type TransportDashboard } from "../../../server/transportData";
+import { getTransportDashboard, refreshTransportDashboard, selectPriorityAlerts, type PriorityAlert, type TransportDashboard } from "../../../server/transportData";
 
 function formatHkt(value?: string) {
   if (!value) return "未有時間";
@@ -34,6 +35,8 @@ function AlertCard({ alert }: { alert: PriorityAlert }) {
 export default function StaticHome() {
   const [dashboard, setDashboard] = useState<TransportDashboard | null>(null);
   const [loadError, setLoadError] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshFeedback, setRefreshFeedback] = useState<RefreshFeedback | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
   const [routeOpen, setRouteOpen] = useState(false);
   const [routeChecked, setRouteChecked] = useState(false);
@@ -107,6 +110,22 @@ export default function StaticHome() {
   const routeDecision = getJourneyDecision(relatedAlerts, { loading: !dashboard && !loadError, degraded, routeReady: routeChecked, routeAreas });
   const directionsUrl = routeReady ? buildDirectionsUrl(origin, destination, mode) : "";
   const cycleFontSize = () => setFontSize((current) => current === "normal" ? "large" : current === "large" ? "xlarge" : "normal");
+  const refreshOfficialData = async () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    setRefreshFeedback(null);
+    try {
+      const freshDashboard = await keepRefreshVisible(refreshTransportDashboard());
+      setDashboard(freshDashboard);
+      setLoadError(false);
+      setRefreshFeedback(makeRefreshFeedback(freshDashboard.sources, freshDashboard.fetchedAt));
+    } catch {
+      setLoadError(true);
+      setRefreshFeedback(makeRefreshErrorFeedback());
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
   const saveRoute = () => {
     if (!routeReady) return;
     const cleanOrigin = origin.trim();
@@ -130,7 +149,7 @@ export default function StaticHome() {
 
     <div className="page-shell" id="top">
       <section className={`decision-hero decision-${decision.tone}${hasIncident ? " incident-active" : ""}`} aria-live="polite">
-        <div className="decision-topline"><span className="decision-kicker"><i className={hasIncident ? "incident-beacon" : ""} />{decision.kicker}</span><button className="decision-refresh" onClick={() => setReloadKey((value) => value + 1)} aria-label="重新載入警報"><RefreshCw size={16} /></button></div>
+        <div className="decision-topline"><span className="decision-kicker"><i className={hasIncident ? "incident-beacon" : ""} />{decision.kicker}</span>{(isRefreshing || refreshFeedback) && <span className={`decision-refresh-status${isRefreshing ? " is-loading" : ` is-${refreshFeedback?.kind ?? "success"}`}`} role="status" aria-live="polite">{isRefreshing ? "正在重新檢查…" : refreshFeedback?.message}</span>}<button className={`decision-refresh${isRefreshing ? " is-refreshing" : ""}${refreshFeedback ? ` has-refresh-feedback feedback-${refreshFeedback.kind}` : ""}`} onClick={() => void refreshOfficialData()} disabled={isRefreshing} aria-label={isRefreshing ? "正在重新檢查官方警報" : "重新檢查官方警報"} aria-busy={isRefreshing}><RefreshCw size={16} className={isRefreshing ? "refresh-icon-spinning" : refreshFeedback ? "refresh-icon-complete" : ""} /></button></div>
         <h1>{decision.title}</h1>
         <p>{decision.detail}</p>
         <div className="decision-actions">

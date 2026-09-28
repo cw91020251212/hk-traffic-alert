@@ -124,3 +124,6 @@
 
 
 - 2026-09-28 18:04 最終發布核實：使用者已於 17:57 明確批准合併並發布。PR #24 merged，merge commit `f83cbc74025cad84cccafb20800bdfc4187e3c01`。主線 build 後推送 Pages commit `075f022a27bd16184b019ad1df2377c1d79b20fc`；Pages workflow [#36406863148](https://github.com/cw91020251212/hk-traffic-alert/actions/runs/36406863148) success；公開首頁已載入新 JS/CSS，兩個資產 HTTP 200。詳見 `reports/2026-09-28-route-check-and-gps.md`。
+
+
+- 2026-09-28 18:37 手動更新掣新工作（分支 `feat/refresh-button-feedback`）：根因是 Pages 按鈕只重讀有 60 秒記憶體快取的 `getTransportDashboard()`，Server 按鈕只 refetch 部分 tRPC query，而後端來源快取仍會回舊資料；兩版又欠缺 loading／完成狀態，所以用家看不出更新是否執行。已改 Pages 手動 cache bypass、Server `transport.refresh` 清除四類 server cache 並以 mutation 結果更新四個 tRPC client caches；按鈕至少轉 650 ms，顯示「正在重新檢查…」、成功 HKT 時間、來源失敗數或整體失敗文案。加入 reduced-motion、aria busy/live feedback、快取刷新及狀態單元測試。`pnpm test` 10 files／88 tests、`pnpm check`、Pages build、Server build、`git diff --check` 通過；375×812 Playwright 用來源 mock 驗證多發出官方 request、loading／完成提示及 reduced-motion。證據：`reports/assets/refresh-button-progress-375.png`、`refresh-button-complete-375.png`；完整原因和限制在 `reports/2026-09-28-refresh-button-feedback.md`。**尚未推送／開 PR／部署；須對這項新改動另行取得公開發布確認。**

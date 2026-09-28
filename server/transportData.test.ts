@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   filterPriorityAlerts,
   getPriorityFeedState,
+  getTransportDashboard,
   isMajorTrafficEvent,
   mergeEndpointFailureSources,
   normalizeEarthquake,
@@ -16,6 +17,8 @@ import {
   parseAQHIXml,
   parseSpecialTrafficNewsXml,
   prioritizeTrafficEvents,
+  refreshAllTransportData,
+  refreshTransportDashboard,
   selectPriorityAlerts,
 } from "./transportData";
 
@@ -297,5 +300,56 @@ describe("alert-first selection and status", () => {
   it("does not report clear when the entire alert dashboard query has failed", () => {
     const sources = mergeEndpointFailureSources([], { dashboard: true });
     expect(getPriorityFeedState(false, sources, [])).toMatchObject({ kind: "unavailable" });
+  });
+
+  it("bypasses the one-minute cache when the static refresh action is used", async () => {
+    let fetchCount = 0;
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      fetchCount += 1;
+      const url = String(input);
+      const isTrafficXml = url.includes("trafficnews.xml");
+      return new Response(isTrafficXml ? "<list />" : JSON.stringify({ details: [] }), {
+        status: 200,
+        headers: { "Content-Type": isTrafficXml ? "application/xml" : "application/json" },
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    try {
+      const first = await getTransportDashboard();
+      const firstFetchCount = fetchCount;
+      await getTransportDashboard();
+      expect(fetchCount).toBe(firstFetchCount);
+
+      const refreshed = await refreshTransportDashboard();
+      expect(fetchCount).toBeGreaterThan(firstFetchCount);
+      expect(refreshed.fetchedAt).not.toBe(first.fetchedAt);
+      expect(refreshed.sources.every((source) => source.status === "ok")).toBe(true);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("refreshes all Server dashboard panels instead of reusing their caches", async () => {
+    let fetchCount = 0;
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      fetchCount += 1;
+      const isTrafficXml = String(input).includes("trafficnews.xml");
+      return new Response(isTrafficXml ? "<list />" : JSON.stringify({ details: [] }), {
+        status: 200,
+        headers: { "Content-Type": isTrafficXml ? "application/xml" : "application/json" },
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    try {
+      const first = await refreshAllTransportData();
+      const firstFetchCount = fetchCount;
+      const second = await refreshAllTransportData();
+      expect(fetchCount).toBeGreaterThan(firstFetchCount);
+      expect(first.sources.length).toBeGreaterThan(0);
+      expect(second.sources.length).toBe(first.sources.length);
+      expect(second.dashboard.sources.every((source) => source.status === "ok")).toBe(true);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

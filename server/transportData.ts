@@ -827,3 +827,38 @@ export async function getEnvironmentDashboard(): Promise<EnvironmentDashboard> {
   })();
   try { return await environmentInFlight; } finally { environmentInFlight = undefined; }
 }
+
+
+/** Force a fresh public-source check for the static Pages interface. */
+export async function refreshTransportDashboard(): Promise<TransportDashboard> {
+  if (inFlight) await inFlight.catch(() => undefined);
+  cached = undefined;
+  return getTransportDashboard();
+}
+
+export type RefreshAllTransportDataResult = {
+  checkedAt: string;
+  dashboard: TransportDashboard;
+  mobility: MobilityDashboard;
+  roadTraffic: RoadTrafficDashboard;
+  environment: EnvironmentDashboard;
+  sources: TrafficSource[];
+};
+
+/** Bypass all in-memory feed caches and refresh every dashboard used by the server UI. */
+export async function refreshAllTransportData(): Promise<RefreshAllTransportDataResult> {
+  await Promise.allSettled([inFlight, mobilityInFlight, roadTrafficInFlight, environmentInFlight]);
+  cached = undefined;
+  mobilityCached = undefined;
+  roadTrafficCached = undefined;
+  environmentCached = undefined;
+
+  const [dashboard, mobility, roadTraffic, environment] = await Promise.all([
+    getTransportDashboard(),
+    getMobilityDashboard(),
+    getRoadTrafficDashboard(),
+    getEnvironmentDashboard(),
+  ]);
+  const sources = [...dashboard.sources, ...mobility.sources, roadTraffic.source, ...environment.sources];
+  return { checkedAt: new Date().toISOString(), dashboard, mobility, roadTraffic, environment, sources };
+}
