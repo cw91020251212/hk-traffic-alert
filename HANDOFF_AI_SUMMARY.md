@@ -30,6 +30,8 @@
 
 - 使用者接着要求暴雨、風球以外的分類 icon 也要更有顏色，避免黑白單調；已把道路／鐵路／天氣／地震圖示改為橙／藍／青綠／紫色配色，分別對比率 4.73／6.16／5.26／6.51:1。另含雨警黃／紅／黑信號色及風球 1／3／8／9／10 號產品自訂顏色 badge；保留 HKO warning code，只接受八號 NE／NW／SE／SW 方向，未知／取消／畸形 subtype 不猜色。8 files／71 tests、typecheck、Pages／Server build 通過；375×812 分別預覽四種分類 icon 和八種天氣信號。PR [#22](https://github.com/cw91020251212/hk-traffic-alert/pull/22) 已合併至 `main` commit `a3a6759e5b8ebd4cafb398416e5d124366336d68`；依使用者於 2026-09-28 10:58 的明確要求，GitHub Pages 已部署至 `gh-pages` commit `797e827df38f5e14b9e48e7ed930cfa4246bf23c`，workflow run [36372370048](https://github.com/cw91020251212/hk-traffic-alert/actions/runs/36372370048) 成功。正式 browser computed style 確認四色背景／圖示顏色已載入。報告：[`reports/2026-09-28-weather-signal-colors.md`](reports/2026-09-28-weather-signal-colors.md)；預覽：[`reports/assets/category-icons-preview-375.png`](reports/assets/category-icons-preview-375.png)、[`reports/assets/weather-signals-preview-375.png`](reports/assets/weather-signals-preview-375.png)。
 
+- 後續使用者於 2026-09-28 11:15 指出公開頁常駐介面 icon 仍呈黑白。實際原因是前一版只替「有重大事件時才會出現」的警報卡分類 icon 加色；當時首頁沒有警報卡，使用者看到的是常駐來源入口和行程控制的中性色 icon。本分支 `fix/always-visible-interface-icon-colors` 已把運輸署／港鐵／天文台快捷入口改為橙／藍／青綠 chip，行程模式改用汽車／列車／步行彩色 icon，Server 手機列的警報／交通／天氣／更多入口亦加色。`pnpm test` 8 files／71 tests、typecheck、Pages／Server build 通過；375×812 本機預覽確認 375px 無橫向溢位。報告／截圖：[`reports/2026-09-28-interface-icon-colors.md`](reports/2026-09-28-interface-icon-colors.md)、[`reports/assets/interface-icons-preview-375.png`](reports/assets/interface-icons-preview-375.png)。使用者已明確授權前述顏色更新發布，但本次 follow-up 尚待開 PR、合併與更新 Pages。
+
 ## 先把這三種網址分清楚
 
 1. **公開 GitHub 原始碼**：<https://github.com/cw91020251212/hk-traffic-alert>  

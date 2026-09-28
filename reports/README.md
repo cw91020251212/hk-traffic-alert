@@ -28,4 +28,5 @@
 - [`2026-09-28-mtr-live-status-anchor.md`](2026-09-28-mtr-live-status-anchor.md) — 更正港鐵圖例頁誤作即時狀態頁；入口改為直達官方即時路綫狀況清單。
 - [`2026-09-28-incident-type-icons.md`](2026-09-28-incident-type-icons.md) — Pages／Server 事故卡新增道路、鐵路、天氣和地震固定圖示與驗收結果。
 - [`2026-09-28-weather-signal-colors.md`](2026-09-28-weather-signal-colors.md) — 事故類別圖示配色、雨警／風球信號 chip、手機驗收及發布結果。
+- [`2026-09-28-interface-icon-colors.md`](2026-09-28-interface-icon-colors.md) — 首頁常駐行程／官方來源入口圖示配色，解釋前版為何只在警報出現時看到顏色。
 - [`TEMPLATE.md`](TEMPLATE.md) — 後續每項工作的報告範本。

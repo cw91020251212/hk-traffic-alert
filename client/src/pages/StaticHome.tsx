@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, ArrowUpRight, CarFront, ChevronRight, CloudLightning, MapPinned, Navigation, RefreshCw, ShieldAlert, TrainFront, TriangleAlert, Zap } from "lucide-react";
+import { ArrowRight, ArrowUpRight, CarFront, ChevronRight, CloudLightning, Footprints, MapPinned, Navigation, RefreshCw, ShieldAlert, TrainFront, TriangleAlert, Zap } from "lucide-react";
 import { PriorityAlertSignalIcon } from "@/components/PriorityAlertIcon";
 import { getJourneyDecision, inferRouteAreas, modeLabel } from "@/lib/journeyDecision";
 import { countSourceIndicators, getSourceDisplayName, getSourceIndicatorLabel, getSourceIndicatorState, orderSourceItems, SOURCE_DISPLAY_ORDER } from "@/lib/sourceDisplay";
@@ -142,7 +142,7 @@ export default function StaticHome() {
         <summary><MapPinned size={18} /><span><strong>我由邊度去邊度？</strong><small>輸入一次，程式替你篩走無關資料</small></span><ChevronRight size={17} /></summary>
         <div className="route-planner-body">
           <div className="route-inputs"><label>起點<input aria-label="起點" value={origin} onChange={(event) => setOrigin(event.target.value)} placeholder="例如：金鐘站" /></label><span className="route-arrow">↓</span><label>目的地<input aria-label="目的地" value={destination} onChange={(event) => setDestination(event.target.value)} placeholder="例如：大埔墟站" /></label></div>
-          <div className="route-mode-switch" role="group" aria-label="出行方式">{(["driving", "transit", "walking"] as RouteMode[]).map((item) => <button type="button" key={item} className={mode === item ? "active" : ""} aria-pressed={mode === item} onClick={() => setMode(item)}>{modeLabel(item)}</button>)}</div>
+          <div className="route-mode-switch" role="group" aria-label="出行方式">{(["driving", "transit", "walking"] as RouteMode[]).map((item) => { const Icon = item === "driving" ? CarFront : item === "transit" ? TrainFront : Footprints; return <button type="button" key={item} className={`route-mode-${item}${mode === item ? " active" : ""}`} aria-pressed={mode === item} onClick={() => setMode(item)}><Icon size={16} aria-hidden="true" focusable="false" />{modeLabel(item)}</button>; })}</div>
           {routeReady && <div className="route-inference"><span>自動篩選範圍</span><strong>{routeAreas.length ? routeAreas.join(" → ") : "只顯示全港警告"}</strong><small>按地名在此裝置估算；不讀取 GPS。</small></div>}
           {routeReady && <div className={`route-verdict route-verdict-${decision.tone}`}><span>{decision.kicker}</span><strong>{decision.title}</strong><p>{decision.detail}</p></div>}
           {directionsUrl ? <a className="route-submit" href={directionsUrl} target="_blank" rel="noreferrer"><Navigation size={16} /> 在 Google Maps 查看建議路線 <ArrowUpRight size={14} /></a> : <div className="route-submit disabled"><Navigation size={16} /> 輸入起點及目的地</div>}
@@ -176,7 +176,7 @@ export default function StaticHome() {
             <p className="source-health-note">綠燈＝成功讀取；紅燈＝讀取失敗；灰燈＝未能確認。燈號只表示是否剛成功取得資料，不代表內容完整、正確或最新，也不代表列車準時。出行資訊請看上方警報；官方消息見下方易讀入口。</p>
           </> : <p className="source-health-note">目前未能連接官方資料；請稍後再試。緊急情況請以運輸署、港鐵或天文台公告為準，入口見下方。</p>}
         </details>
-        <div className="quick-detail-links"><a href="https://www.td.gov.hk/tc/special_news/spnews.htm" target="_blank" rel="noreferrer"><CarFront size={17} /> 運輸署路況 <ArrowUpRight size={14} /></a><a href="https://www.mtr.com.hk/ch/customer/main/index.html#RYGLineStatus" target="_blank" rel="noreferrer"><TrainFront size={17} /> 港鐵即時車務狀況（官方） <ArrowUpRight size={14} /></a><a href="https://www.hko.gov.hk/tc/index.html" target="_blank" rel="noreferrer"><CloudLightning size={17} /> 天文台警告 <ArrowUpRight size={14} /></a></div>
+        <div className="quick-detail-links"><a href="https://www.td.gov.hk/tc/special_news/spnews.htm" target="_blank" rel="noreferrer"><span className="quick-detail-icon quick-detail-icon--road"><CarFront size={16} aria-hidden="true" /></span> 運輸署路況 <ArrowUpRight size={14} /></a><a href="https://www.mtr.com.hk/ch/customer/main/index.html#RYGLineStatus" target="_blank" rel="noreferrer"><span className="quick-detail-icon quick-detail-icon--rail"><TrainFront size={16} aria-hidden="true" /></span> 港鐵即時車務狀況（官方） <ArrowUpRight size={14} /></a><a href="https://www.hko.gov.hk/tc/index.html" target="_blank" rel="noreferrer"><span className="quick-detail-icon quick-detail-icon--weather"><CloudLightning size={16} aria-hidden="true" /></span> 天文台警告 <ArrowUpRight size={14} /></a></div>
         <div className="prototype-footnote"><ShieldAlert size={13} /> GitHub Pages 版直接讀取支援瀏覽器跨域的官方警報來源；TDAS 路線平均車速仍只在 server 版。遇緊急情況以官方公告為準。</div>
       </section>
     </div>

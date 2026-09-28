@@ -78,6 +78,14 @@
 - [x] PR #22 合併至 `main` commit `a3a6759e5b8ebd4cafb398416e5d124366336d68`；Pages 部署 workflow 成功，`gh-pages` commit `797e827df38f5e14b9e48e7ed930cfa4246bf23c`。
 - [x] 正式網站 JS／CSS asset HTTP 200，production browser computed style 確認道路橙／鐵路藍／天氣青綠／地震紫。
 
+## 階段十四｜首頁常駐介面圖示加色（進行中）
+
+- [x] 確認前版只為警報卡圖示上色；沒有重大警報卡時，首頁常駐來源／行程介面仍是較中性的單色 icon。
+- [x] 運輸署、港鐵、天文台來源圖示加橙／藍／青綠色 chip；駕車／公共交通／步行選項加對應 icon；Server 手機列再加色。
+- [x] `pnpm test` 8 files／71 tests、`pnpm check`、Pages／Server builds 和 `git diff --check` 通過；375×812 瀏覽器預覽確認沒有橫向溢位。
+- [x] 建立 [`2026-09-28-interface-icon-colors.md`](reports/2026-09-28-interface-icon-colors.md) 和手機截圖，記錄原因、修正和 QA。
+- [ ] 開 PR、合併、發布至 `gh-pages`，並驗證公開入口圖示的實際顏色。
+
 ## 階段三｜直接結論與自動行程篩選（已完成）
 
 - [x] 首屏由宣傳式 hero 改為直接行動結論：照常出發、留意、預留時間、改路／延後，或來源不足時「未能完整確認」。

@@ -483,7 +483,7 @@ export default function Home() {
 
         <footer className="footer"><span>交通警報器 <span className="footer-dot">·</span> 香港出行資訊整合原型</span><span><Zap size={13} /> 官方公告優先，安全出行</span></footer>
       </div>
-      <div className="mobile-bottom-bar" role="navigation" aria-label="手機快速操作"><button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}><ShieldAlert size={19} /><span>警報</span></button><button onClick={() => openPanel("transport")}><CarFront size={19} /><span>交通</span></button><button onClick={() => openPanel("weather")}><CloudRain size={19} /><span>天氣</span></button><button onClick={() => openPanel("sources")}><Menu size={19} /><span>更多</span></button></div>
+      <div className="mobile-bottom-bar" role="navigation" aria-label="手機快速操作"><button className="mobile-nav-alerts" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}><ShieldAlert size={19} /><span>警報</span></button><button className="mobile-nav-transport" onClick={() => openPanel("transport")}><CarFront size={19} /><span>交通</span></button><button className="mobile-nav-weather" onClick={() => openPanel("weather")}><CloudRain size={19} /><span>天氣</span></button><button className="mobile-nav-more" onClick={() => openPanel("sources")}><Menu size={19} /><span>更多</span></button></div>
     </main>
   );
 }
