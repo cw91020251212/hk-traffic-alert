@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { PriorityAlertSignalIcon } from "@/components/PriorityAlertIcon";
 import { AlertEffectsSettings } from "@/components/AlertEffectsSettings";
+import { ActiveWeatherWarnings } from "@/components/ActiveWeatherWarnings";
 import { RouteLocationButton } from "@/components/RouteLocationButton";
 import { useAlertEffects } from "@/hooks/useAlertEffects";
 import { trpc } from "@/lib/trpc";
@@ -71,9 +72,10 @@ const modes: Mode[] = [
 const hazardFallbacks = [
   { name: "颱風及熱帶氣旋", icon: CloudLightning, tone: "hazard-coral", codes: ["WTCSGNL", "WTCPRE8"] },
   { name: "暴雨警告：黃・紅・黑", icon: CloudRain, tone: "hazard-gold", codes: ["WRAIN"] },
+  { name: "洪水／水浸特別報告", icon: Waves, tone: "hazard-blue", codes: ["WFNTSA"] },
   { name: "山泥傾瀉警告", icon: TriangleAlert, tone: "hazard-earth", codes: ["WL"] },
   { name: "地震及海嘯資訊", icon: Waves, tone: "hazard-blue", codes: ["WTMW", "earthquake"] },
-  { name: "其他警告：雷暴・酷熱・寒冷等", icon: TriangleAlert, tone: "hazard-earth", codes: ["WTS", "WHOT", "WCOLD", "WFIRE", "WMSGNL", "WFROST", "WFNTSA"] },
+  { name: "其他警告：雷暴・酷熱・寒冷等", icon: TriangleAlert, tone: "hazard-earth", codes: ["WTS", "WHOT", "WCOLD", "WFIRE", "WMSGNL", "WFROST"] },
 ];
 
 const examples = [
@@ -289,6 +291,8 @@ export default function Home() {
 
         <AlertEffectsSettings preferences={alertEffects.preferences} status={alertEffects.status} setSoundEnabled={alertEffects.setSoundEnabled} setBreathingEnabled={alertEffects.setBreathingEnabled} testSound={alertEffects.testSound} />
         {alertEffects.newAlertNotice && <div className="new-alert-notice" role="status" aria-live="polite"><Bell size={16} aria-hidden="true" />{alertEffects.newAlertNotice}</div>}
+
+        <ActiveWeatherWarnings warnings={activeWarnings} />
 
         {notice && <div className="inline-notice" role="status">{notice}<button onClick={() => setNotice("")} aria-label="關閉">×</button></div>}
 
