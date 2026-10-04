@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, ArrowUpRight, Bell, CarFront, ChevronRight, CloudLightning, Footprints, MapPinned, Navigation, RefreshCw, ShieldAlert, TrainFront, TriangleAlert, Zap } from "lucide-react";
 import { AlertEffectsSettings } from "@/components/AlertEffectsSettings";
 import { ActiveWeatherWarnings } from "@/components/ActiveWeatherWarnings";
+import { IncidentLocationMap } from "@/components/IncidentLocationMap";
 import { PriorityAlertSignalIcon } from "@/components/PriorityAlertIcon";
 import { RouteLocationButton } from "@/components/RouteLocationButton";
 import { useAlertEffects } from "@/hooks/useAlertEffects";
@@ -31,6 +32,7 @@ function AlertCard({ alert }: { alert: PriorityAlert }) {
     <h3 className="priority-card-heading"><PriorityAlertSignalIcon alert={alert} /><span>{alert.title}</span></h3>
     <p>{alert.detail}</p>
     <div className="priority-card-meta"><span>{alert.location}</span>{alert.updatedAt && <span>{formatHkt(alert.updatedAt)} HKT</span>}</div>
+    {(alert.kind === "road" || alert.kind === "earthquake") && <IncidentLocationMap label={alert.location} searchQuery={alert.locationSearchQuery} latitude={alert.latitude} longitude={alert.longitude} />}
     <a href={href} target="_blank" rel="noreferrer">查看官方消息 <ArrowUpRight size={13} /></a>
   </article>;
 }

@@ -25,6 +25,7 @@ import {
 import { PriorityAlertSignalIcon } from "@/components/PriorityAlertIcon";
 import { AlertEffectsSettings } from "@/components/AlertEffectsSettings";
 import { ActiveWeatherWarnings } from "@/components/ActiveWeatherWarnings";
+import { IncidentLocationMap } from "@/components/IncidentLocationMap";
 import { RouteLocationButton } from "@/components/RouteLocationButton";
 import { useAlertEffects } from "@/hooks/useAlertEffects";
 import { trpc } from "@/lib/trpc";
@@ -556,6 +557,7 @@ function PriorityAlertCard({ alert }: { alert: PriorityAlert }) {
     <div className="priority-card-top"><span className="priority-level">{levelLabel}</span><span className="priority-area">{alert.area} · {alert.kind === "road" ? "道路" : alert.kind === "rail" ? "鐵路" : alert.kind === "weather" ? "天氣警告" : "地震"}</span></div>
     <h3 className="priority-card-heading"><PriorityAlertSignalIcon alert={alert} /><span>{alert.title}</span></h3><p>{alert.detail}</p>
     <div className="priority-card-meta"><span>{alert.location}</span>{alert.updatedAt && <span>官方更新 {formatHkt(alert.updatedAt)} HKT</span>}</div>
+    {(alert.kind === "road" || alert.kind === "earthquake") && <IncidentLocationMap label={alert.location} searchQuery={alert.locationSearchQuery} latitude={alert.latitude} longitude={alert.longitude} />}
     <a href={sourceUrl} target="_blank" rel="noreferrer">查看官方消息 <ArrowUpRight size={13} /></a>
   </article>;
 }
@@ -567,10 +569,11 @@ function TrafficEventRow({ event }: { event: TrafficEvent }) {
     <div className="event-content"><div className="event-heading"><strong>{event.title || "交通消息"}</strong><span className={closed ? "event-badge closed" : "event-badge open"}>{event.status || "官方消息"}</span></div>
       <p>{event.detail || "官方消息內容未提供"}</p>
       <div className="event-meta"><span>{[event.location, event.district, event.direction].filter(Boolean).join(" · ") || "地點未提供"}</span><span>{formatHkt(event.announcedAt)} HKT</span></div>
+      <IncidentLocationMap label={event.location || event.title || "交通事件"} searchQuery={event.location || event.district || undefined} latitude={event.latitude} longitude={event.longitude} />
     </div>
   </article>;
 }
 
 function EarthquakeRow({ quake }: { quake: EarthquakeBulletin }) {
-  return <div className="earthquake-row"><span className="quake-mark"><Waves size={13} /></span><div><strong>{quake.label}</strong><span>{[quake.region, quake.magnitude ? `M${quake.magnitude}` : "", quake.occurredAt ? formatHkt(quake.occurredAt) + " HKT" : ""].filter(Boolean).join(" · ") || quake.content || "官方報告"}</span></div></div>;
+  return <div className="earthquake-row"><span className="quake-mark"><Waves size={13} /></span><div><strong>{quake.label}</strong><span>{[quake.region, quake.magnitude ? `M${quake.magnitude}` : "", quake.occurredAt ? formatHkt(quake.occurredAt) + " HKT" : ""].filter(Boolean).join(" · ") || quake.content || "官方報告"}</span><IncidentLocationMap label={quake.region || quake.label} searchQuery={quake.region} latitude={quake.latitude} longitude={quake.longitude} /></div></div>;
 }

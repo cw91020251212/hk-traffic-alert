@@ -43,9 +43,12 @@ export type PriorityAlert = {
   location: string;
   area: "全港" | "港島" | "九龍" | "新界／離島" | "未標示";
   updatedAt?: string;
+  latitude?: number;
+  longitude?: number;
+  locationSearchQuery?: string;
 };
 
-const MAJOR_TRAFFIC_PATTERN = /封路|封閉|封閉行車線|交通意外|道路事故|交通事故|車輛故障|行車線阻塞|行車線受阻|嚴重擠塞|嚴重阻塞|交通擠塞|塞車|行車緩慢|交通改道|巴士改道|交通管制|road closure|lane closure|traffic accident|major congestion|diversion|service disruption/i;
+const MAJOR_TRAFFIC_PATTERN = /封路|封閉|封閉行車線|交通意外|道路事故|交通事故|山泥傾瀉|山泥滑坡|山體滑坡|山崩|泥石流|塌方|塌樹|塌陷|落石|路面陷落|車輛故障|行車線阻塞|行車線受阻|嚴重擠塞|嚴重阻塞|交通擠塞|塞車|行車緩慢|交通改道|巴士改道|交通管制|road closure|lane closure|traffic accident|landslide|slope collapse|rockfall|major congestion|diversion|service disruption/i;
 const EXPLICIT_NO_IMPACT_PATTERN = /交通不受影響|不影響交通|行車暢順|不影響行車/i;
 
 function alertArea(value: string): PriorityAlert["area"] {
@@ -82,7 +85,7 @@ export function selectPriorityAlerts(input: {
   const alerts: PriorityAlert[] = [];
   for (const event of input.trafficEvents.filter(isMajorTrafficEvent)) {
     const location = [event.location, event.district, event.direction].filter(Boolean).join(" · ") || "地點以運輸署公告為準";
-    alerts.push({ id: `road-${event.id}`, kind: "road", level: "high", title: event.title || "主要道路交通事件", detail: event.detail || "運輸署公布主要道路安排。", location, area: alertArea(`${event.location} ${event.district} ${event.direction}`), updatedAt: event.announcedAt });
+    alerts.push({ id: `road-${event.id}`, kind: "road", level: "high", title: event.title || "主要道路交通事件", detail: event.detail || "運輸署公布主要道路安排。", location, area: alertArea(`${event.location} ${event.district} ${event.direction}`), updatedAt: event.announcedAt, ...(event.latitude === undefined ? {} : { latitude: event.latitude }), ...(event.longitude === undefined ? {} : { longitude: event.longitude }), ...(event.location ? { locationSearchQuery: event.location } : {}) });
   }
   for (const warning of input.warnings) {
     const subtype = warning.subtype ?? "";
@@ -94,7 +97,7 @@ export function selectPriorityAlerts(input: {
     alerts.push({ id: `rail-${train.line}`, kind: "rail", level: "high", title: `${train.label}服務延誤／安排`, detail: train.message || "港鐵 API 標記此綫服務延誤；原因及最新安排請查看官方消息。", location: `${train.station} · 以港鐵公告為準`, area: alertArea(train.station), updatedAt: train.currentTime });
   }
   for (const quake of input.earthquakes.filter((item) => item.kind === "felt")) {
-    alerts.push({ id: `earthquake-felt-${quake.occurredAt ?? quake.updatedAt ?? quake.region ?? "latest"}`, kind: "earthquake", level: "high", title: "香港有感地震報告", detail: quake.content || [quake.region, quake.magnitude ? `M${quake.magnitude}` : ""].filter(Boolean).join(" · ") || "天文台有感地震報告。", location: quake.region || "香港天文台本地報告", area: alertArea(quake.region || "香港"), updatedAt: quake.updatedAt || quake.occurredAt });
+    alerts.push({ id: `earthquake-felt-${quake.occurredAt ?? quake.updatedAt ?? quake.region ?? "latest"}`, kind: "earthquake", level: "high", title: "香港有感地震報告", detail: quake.content || [quake.region, quake.magnitude ? `M${quake.magnitude}` : ""].filter(Boolean).join(" · ") || "天文台有感地震報告。", location: quake.region || "香港天文台本地報告", area: alertArea(quake.region || "香港"), updatedAt: quake.updatedAt || quake.occurredAt, ...(quake.latitude === undefined ? {} : { latitude: quake.latitude }), ...(quake.longitude === undefined ? {} : { longitude: quake.longitude }), ...(quake.region ? { locationSearchQuery: quake.region } : {}) });
   }
   for (const route of input.roadRoutes.filter((item) => item.speedKph !== undefined && item.speedKph < 25)) {
     const speed = route.speedKph ?? 0;
