@@ -1,7 +1,7 @@
 # 事故位置地圖：來源研究、實作與交接報告
 
 **更新日期：** 2026-10-05（香港時間）
-**狀態：** PR #32 已補上繁體中文地圖標示及提示，測試通過；用戶已確認合併並發布，正在完成發布核實。
+**狀態：** PR #32 已合併；繁體中文地圖與互動事故地圖已部署到用戶自己的 GitHub Pages 公開網站，並完成線上核實。
 
 ## 用戶需求
 
@@ -25,11 +25,11 @@
 
 底圖採用官方[OpenFreeMap Quick Start](https://openfreemap.org/quick_start/)建議的 MapLibre GL JS + OpenFreeMap vector style：`https://tiles.openfreemap.org/styles/bright`。MapLibre 程式碼動態載入，只在用戶打開地圖時載入。
 
-先前底圖預設的文字欄位偏向拉丁／英文名稱，操作按鈕和觸控提示也使用英文。現已在地圖樣式載入後，把有文字的標籤改為依序尋找 `name:zh-Hant`、`name:zh`、`name:nonlatin`、本地 `name`，再後備至英文名稱欄位。放大、縮小、署名、全螢幕、位置及 MapLibre cooperative gesture 提示均使用繁體中文；地圖下方亦有清楚的手機／桌面操作說明。若地圖資料本身沒有中文名稱，才會用現有名稱作後備；OpenFreeMap、OpenMapTiles 等名稱仍保留原名，署名不被移除。
+底圖預設文字欄位原本偏向拉丁／英文名稱，操作按鈕和觸控提示也使用英文。現於地圖樣式載入後，把有文字的標籤改為依序尋找 `name:zh-Hant`、`name:zh`、`name:nonlatin`、本地 `name`，再後備至英文名稱欄位。放大、縮小、署名、全螢幕、位置及 MapLibre cooperative gesture 提示均使用繁體中文；地圖下方亦有手機／桌面操作說明。若地圖資料本身沒有中文名稱，才會用現有名稱作後備；OpenFreeMap、OpenMapTiles 等名稱仍保留原名，署名不被移除。
 
-語言標籤採用 [MapLibre 官方語言標籤範例](https://maplibre.org/maplibre-gl-js/docs/examples/change-a-maps-language/)、[MapOptions locale 文件](https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/MapOptions/)及 [OpenMapTiles multilingual schema](https://openmaptiles.org/schema/)；locale 字典亦覆蓋 MapLibre 官方 `default_locale` 中的 cooperative gesture 提示鍵。
+語言標籤採用 [MapLibre 官方語言標籤範例](https://maplibre.org/maplibre-gl-js/docs/examples/change-a-maps-language/)、[MapOptions locale 文件](https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/MapOptions/)及 [OpenMapTiles multilingual schema](https://openmaptiles.org/schema/)；locale 字典亦覆蓋 MapLibre 官方 default locale 中的 cooperative gesture 提示鍵。
 
-地圖保留縮放／導覽及 cooperative gestures，並列出 OpenFreeMap、OpenMapTiles 和 OpenStreetMap 來源。OpenFreeMap [條款](https://openfreemap.org/tos/)說明其免費服務按現況提供，可能更改或停止，因此不能承諾該第三方底圖永久可用。地圖面板另提供 Google Maps 的座標／地名外部連結作備用；[Google 官方 Maps URLs 文件](https://developers.google.com/maps/documentation/urls/get-started)指 Maps URLs 不需 API key。
+地圖保留縮放／導覽及 cooperative gestures，並列出 OpenFreeMap、OpenMapTiles 和 OpenStreetMap 來源。OpenFreeMap [條款](https://openfreemap.org/tos/)說明服務免費提供、按現況提供，可能更改或停止，因此不能承諾該第三方底圖永久可用。地圖面板另提供 Google Maps 的座標／地名外部連結作備用；[Google 官方 Maps URLs 文件](https://developers.google.com/maps/documentation/urls/get-started)指 Maps URLs 不需 API key。
 
 ## 實作規則
 
@@ -40,12 +40,15 @@
 
 ## 驗證結果
 
-- `pnpm test`：**99 項測試通過**（12 個測試檔案），包括新加的中文標籤欄位優先序、MapLibre 按鈕及手勢提示翻譯測試。
+- `pnpm test`：**99 項測試通過**（12 個測試檔案），包括繁中標籤欄位優先序、MapLibre 按鈕與手機／桌面手勢提示翻譯測試。
 - `pnpm check`：TypeScript 檢查通過。
 - `pnpm pages:build` 與 `pnpm build`：GitHub Pages 及 Server 建置通過。建置會顯示 MapLibre chunk 大小提醒（約 1.05 MB 未壓縮／285.63 KB gzip）；地圖程式碼獨立拆分並按需載入。
-- 375px Chromium／Playwright：GeoInfo 候選選取、地圖載入、繁體中文放大提示、繁體中文手機／桌面手勢提示及無水平溢出均通過。另檢查實際地圖畫面確認香港底圖可顯示中文道路標示。
+- 375px Chromium／Playwright：GeoInfo 候選選取、互動地圖、繁體中文縮放提示、手機／桌面手勢提示及無水平溢出均通過；並檢查實際地圖畫面有中文道路標示。
 - 截圖：[375px 地圖驗證畫面](assets/incident-map-375.png)。
+- 部署後直接以 cache-busting 請求核實 [GitHub Pages 正式網站](https://cw91020251212.github.io/hk-traffic-alert/)及其新 JavaScript 資源：HTML、JS 均回覆 HTTP 200，bundle 內確認有 `name:zh-Hant`、「放大地圖」及「使用兩隻手指移動地圖」等繁中項目。
 
 ## 發布記錄
 
-用戶已確認合併 PR #32 並發布到其自己的 GitHub Pages；PR 合併與 Pages 部署狀態正在核實後填入。Manus 臨時預覽不是永久網址，不作為正式發布目的地。
+用戶確認後，PR [#32](https://github.com/cw91020251212/hk-traffic-alert/pull/32) 於 2026-10-05（香港時間）合併到 `main`，merge commit：`b48342fe60851b4c688ed812405a3b31cd610bf6`。
+
+GitHub Pages 使用的來源是 `gh-pages` 根目錄。從合併後的 `main` 建置並部署，`gh-pages` commit 為 `1b8bc395d7ee462a1ebb941f63a670d41b23542b`。GitHub Pages Actions run [#37226770123](https://github.com/cw91020251212/hk-traffic-alert/actions/runs/37226770123) 結果為 **success**。最後直接核實正式網址和新 JS bundle 回覆正常；公開站已包含繁體中文地圖標示及互動事故地圖功能。
