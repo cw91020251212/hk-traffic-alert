@@ -2,12 +2,34 @@ import { describe, expect, it, vi } from "vitest";
 import {
   buildGoogleMapsSearchUrl,
   buildOpenFreeMapUrl,
+  buildTraditionalChineseLabelExpression,
   isValidMapCoordinate,
   officialCoordinatePoint,
   searchIncidentPlace,
+  TRADITIONAL_CHINESE_LABEL_FIELDS,
+  TRADITIONAL_CHINESE_MAP_LOCALE,
 } from "./incidentMap";
 
 describe("incident map locations", () => {
+  it("prefers Traditional Chinese and local-script labels and translates MapLibre controls", () => {
+    expect(TRADITIONAL_CHINESE_LABEL_FIELDS.slice(0, 3)).toEqual(["name:zh-Hant", "name:zh", "name:nonlatin"]);
+    expect(buildTraditionalChineseLabelExpression()).toEqual([
+      "coalesce",
+      ["get", "name:zh-Hant"],
+      ["get", "name:zh"],
+      ["get", "name:nonlatin"],
+      ["get", "name"],
+      ["get", "name_en"],
+      ["get", "name:latin"],
+    ]);
+    expect(TRADITIONAL_CHINESE_MAP_LOCALE["NavigationControl.ZoomIn"]).toBe("放大地圖");
+    expect(TRADITIONAL_CHINESE_MAP_LOCALE["NavigationControl.ZoomOut"]).toBe("縮小地圖");
+    expect(TRADITIONAL_CHINESE_MAP_LOCALE["AttributionControl.ToggleAttribution"]).toBe("切換地圖資料來源");
+    expect(TRADITIONAL_CHINESE_MAP_LOCALE["CooperativeGesturesHandler.MobileHelpText"]).toBe("使用兩隻手指移動地圖");
+    expect(TRADITIONAL_CHINESE_MAP_LOCALE["CooperativeGesturesHandler.WindowsHelpText"]).toContain("Ctrl");
+    expect(TRADITIONAL_CHINESE_MAP_LOCALE["CooperativeGesturesHandler.MacHelpText"]).toContain("⌘");
+  });
+
   it("accepts a complete geographic coordinate pair and rejects invalid or partial values", () => {
     expect(isValidMapCoordinate(22.31, 114.18)).toBe(true);
     expect(isValidMapCoordinate(undefined, 114.18)).toBe(false);

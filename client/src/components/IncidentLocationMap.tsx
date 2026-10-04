@@ -5,9 +5,11 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import {
   buildGoogleMapsSearchUrl,
   buildOpenFreeMapUrl,
+  buildTraditionalChineseLabelExpression,
   isValidMapCoordinate,
   officialCoordinatePoint,
   searchIncidentPlace,
+  TRADITIONAL_CHINESE_MAP_LOCALE,
   type IncidentMapPoint,
 } from "@/lib/incidentMap";
 
@@ -25,6 +27,16 @@ function MapView({ point }: { point: IncidentMapPoint }) {
   const [ready, setReady] = useState(false);
   const [error, setError] = useState("");
 
+  const applyTraditionalChineseLabels = (mapInstance: import("maplibre-gl").Map) => {
+    const nameLayers = mapInstance.getStyle().layers.filter((layer) => {
+      if (layer.type !== "symbol" || !layer.layout?.["text-field"] || /shield/i.test(layer.id)) return false;
+      return JSON.stringify(layer.layout["text-field"]).includes('"name');
+    });
+    for (const layer of nameLayers) {
+      mapInstance.setLayoutProperty(layer.id, "text-field", buildTraditionalChineseLabelExpression());
+    }
+  };
+
   useEffect(() => {
     let disposed = false;
     let map: import("maplibre-gl").Map | undefined;
@@ -39,6 +51,7 @@ function MapView({ point }: { point: IncidentMapPoint }) {
         center: [point.longitude, point.latitude],
         zoom: 15,
         cooperativeGestures: true,
+        locale: TRADITIONAL_CHINESE_MAP_LOCALE,
       });
       map.addControl(new NavigationControl({ showCompass: false }), "top-right");
       const markerElement = document.createElement("div");
@@ -48,7 +61,13 @@ function MapView({ point }: { point: IncidentMapPoint }) {
       marker = new Marker({ element: markerElement, anchor: "bottom" })
         .setLngLat([point.longitude, point.latitude])
         .addTo(map);
-      map.once("style.load", () => { if (!disposed) { loadedRef.current = true; setReady(true); } });
+      map.once("style.load", () => {
+        if (!disposed) {
+          applyTraditionalChineseLabels(map!);
+          loadedRef.current = true;
+          setReady(true);
+        }
+      });
       map.on("render", () => {
         if (!disposed && !loadedRef.current && map?.isStyleLoaded()) {
           loadedRef.current = true;
@@ -77,6 +96,7 @@ function MapView({ point }: { point: IncidentMapPoint }) {
       {!ready && <div className="incident-map-loading" role="status">{error || "正在載入互動地圖…"}</div>}
       <div ref={containerRef} className="incident-map-frame" role="region" aria-label={`${point.label}互動地圖`} />
     </div>
+    <p className="incident-map-usage-hint">地圖操作：手機以兩隻手指拖移；按「＋／−」放大或縮小。</p>
     <div className="incident-map-caption">
       <span><MapPin size={13} aria-hidden="true" />{point.label}{point.description ? ` · ${point.description}` : ""}</span>
       <a href={externalMapUrl} target="_blank" rel="noreferrer">在 Google Maps 查看位置 <ArrowUpRight size={12} aria-hidden="true" /></a>

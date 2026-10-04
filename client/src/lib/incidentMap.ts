@@ -3,6 +3,32 @@ import proj4 from "proj4";
 const CSDI_API = "https://www.map.gov.hk/gs/api/v1.0.0/locationSearch";
 const CSDI_CACHE_KEY = "hk-traffic-alert:location-search:v1";
 const CSDI_CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
+export const TRADITIONAL_CHINESE_LABEL_FIELDS = ["name:zh-Hant", "name:zh", "name:nonlatin", "name", "name_en", "name:latin"] as const;
+export const TRADITIONAL_CHINESE_MAP_LOCALE = {
+  "AttributionControl.ToggleAttribution": "切換地圖資料來源",
+  "AttributionControl.MapFeedback": "地圖意見回饋",
+  "FullscreenControl.Enter": "進入全螢幕",
+  "FullscreenControl.Exit": "離開全螢幕",
+  "GeolocateControl.FindMyLocation": "顯示我的位置",
+  "GeolocateControl.LocationNotAvailable": "暫時無法取得你的位置",
+  "LogoControl.Title": "MapLibre 地圖",
+  "Map.Title": "互動地圖",
+  "Marker.Title": "地圖標記",
+  "NavigationControl.ResetBearing": "恢復地圖方向",
+  "NavigationControl.ZoomIn": "放大地圖",
+  "NavigationControl.ZoomOut": "縮小地圖",
+  "CooperativeGesturesHandler.WindowsHelpText": "按住 Ctrl 鍵並滾動滑鼠滾輪以縮放地圖",
+  "CooperativeGesturesHandler.MacHelpText": "按住 ⌘ 鍵並滾動滑鼠滾輪以縮放地圖",
+  "CooperativeGesturesHandler.MobileHelpText": "使用兩隻手指移動地圖",
+  "Popup.Close": "關閉地圖提示",
+  "ScaleControl.Feet": "英尺",
+  "ScaleControl.Meters": "米",
+  "ScaleControl.Kilometers": "公里",
+  "ScaleControl.Miles": "英里",
+  "ScaleControl.NauticalMiles": "海里",
+  "GlobeControl.Enable": "切換至地球模式",
+  "GlobeControl.Disable": "切換至平面地圖",
+} as const;
 const COORDINATE_HK80 = "EPSG:2326";
 const COORDINATE_WGS84 = "EPSG:4326";
 
@@ -31,6 +57,14 @@ type GeoInfoSearchResult = {
 };
 
 type CachedResults = { savedAt: number; results: IncidentMapPoint[] };
+
+type NameGetExpression = ["get", typeof TRADITIONAL_CHINESE_LABEL_FIELDS[number]];
+export type TraditionalChineseLabelExpression = ["coalesce", ...NameGetExpression[]];
+
+export function buildTraditionalChineseLabelExpression(): TraditionalChineseLabelExpression {
+  const nameFields: NameGetExpression[] = TRADITIONAL_CHINESE_LABEL_FIELDS.map((field) => ["get", field]);
+  return ["coalesce", ...nameFields];
+}
 
 const memoryCache = new Map<string, IncidentMapPoint[]>();
 let searchQueue = Promise.resolve();

@@ -951,3 +951,6 @@ button { -webkit-tap-highlight-color: transparent; }
   .incident-map-caption { align-items:flex-start; }
   .incident-map-caption a { width:100%; }
 }
+
+/* Traditional-Chinese operation hint for the incident map. */
+.incident-map-usage-hint { margin:0; padding:6px 8px; color:#526174; font-size:11px; line-height:1.5; }
