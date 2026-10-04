@@ -51,6 +51,13 @@ describe("parseSpecialTrafficNewsXml", () => {
   it("returns an empty array for a valid feed with no messages", () => {
     expect(parseSpecialTrafficNewsXml("<list />")).toEqual([]);
   });
+
+  it("retains a complete official WGS-84 coordinate pair when the feed supplies one", () => {
+    expect(parseSpecialTrafficNewsXml(`<list><message>
+      <ID>located-1</ID><LOCATION_CN>公主道</LOCATION_CN>
+      <LATITUDE>22.3124</LATITUDE><LONGITUDE>114.1768</LONGITUDE>
+    </message></list>`)).toMatchObject([{ id: "located-1", location: "公主道", latitude: 22.3124, longitude: 114.1768 }]);
+  });
 });
 
 describe("normalizeWeatherWarnings", () => {
@@ -281,7 +288,7 @@ describe("alert-first selection and status", () => {
   });
 
   it("selects major road incidents, MTR delay flags and local felt earthquakes, not global M6 bulletins", () => {
-    const majorRoad = { id: "road-1", incidentNumber: "IN-1", title: "吐露港公路交通意外", detail: "行車線封閉", location: "大埔", district: "大埔", direction: "往沙田", status: "仍然生效", announcedAt: "2026-09-27T09:00:00+08:00" };
+    const majorRoad = { id: "road-1", incidentNumber: "IN-1", title: "吐露港公路交通意外", detail: "行車線封閉", location: "大埔", district: "大埔", direction: "往沙田", status: "仍然生效", announcedAt: "2026-09-27T09:00:00+08:00", latitude: 22.45, longitude: 114.16 };
     const alerts = selectPriorityAlerts({
       ...emptyInput,
       trafficEvents: [majorRoad],
@@ -290,8 +297,9 @@ describe("alert-first selection and status", () => {
     });
     expect(alerts.map((alert) => alert.kind)).toContain("road");
     expect(alerts.map((alert) => alert.kind)).toContain("rail");
+    expect(alerts.find((alert) => alert.kind === "road")).toMatchObject({ latitude: 22.45, longitude: 114.16, locationSearchQuery: "大埔" });
     expect(alerts.filter((alert) => alert.kind === "earthquake")).toHaveLength(1);
-    expect(alerts.find((alert) => alert.kind === "earthquake")?.location).toBe("香港附近");
+    expect(alerts.find((alert) => alert.kind === "earthquake")).toMatchObject({ location: "香港附近", locationSearchQuery: "香港附近" });
   });
 
   it("does not treat minor bus arrival notes as major road incidents", () => {
@@ -301,7 +309,7 @@ describe("alert-first selection and status", () => {
 
   it("recognizes explicit road impact while suppressing roadside incidents with no traffic impact", () => {
     const event = (title: string, detail = "", status = "生效") => ({ id: title, incidentNumber: "", title, detail, location: "吐露港公路", district: "大埔", direction: "往沙田", status, announcedAt: "2026-09-27T09:00:00+08:00" });
-    expect(["吐露港公路封路", "吐露港公路塞車", "行車線阻塞", "交通改道", "車輛故障"].every((title) => isMajorTrafficEvent(event(title)))).toBe(true);
+    expect(["吐露港公路封路", "吐露港公路塞車", "行車線阻塞", "交通改道", "車輛故障", "山泥傾瀉", "山泥滑坡", "塌方", "落石"].every((title) => isMajorTrafficEvent(event(title)))).toBe(true);
     expect(isMajorTrafficEvent(event("車輛故障", "車輛已移至路旁，交通不受影響"))).toBe(false);
     expect(isMajorTrafficEvent(event("吐露港公路交通意外", "", "已解除"))).toBe(false);
   });
