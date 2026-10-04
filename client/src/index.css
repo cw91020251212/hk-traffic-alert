@@ -862,3 +862,42 @@ button { -webkit-tap-highlight-color: transparent; }
   .alert-breathing-enabled .incident-card { animation:none !important; }
   .alert-effect-switch > span { transition:none; }
 }
+
+
+/* Keep every currently effective Observatory warning visible, independent of the major-incident feed cap. */
+.hko-warning-panel { margin:10px 0 0; overflow:hidden; border:1px solid #d9e4dc; border-radius:12px; background:#fff; box-shadow:0 4px 15px rgba(35,72,55,.045); }
+.hko-warning-panel-heading { min-height:52px; display:flex; align-items:center; gap:9px; padding:9px 12px; background:#f4f8f3; }
+.hko-warning-icon { width:30px; height:30px; flex:0 0 auto; display:grid; place-items:center; border-radius:9px; color:#18766b; background:#e0f2e9; }
+.hko-warning-heading-copy { min-width:0; flex:1; display:grid; gap:3px; }
+.hko-warning-heading-copy strong { color:#264f46; font-size:12px; }
+.hko-warning-heading-copy small { color:#71837a; font-size:9px; line-height:1.4; }
+.hko-warning-count { flex:0 0 auto; padding:4px 7px; border-radius:99px; color:#3e6c5a; background:#e6f1e9; font-size:9px; font-weight:800; }
+.hko-warning-list { display:grid; }
+.hko-warning-item { border-top:1px solid #e9eee9; }
+.hko-warning-item > summary { min-height:54px; display:grid; grid-template-columns:42px minmax(0,1fr) auto 16px; align-items:center; gap:8px; padding:8px 12px; cursor:pointer; list-style:none; }
+.hko-warning-item > summary::-webkit-details-marker { display:none; }
+.hko-warning-badge { min-height:22px; display:inline-flex; align-items:center; justify-content:center; padding:3px 5px; border-radius:6px; color:#5d6341; background:#eef1dd; font-size:9px; font-weight:850; white-space:nowrap; }
+.hko-warning-high .hko-warning-badge { color:#82470d; background:#fff0d7; }
+.hko-warning-critical .hko-warning-badge { color:#8b2724; background:#ffe5e1; }
+.hko-warning-text { min-width:0; display:grid; gap:3px; }
+.hko-warning-text strong { color:#354c43; font-size:11px; line-height:1.35; }
+.hko-warning-text small { display:-webkit-box; overflow:hidden; color:#75827c; font-size:9px; line-height:1.4; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
+.hko-warning-scope { display:inline-flex; align-items:center; justify-content:flex-end; gap:3px; color:#77877f; font-size:9px; white-space:nowrap; }
+.hko-warning-scope svg { flex:0 0 auto; color:#81958a; }
+.hko-warning-chevron { color:#829088; transition:transform .18s ease; }
+.hko-warning-item[open] .hko-warning-chevron { transform:rotate(180deg); }
+.hko-warning-details { display:grid; gap:8px; padding:0 13px 12px 62px; }
+.hko-warning-details p { margin:0; color:#586d62; font-size:10px; line-height:1.65; white-space:pre-line; overflow-wrap:anywhere; }
+.hko-warning-details > span { color:#819088; font-size:9px; }
+.hko-warning-details a { width:max-content; max-width:100%; color:#2b7063; font-size:10px; font-weight:750; text-decoration:underline; text-underline-offset:2px; }
+@media (max-width:620px) {
+  .hko-warning-panel { margin-top:8px; }
+  .hko-warning-panel-heading { min-height:48px; padding:8px 10px; }
+  .hko-warning-item > summary { grid-template-columns:40px minmax(0,1fr) auto 14px; gap:6px; padding:8px 9px; }
+  .hko-warning-badge { font-size:8px; }
+  .hko-warning-scope { font-size:8px; }
+  .hko-warning-details { padding-left:55px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .hko-warning-chevron { transition:none; }
+}

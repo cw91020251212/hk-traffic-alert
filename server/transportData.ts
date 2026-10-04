@@ -61,6 +61,16 @@ export function isMajorTrafficEvent(event: TrafficEvent): boolean {
   return !EXPLICIT_NO_IMPACT_PATTERN.test(searchable) && MAJOR_TRAFFIC_PATTERN.test(searchable);
 }
 
+export function getWeatherWarningLevel(warning: WeatherWarning): PriorityAlert["level"] {
+  const subtype = warning.subtype ?? "";
+  if (warning.code === "WRAIN") return subtype === "WRAINB" ? "critical" : subtype === "WRAINR" ? "high" : "watch";
+  if (warning.code === "WTCSGNL") return /TC(?:8|9|10)/.test(subtype) ? "critical" : "watch";
+  if (warning.code === "WTMW") return "critical";
+  if (warning.code === "WL" || warning.code === "WFNTSA") return "high";
+  // Keep every other active HKO signal visible without overstating its severity.
+  return "watch";
+}
+
 export function selectPriorityAlerts(input: {
   trafficEvents: TrafficEvent[];
   warnings: WeatherWarning[];
@@ -76,13 +86,9 @@ export function selectPriorityAlerts(input: {
   }
   for (const warning of input.warnings) {
     const subtype = warning.subtype ?? "";
-    let level: PriorityAlert["level"] | undefined;
-    if (warning.code === "WRAIN") level = subtype === "WRAINB" ? "critical" : subtype === "WRAINR" ? "high" : "watch";
-    else if (warning.code === "WTCSGNL") level = /TC(?:8|9|10)/.test(subtype) ? "critical" : "watch";
-    else if (warning.code === "WTMW") level = "critical";
-    else if (warning.code === "WL" || warning.code === "WFNTSA") level = "high";
-    if (!level) continue;
-    alerts.push({ id: `weather-${warning.code}-${subtype}`, kind: "weather", level, warningCode: warning.code, warningSubtype: subtype || undefined, title: warning.label, detail: warning.content || "香港天文台官方警告目前生效。", location: "香港天文台官方訊號", area: "全港", updatedAt: warning.updatedAt });
+    const level = getWeatherWarningLevel(warning);
+    const localFlood = warning.code === "WFNTSA";
+    alerts.push({ id: `weather-${warning.code}-${subtype}`, kind: "weather", level, warningCode: warning.code, warningSubtype: subtype || undefined, title: warning.label, detail: warning.content || "香港天文台官方警告目前生效。", location: localFlood ? "新界北部" : "香港天文台官方訊號", area: localFlood ? "新界／離島" : "全港", updatedAt: warning.updatedAt });
   }
   for (const train of input.trains.filter((item) => item.serviceDelayed || Boolean(item.message))) {
     alerts.push({ id: `rail-${train.line}`, kind: "rail", level: "high", title: `${train.label}服務延誤／安排`, detail: train.message || "港鐵 API 標記此綫服務延誤；原因及最新安排請查看官方消息。", location: `${train.station} · 以港鐵公告為準`, area: alertArea(train.station), updatedAt: train.currentTime });
@@ -268,6 +274,11 @@ const RAIN_LABELS: Record<string, string> = {
   WRAINB: "黑色暴雨警告",
 };
 
+const FIRE_LABELS: Record<string, string> = {
+  WFIREY: "黃色火災危險警告",
+  WFIRER: "紅色火災危險警告",
+};
+
 const TYPHOON_LABELS: Record<string, string> = {
   TC1: "一號戒備信號",
   TC3: "三號強風信號",
@@ -377,6 +388,8 @@ export function normalizeWeatherWarnings(payload: unknown): WeatherWarning[] {
       : [];
     const label = code === "WRAIN" && subtype
       ? RAIN_LABELS[subtype] || WARNING_LABELS[code]
+      : code === "WFIRE" && subtype
+        ? FIRE_LABELS[subtype] || WARNING_LABELS[code]
       : code === "WTCSGNL" && subtype
         ? `熱帶氣旋 · ${TYPHOON_LABELS[subtype] || subtype}`
         : WARNING_LABELS[code] || code;

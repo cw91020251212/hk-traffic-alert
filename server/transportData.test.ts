@@ -246,6 +246,34 @@ describe("alert-first selection and status", () => {
     expect(alerts.map((alert) => alert?.level)).toEqual(["watch", "high", "critical"]);
   });
 
+  it("keeps cold, thunderstorm, northern NT flood and other active HKO warnings visible", () => {
+    const warnings = normalizeWeatherWarnings({ details: [
+      { warningStatementCode: "WRAIN", subtype: "WRAINA", contents: ["黃色暴雨警告生效"] },
+      { warningStatementCode: "WCOLD", contents: ["天氣顯著轉冷"] },
+      { warningStatementCode: "WFNTSA", contents: ["新界北部有水浸風險"] },
+      { warningStatementCode: "WTS", contents: ["雷暴警告生效"] },
+      { warningStatementCode: "WNEW", contents: ["新加入的官方警告"] },
+    ] });
+    const alerts = selectPriorityAlerts({ ...emptyInput, warnings });
+    expect(alerts.map((alert) => alert.warningCode)).toEqual(["WFNTSA", "WRAIN", "WCOLD", "WTS", "WNEW"]);
+    expect(alerts.find((alert) => alert.warningCode === "WRAIN")).toMatchObject({ warningSubtype: "WRAINA", title: "黃色暴雨警告" });
+    expect(alerts.find((alert) => alert.warningCode === "WFNTSA")).toMatchObject({
+      level: "high", location: "新界北部", area: "新界／離島", title: "新界北部水浸特別報告",
+    });
+    expect(alerts.find((alert) => alert.warningCode === "WRAIN")?.level).toBe("watch");
+    expect(alerts.find((alert) => alert.warningCode === "WCOLD")?.level).toBe("watch");
+    expect(alerts.find((alert) => alert.warningCode === "WTS")?.level).toBe("watch");
+    expect(alerts.find((alert) => alert.warningCode === "WNEW")?.level).toBe("watch");
+  });
+
+  it("does not turn an active watch-level HKO warning into a clear feed", () => {
+    const alerts = selectPriorityAlerts({
+      ...emptyInput,
+      warnings: normalizeWeatherWarnings({ details: [{ warningStatementCode: "WCOLD", contents: ["天氣顯著轉冷"] }] }),
+    });
+    expect(getPriorityFeedState(false, [{ id: "hko-warning", label: "天文台警告", url: "https://example.com", status: "ok", checkedAt: "now" }], alerts)).toMatchObject({ kind: "alerts" });
+  });
+
   it("filters a cancelled warning and ignores a closed road event", () => {
     const warnings = normalizeWeatherWarnings({ details: [{ warningStatementCode: "WTCSGNL", subtype: "CANCEL", contents: ["所有信號取消"] }] });
     const closedRoad = { id: "closed", incidentNumber: "1", title: "吐露港公路嚴重交通意外", detail: "車輛相撞", location: "大埔", district: "大埔", direction: "往沙田", status: "完結", announcedAt: "2026-09-27T08:00:00+08:00" };

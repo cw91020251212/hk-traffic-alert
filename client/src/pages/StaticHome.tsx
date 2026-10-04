@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, ArrowUpRight, Bell, CarFront, ChevronRight, CloudLightning, Footprints, MapPinned, Navigation, RefreshCw, ShieldAlert, TrainFront, TriangleAlert, Zap } from "lucide-react";
 import { AlertEffectsSettings } from "@/components/AlertEffectsSettings";
+import { ActiveWeatherWarnings } from "@/components/ActiveWeatherWarnings";
 import { PriorityAlertSignalIcon } from "@/components/PriorityAlertIcon";
 import { RouteLocationButton } from "@/components/RouteLocationButton";
 import { useAlertEffects } from "@/hooks/useAlertEffects";
@@ -164,6 +165,7 @@ export default function StaticHome() {
 
       <AlertEffectsSettings preferences={alertEffects.preferences} status={alertEffects.status} setSoundEnabled={alertEffects.setSoundEnabled} setBreathingEnabled={alertEffects.setBreathingEnabled} testSound={alertEffects.testSound} />
       {alertEffects.newAlertNotice && <div className="new-alert-notice" role="status" aria-live="polite"><Bell size={16} aria-hidden="true" />{alertEffects.newAlertNotice}</div>}
+      <ActiveWeatherWarnings warnings={dashboard?.warnings ?? []} />
 
       <details className="route-planner route-planner-primary" open={routeOpen} onToggle={(event) => setRouteOpen((event.currentTarget as HTMLDetailsElement).open)}>
         <summary><MapPinned size={18} /><span><strong>我由邊度去邊度？</strong><small>按大區初步比對，不是實際路線檢查</small></span><ChevronRight size={17} /></summary>
