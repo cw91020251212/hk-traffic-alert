@@ -2,7 +2,7 @@
 
 **日期：** 2026-10-04（香港時間）
 
-**狀態：** 實作與測試完成；準備提交 PR。**尚未合併或更新公開網站。**
+**狀態：** PR #30 已合併；GitHub Pages 部署成功，公開網址已核實。
 
 ## 用戶需求與問題
 
@@ -34,4 +34,6 @@
 
 ## 部署界線
 
-本次尚未合併或部署。正式 GitHub Pages 網站仍維持現有公開版本；需用戶確認後才可合併變更並更新 `gh-pages`。
+用戶確認後，PR [#30](https://github.com/cw91020251212/hk-traffic-alert/pull/30) 已於 2026-10-04 合併至 `main`，merge commit 為 `e34428d9129f1d8dd4256fbe0c07f31fe7b13a87`。GitHub Pages 靜態資產發佈至 `gh-pages` commit `49f79d51c5c90cd1dd1b6a55fb4b265b59136585`；[部署工作 37206484813](https://github.com/cw91020251212/hk-traffic-alert/actions/runs/37206484813) 結果為 success。
+
+正式網址 <https://cw91020251212.github.io/hk-traffic-alert/> 及其 JavaScript bundle 均回傳 HTTP 200。公開 bundle `assets/index-Bv4fPdfC.js` 已確認包含「天文台生效警告」、「黃色暴雨警告」、「寒冷天氣警告」及「新界北部水浸特別報告」文字。
