@@ -1,4 +1,5 @@
 import { ChevronDown, CloudRain, MapPin } from "lucide-react";
+import { IncidentLocationMap } from "@/components/IncidentLocationMap";
 import { getWeatherWarningLevel, type WeatherWarning } from "../../../server/transportData";
 
 type ActiveWeatherWarningsProps = {
@@ -47,6 +48,8 @@ export function ActiveWeatherWarnings({ warnings }: ActiveWeatherWarningsProps) 
           <div className="hko-warning-details">
             {warning.content ? <p>{warning.content}</p> : <p>天文台官方警告目前生效。詳情請查看香港天文台公告。</p>}
             <span>天文台更新：{formatHkt(warning.updatedAt)} HKT</span>
+            {warning.code === "WL" && <IncidentLocationMap label={warningScope(warning)} noLocationMessage="山泥傾瀉警告是預警；天文台這項警告沒有提供個別塌方事故座標，不能據此標出單一事故點。" />}
+            {warning.code === "WFNTSA" && <IncidentLocationMap label={warningScope(warning)} noLocationMessage="這是新界北部區域性水浸提示，公告沒有提供單一現場座標；請以天文台原文及現場情況為準。" />}
             <a href="https://www.hko.gov.hk/tc/index.html" target="_blank" rel="noreferrer">查看天文台官方消息</a>
           </div>
         </details>;
