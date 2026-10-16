@@ -18,7 +18,7 @@ Pages 不能運行 Express／tRPC，因此公開網站直接從瀏覽器讀取�
 6. [`DATA_SOURCES.md`](DATA_SOURCES.md)、[`政府公告與警報選項.md`](政府公告與警報選項.md) — 官方資料來源和限制。
 7. [`reports/README.md`](reports/README.md) — AI 工作報告規則、範本及歷次完成報告。
 
-**每次 AI／開發工作完成時都要在 `reports/` 建立一份報告，並把報告提交到 GitHub 作為備份，供其他 AI／公司同事參考；工作被中斷時若已有可交接結果，也要記錄進度。** 同時更新 handoff／todo（如有需要），明確分開已完成、未完成、半完成、驗證和下一步；不要把查到資料誤標為已接入，不要把未合併或未發布說成已完成，也不要讓後續 AI 重頭做。
+**每次 AI／開發工作完成時都要在 `reports/` 建立一份報告，並把報告提交到 GitHub 作為備份，供後續維護參考；工作被中斷時若已有可交接結果，也要記錄進度。** 同時更新 handoff／todo（如有需要），明確分開已完成、未完成、半完成、驗證和下一步；不要把查到資料誤標為已接入，不要把未合併或未發布說成已完成，也不要讓後續 AI 重頭做。
 
 ## 目前功能摘要
 
@@ -40,8 +40,6 @@ Pages 不能運行 Express／tRPC，因此公開網站直接從瀏覽器讀取�
 
 ## 開發與測試
 
-專案目錄：`/home/ubuntu/hk-traffic-alert`
-
 ```bash
 pnpm install
 pnpm dev
@@ -51,8 +49,13 @@ pnpm build
 pnpm pages:build
 ```
 
-最近驗證為 41 項測試通過、TypeScript 檢查通過、正式 build 成功，並完成 375px 展開路線表單、地區推斷、Google Maps URL、localStorage 及橫向溢位檢查。若在一般 Node 環境啟動 Manus 模板，OAuth／DB 等平台整合要用正式環境 secrets；**不要將 `.env`、token 或使用者憑證放入 GitHub／交接 ZIP**。
+最近驗證為 41 項測試通過、TypeScript 檢查通過、正式 build 成功，並完成 375px 展開路線表單、地區推斷、Google Maps URL、localStorage 及橫向溢位檢查。若在一般 Node 環境啟動此專案，OAuth／DB 等平台整合要用正式環境 secrets；**不要將 `.env`、token 或使用者憑證放入 GitHub／交接 ZIP**。
 
-## 預覽
+---
 
-目前預覽：<https://3000-ih1j11rgdevjk1295tsun-ba280051.sg2.manus.computer>。可複製連結於手機或桌面開啟；這是沙盒開發預覽，不是保證長期可用的 production hostname。
+<!-- project-status-and-license-notice -->
+## 專案狀態與授權
+
+本專案由個人維護，主要用於個人實驗、學習與測試。部分版本可能公開展示或部署供體驗，但功能、資料及部署可能不完整或變更；請在實際依賴前自行核實，不構成任何第三方背書。
+
+本倉庫的原創程式碼、文件及專案素材只授權個人本機評估與測試；未經著作權人事先書面許可，不得公開鏡像、公開再發佈、散佈或再授權。詳情及第三方材料的範圍見 [`LICENSE`](LICENSE)；第三方程式、資料、圖片、商標及來源材料仍受其各自授權與條款約束。
